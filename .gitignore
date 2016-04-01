@@ -1,0 +1,4 @@
+node_modules
+temp
+src/nabto/android-*
+src/nabto/ios
