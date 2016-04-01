@@ -87,6 +87,7 @@ src
 ├── ios
 │   └── *
 └── nabto
+    ├── assets.md
     ├── android-arm
     │   └── lib
     │       └── libnabto_client_api_jni.so
@@ -96,19 +97,19 @@ src
     ├── android-x86
     │   └── lib
     │       └── libnabto_client_api_jni.so
-    ├── include
-    │   └── nabto_client_api.h
-    ├── ios
-    │   └── lib
-    │       ├── libnabto_client_api_static.a
-    │       └── libnabto_static_external.a
-    └── share
-        └── nabto
-            ├── configuration
-            ├── roots
-            ├── schemas
-            ├── skins
-            └── users
+    └── ios
+        ├── include
+        │   └── nabto_client_api.h
+        ├── lib
+        │   ├── libnabto_client_api_static.a
+        │   └── libnabto_static_external.a
+        └── share
+            └── nabto
+                ├── configuration
+                ├── roots
+                ├── schemas
+                ├── skins
+                └── users
 ```
 
 ## Run Tests
