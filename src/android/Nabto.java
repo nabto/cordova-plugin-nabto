@@ -10,18 +10,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import android.content.Context;
 
-import com.nabto.api.NabtoApi;
-
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 public class Nabto extends CordovaPlugin {
-
     private NabtoApi nabto = null;
     private Session session;
 
-    public Nabto() {
-    }
+    public Nabto() {}
 
     /**
      * Executes the request and returns PluginResult.
