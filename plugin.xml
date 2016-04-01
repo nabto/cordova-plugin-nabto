@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-plugin-nabto"
+    version="1.0.0">
+
+    <name>Nabto</name>
+    <description>Cordova Plugin Nabto</description>
+    <license>MIT</license>
+    <keywords>cordova,nabto</keywords>
+
+    <js-module src="www/nabto.js" name="nabto">
+        <clobbers target="nabto"/>
+    </js-module>
+
+    <js-module src="www/nabto-status.js" name="NabtoStatus">
+        <clobbers target="window.NabtoStatus"/>
+    </js-module>
+
+    <js-module src="www/nabto-error.js" name="NabtoError">
+        <clobbers target="window.NabtoError"/>
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="Nabto">
+                <param name="android-package" value="com.nabto.api.Nabto"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoConnectionType.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoState.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoStatus.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/StreamConnectionTypeResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/StreamOptionName.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/StreamReadResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/TunnelInfo.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/UrlFetchResult.java" target-dir="src/com/nabto/api" />
+
+        <source-file src="src/nabto/android-arm/lib/libnabto_client_api_jni.so" target-dir="libs/armeabi"/>
+        <source-file src="src/nabto/android-armv7/lib/libnabto_client_api_jni.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/nabto/android-x86/lib/libnabto_client_api_jni.so" target-dir="libs/x86"/>
+
+        <source-file src="src/nabto/ios/share" target-dir="assets" />
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.INTERNET" />
+        </config-file>
+    </platform>
+
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Nabto">
+                <param name="ios-package" value="CDVNabto"/>
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/CDVNabto.h" />
+        <source-file src="src/ios/CDVNabto.m" />
+        <header-file src="src/ios/Manager.h" />
+        <source-file src="src/ios/Manager.m" />
+        <header-file src="src/nabto/ios/include/nabto_client_api.h" />
+
+        <resource-file src="src/nabto/ios/share/nabto/configuration" />
+        <resource-file src="src/nabto/ios/share/nabto/roots" />
+        <resource-file src="src/nabto/ios/share/nabto/schemas" />
+        <resource-file src="src/nabto/ios/share/nabto/skins" />
+        <resource-file src="src/nabto/ios/share/nabto/users" />
+
+        <source-file src="src/nabto/ios/lib/libnabto_client_api_static.a" framework="true" />
+        <source-file src="src/nabto/ios/lib/libnabto_static_external.a" framework="true" />
+    </platform>
+
+</plugin>
