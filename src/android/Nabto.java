@@ -64,7 +64,7 @@ public class Nabto extends CordovaPlugin {
         }
 
         if (session != null) {
-            cc.error("Session already open");
+            cc.success();
             return;
         }
 
