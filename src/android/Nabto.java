@@ -74,64 +74,94 @@ public class Nabto extends CordovaPlugin {
         }
     }
 
-    private void startup(String user, String pass, CallbackContext cc) {
-        if (nabto != null) {
-            openSession(user, pass, cc);
-            return;
-        }
+    private void startup(final String user, final String pass, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
 
-        Context context = this.cordova.getActivity().getApplicationContext();
-        nabto = new NabtoApi(context);
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (nabto != null) {
+                    openSession(user, pass, cc);
+                    return;
+                }
+                nabto = new NabtoApi(context);
 
-        NabtoStatus status = nabto.setStaticResourceDir();
-        if (status != NabtoStatus.OK) {
-            cc.error(status.ordinal());
-            return;
-        }
+                NabtoStatus status = nabto.setStaticResourceDir();
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
 
-        nabto.init(user, pass);
-        openSession(user, pass, cc);
+                nabto.init(user, pass);
+                openSession(user, pass, cc);
+            }
+        });
     }
 
-    private void shutdown(CallbackContext cc) {
-        nabto.pause(session);
-        session = null;
-        cc.success();
+    private void shutdown(final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                nabto.pause(session);
+                session = null;
+                cc.success();
+            }
+        });
     }
 
-    private void fetchUrl(String url, CallbackContext cc) {
-        if (session == null) {
-            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-            return;
-        }
+    private void fetchUrl(final String url, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (session == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
 
-        UrlFetchResult result = nabto.fetchUrl(url, session);
-        if (result.getNabtoStatus() != NabtoStatus.OK) {
-            cc.error(result.getNabtoStatus().ordinal());
-            return;
-        }
+                UrlFetchResult result = nabto.fetchUrl(url, session);
+                if (result.getNabtoStatus() != NabtoStatus.OK) {
+                    cc.error(result.getNabtoStatus().ordinal());
+                    return;
+                }
 
-        try {
-            String stringResult = new String(result.getResult(), "UTF-8");
-            cc.success(stringResult);
-        } catch (UnsupportedEncodingException e) {
-            cc.error("Nabto request parse error");
-        }
+                try {
+                    String stringResult = new String(result.getResult(), "UTF-8");
+                    cc.success(stringResult);
+                } catch (UnsupportedEncodingException e) {
+                    cc.error("Nabto request parse error");
+                }
+            }
+        });
     }
 
-    private void getSessionToken(CallbackContext cc) {
-        String token = nabto.getSessionToken(session);
-        cc.success(token);
+    private void getSessionToken(final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                String token = nabto.getSessionToken(session);
+                cc.success(token);
+            }
+        });
     }
 
-    private void getLocalDevices(CallbackContext cc) {
-        String[] devices = nabto.nabtoGetLocalDevices();
-        JSONArray jsonArray = new JSONArray(Arrays.asList(devices));
-        cc.success(jsonArray);
+    private void getLocalDevices(final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                String[] devices = nabto.nabtoGetLocalDevices();
+                JSONArray jsonArray = new JSONArray(Arrays.asList(devices));
+                cc.success(jsonArray);
+            }
+        });
     }
 
-    private void version(CallbackContext cc) {
-        String version = nabto.nabtoVersion();
-        cc.success(version);
+    private void version(final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                String version = nabto.nabtoVersion();
+                cc.success(version);
+            }
+        });
     }
 }
