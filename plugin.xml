@@ -22,6 +22,10 @@
         <clobbers target="window.NabtoError"/>
     </js-module>
 
+    <js-module src="www/nabto-tunnel-state.js" name="NabtoTunnelState">
+        <clobbers target="window.NabtoTunnelState"/>
+    </js-module>
+
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
