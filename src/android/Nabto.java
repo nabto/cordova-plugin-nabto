@@ -192,7 +192,7 @@ public class Nabto extends CordovaPlugin {
     /* Nabto Tunnel API */
 
     private void tunnelOpenTcp(String host, int port, CallbackContext cc) {
-        tunnel = nabto.nabtoTunnelOpenTcp(0, "localhost", host, port, session.getSession());
+        tunnel = nabto.nabtoTunnelOpenTcp(0, host, "localhost", port, session.getSession());
         NabtoStatus status = tunnel.getStatus();
         if (status != NabtoStatus.OK) {
             tunnel = null;
