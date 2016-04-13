@@ -5,7 +5,7 @@
 /* globals cordova */
 
 function NabtoTunnelState(state) {
-  this.state = state || NabtoTunnelState.OK;
+  this.state = !state && state !== 0 ? NabtoTunnelState.NTCS_CLOSED : state;
   if (this.state > NabtoTunnelState.NTCS_REMOTE_RELAY_MICRO) {
     this.state = NabtoTunnelState.NTCS_CLOSED;
   }

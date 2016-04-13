@@ -7,7 +7,7 @@ Nabto provides a full communication infrastructure to allow direct, encrypted co
 ## Limitations
 
 - Only Android and iOS support
-- No streaming API
+- No Nabto streaming API
 - Handling of rare other Cordova errors (becomes a `NabtoStatus`)
 
 ## Installation

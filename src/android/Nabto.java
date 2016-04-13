@@ -16,6 +16,7 @@ import java.util.Arrays;
 public class Nabto extends CordovaPlugin {
     private NabtoApi nabto = null;
     private Session session;
+    private Tunnel tunnel;
 
     public Nabto() {}
 
@@ -28,6 +29,7 @@ public class Nabto extends CordovaPlugin {
      * @return                  True when the action was valid, false otherwise.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        // Nabto API
         if (action.equals("startup")) {
             startup(args.getString(0), args.getString(1), callbackContext);
         }
@@ -45,6 +47,25 @@ public class Nabto extends CordovaPlugin {
         }
         else if (action.equals("version")) {
             version(callbackContext);
+        }
+        // Nabto Tunnel API
+        else if (action.equals("tunnelOpenTcp")) {
+            tunnelOpenTcp(args.getString(0), args.getInt(1), callbackContext);
+        }
+        else if (action.equals("tunnelVersion")) {
+            tunnelVersion(callbackContext);
+        }
+        else if (action.equals("tunnelState")) {
+            tunnelState(callbackContext);
+        }
+        else if (action.equals("tunnelLastError")) {
+            tunnelLastError(callbackContext);
+        }
+        else if (action.equals("tunnelPort")) {
+            tunnelPort(callbackContext);
+        }
+        else if (action.equals("tunnelClose")) {
+            tunnelClose(callbackContext);
         }
         else {
             return false;
@@ -73,6 +94,9 @@ public class Nabto extends CordovaPlugin {
             cc.success();
         }
     }
+
+    /* Nabto API */
+
 
     private void startup(final String user, final String pass, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
@@ -163,5 +187,70 @@ public class Nabto extends CordovaPlugin {
                 cc.success(version);
             }
         });
+    }
+
+    /* Nabto Tunnel API */
+
+    private void tunnelOpenTcp(String host, int port, CallbackContext cc) {
+        tunnel = nabto.nabtoTunnelOpenTcp(0, "localhost", host, port, session.getSession());
+        NabtoStatus status = tunnel.getStatus();
+        if (status != NabtoStatus.OK) {
+            tunnel = null;
+            cc.error(status.ordinal());
+        }
+        else {
+            cc.success();
+        }
+    }
+
+    private void tunnelVersion(CallbackContext cc) {
+        if (tunnel == null) {
+            cc.success(-1);
+            return;
+        }
+        // Not returned by Android library wrapper
+        cc.success(1);
+    }
+
+    private void tunnelState(CallbackContext cc) {
+        if (tunnel == null) {
+            cc.success(-1);
+            return;
+        }
+        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
+        cc.success(info.getNabtoState().ordinal() - 1);
+    }
+
+    private void tunnelLastError(CallbackContext cc) {
+        if (tunnel == null) {
+            cc.success(-1);
+            return;
+        }
+        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
+        cc.success(info.getNabtoStatus().ordinal() - 1);
+    }
+
+    private void tunnelPort(CallbackContext cc) {
+        if (tunnel == null) {
+            cc.success(-1);
+            return;
+        }
+        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
+        cc.success(info.getNabtoPort());
+    }
+
+    private void tunnelClose(CallbackContext cc) {
+        if (tunnel == null) {
+            cc.success(-1);
+            return;
+        }
+        NabtoStatus status = nabto.nabtoTunnelCloseTcp(tunnel.getTunnel());
+        if (status != NabtoStatus.OK) {
+            tunnel = null;
+            cc.error(status.ordinal());
+        }
+        else {
+            cc.success();
+        }
     }
 }
