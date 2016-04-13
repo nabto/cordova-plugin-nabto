@@ -7,6 +7,8 @@
 
 @implementation CDVNabto
 
+#pragma mark Nabto API
+
 - (void)startup:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* res = nil;
@@ -82,6 +84,60 @@
 - (void)version:(CDVInvokedUrlCommand*)command {
     NSString *version = [[Manager sharedManager] nabtoVersion];
     CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:version];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+#pragma mark Nabto Tunnel API
+
+- (void)tunnelOpenTcp:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult *res = nil;
+    
+    nabto_status_t status = [[Manager sharedManager] nabtoTunnelOpenTcp:[command.arguments objectAtIndex:0] onPort:[[command.arguments objectAtIndex:1] intValue]];
+    if (status == NABTO_OK) {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }
+    else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+    }
+    
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelVersion:(CDVInvokedUrlCommand*)command {
+    int version = [[Manager sharedManager] nabtoTunnelVersion];
+    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:version];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelState:(CDVInvokedUrlCommand*)command {
+    nabto_tunnel_state_t state = [[Manager sharedManager] nabtoTunnelInfo];
+    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:state];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelLastError:(CDVInvokedUrlCommand*)command {
+    nabto_status_t status = [[Manager sharedManager] nabtoTunnelError];
+    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:status];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelPort:(CDVInvokedUrlCommand*)command {
+    int port = [[Manager sharedManager] nabtoTunnelPort];
+    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:port];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelClose:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult *res = nil;
+    
+    nabto_status_t status = [[Manager sharedManager] nabtoTunnelClose];
+    if (status == NABTO_OK) {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }
+    else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+    }
+    
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 

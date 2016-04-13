@@ -6,7 +6,8 @@
 
 var exec = require('cordova/exec'),
   NabtoStatus = require('./NabtoStatus'),
-  NabtoError = require('./NabtoError');
+  NabtoError = require('./NabtoError'),
+  NabtoTunnelState = require('./NabtoTunnelState');
 
 function Nabto() {}
 
@@ -84,6 +85,62 @@ Nabto.prototype.version = function(cb) {
     function(status) {
       cb(new NabtoStatus(status));
     }, 'Nabto', 'version', []);
+};
+
+Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
+  exec(
+    function() { cb(); },
+    function(status) {
+      cb(new NabtoStatus(status));
+    }, 'Nabto', 'tunnelOpenTcp', [host, port]);
+};
+
+Nabto.prototype.tunnelVersion = function(cb) {
+  exec(
+    function(version) {
+      cb(undefined, version);
+    },
+    function(status) {
+      cb(new NabtoStatus(status));
+    }, 'Nabto', 'tunnelVersion', []);
+};
+
+Nabto.prototype.tunnelState = function(cb) {
+  exec(
+    function(state) {
+      cb(undefined, new NabtoTunnelState(state));
+    },
+    function(status) {
+      cb(new NabtoStatus(status));
+    }, 'Nabto', 'tunnelState', []);
+};
+
+Nabto.prototype.tunnelLastError = function(cb) {
+  exec(
+    function(status) {
+      cb(new NabtoStatus(status));
+    },
+    function(status) {
+      cb(new NabtoStatus(status));
+    }, 'Nabto', 'tunnelLastError', []);
+};
+
+Nabto.prototype.tunnelPort = function(cb) {
+  exec(
+    function(port) {
+      cb(undefined, port);
+    },
+    function(status) {
+      cb(new NabtoStatus(status));
+    }, 'Nabto', 'tunnelPort', []);
+};
+
+Nabto.prototype.tunnelClose = function(cb) {
+  exec(
+    function() { cb(); },
+    function(status) {
+      cb(new NabtoStatus(status));
+    }, 'Nabto', 'tunnelClose', []);
 };
 
 module.exports = new Nabto();
