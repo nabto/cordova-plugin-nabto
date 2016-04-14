@@ -192,6 +192,10 @@ public class Nabto extends CordovaPlugin {
     /* Nabto Tunnel API */
 
     private void tunnelOpenTcp(String host, int port, CallbackContext cc) {
+        if (tunnel != null) {
+            cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+            return;
+        }
         tunnel = nabto.nabtoTunnelOpenTcp(0, host, "localhost", port, session.getSession());
         NabtoStatus status = tunnel.getStatus();
         if (status != NabtoStatus.OK) {
@@ -241,12 +245,12 @@ public class Nabto extends CordovaPlugin {
 
     private void tunnelClose(CallbackContext cc) {
         if (tunnel == null) {
-            cc.success(-1);
+            cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
         NabtoStatus status = nabto.nabtoTunnelCloseTcp(tunnel.getTunnel());
+        tunnel = null;
         if (status != NabtoStatus.OK) {
-            tunnel = null;
             cc.error(status.ordinal());
         }
         else {
