@@ -39,6 +39,9 @@ Nabto.prototype.shutdown = function(cb) {
 
 Nabto.prototype.fetchUrl = function(url, cb) {
   cb = cb || function() {};
+  if (typeof url !== "string") {
+    return cb(new NabtoError(NabtoError.INVALID_ARG));
+  }
 
   exec(
     function(result) {
@@ -58,6 +61,8 @@ Nabto.prototype.fetchUrl = function(url, cb) {
 };
 
 Nabto.prototype.getSessionToken = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(token) {
       cb(undefined, token);
@@ -68,6 +73,8 @@ Nabto.prototype.getSessionToken = function(cb) {
 };
 
 Nabto.prototype.getLocalDevices = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(devices) {
       cb(undefined, devices);
@@ -78,6 +85,8 @@ Nabto.prototype.getLocalDevices = function(cb) {
 };
 
 Nabto.prototype.version = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(version) {
       cb(undefined, version);
@@ -88,6 +97,14 @@ Nabto.prototype.version = function(cb) {
 };
 
 Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
+  cb = cb || function() {};
+  if (typeof host !== 'string' || typeof port !== 'number') {
+    if (typeof host === 'function') {
+      cb = host;
+    }
+    return cb(new NabtoError(NabtoError.INVALID_ARG));
+  }
+
   exec(
     function() { cb(); },
     function(status) {
@@ -96,6 +113,8 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
 };
 
 Nabto.prototype.tunnelVersion = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(version) {
       cb(undefined, version);
@@ -106,6 +125,8 @@ Nabto.prototype.tunnelVersion = function(cb) {
 };
 
 Nabto.prototype.tunnelState = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(state) {
       cb(undefined, new NabtoTunnelState(state));
@@ -116,6 +137,8 @@ Nabto.prototype.tunnelState = function(cb) {
 };
 
 Nabto.prototype.tunnelLastError = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(status) {
       cb(new NabtoStatus(status));
@@ -126,6 +149,8 @@ Nabto.prototype.tunnelLastError = function(cb) {
 };
 
 Nabto.prototype.tunnelPort = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function(port) {
       cb(undefined, port);
@@ -136,6 +161,8 @@ Nabto.prototype.tunnelPort = function(cb) {
 };
 
 Nabto.prototype.tunnelClose = function(cb) {
+  cb = cb || function() {};
+
   exec(
     function() { cb(); },
     function(status) {

@@ -58,6 +58,14 @@ exports.defineAutoTests = function () {
       });
     });
 
+    it('gets error with invalid arguments to fetchUrl', function(done) {
+      nabto.fetchUrl(123, function(status, result) {
+        expect(result).not.toBeDefined();
+        expect(status.error).toBe(NabtoError.INVALID_ARG);
+        done();
+      });
+    });
+
     it('cannot startup nabto with invalid username/password', function(done) {
       nabto.startup('nonexisting', '1234567', function(status) {
         expect([7, 5]).toContain(status.value);
@@ -92,7 +100,7 @@ exports.defineAutoTests = function () {
     it('returns error when fetching a non-existing url', function(done) {
       nabto.fetchUrl('nabto://nonexisting.nabto.net', function(status, result) {
         expect(status).toBeDefined();
-        expect(status.value).toBe(NabtoError.PARSE_ERROR);
+        expect(status.error).toBe(NabtoError.PARSE_ERROR);
         done();
       });
     });
@@ -159,6 +167,19 @@ exports.defineAutoTests = function () {
       });
     });
 
+    it('handles invalid arguments to tunnelOpenTcp', function(done) {
+      nabto.tunnelOpenTcp(function(status) {
+        expect(status.error).toBe(NabtoError.INVALID_ARG);
+        nabto.tunnelOpenTcp(device, '5555', function(status) {
+          expect(status.error).toBe(NabtoError.INVALID_ARG);
+          nabto.tunnelOpenTcp(123, remotePort, function(status) {
+            expect(status.error).toBe(NabtoError.INVALID_ARG);
+            done();
+          });
+        });
+      });
+    });
+
     it('opens a nabto tunnel and wait for it to connect', function(done) {
       nabto.tunnelOpenTcp(device, remotePort, function(status) {
         expect(status).not.toBeDefined();
@@ -170,6 +191,13 @@ exports.defineAutoTests = function () {
             done();
           });
         }, 500);
+      });
+    });
+
+    it('fails to open a second tunnel', function(done) {
+      nabto.tunnelOpenTcp('2' + device, remotePort, function(status) {
+        expect(status.value).toBe(NabtoStatus.INVALID_TUNNEL);
+        done();
       });
     });
 
@@ -224,7 +252,7 @@ exports.defineAutoTests = function () {
 
     it('gets last error', function(done) {
       nabto.tunnelLastError(function(status) {
-        expect(status.toString()).toBe('NO_PROFILE');
+        expect(status.toString()).toBe('UNKNOWN');
         done();
       });
     });
@@ -232,6 +260,13 @@ exports.defineAutoTests = function () {
     it('closes tunnel', function(done) {
       nabto.tunnelClose(function(status) {
         expect(status).not.toBeDefined();
+        done();
+      });
+    });
+
+    it('closes a non-open tunnel', function(done) {
+      nabto.tunnelClose(function(status) {
+        expect(status.value).toBe(NabtoStatus.INVALID_TUNNEL);
         done();
       });
     });

@@ -138,6 +138,9 @@ void nabtoLogCallback(const char* line, size_t size) {
 }
 
 - (nabto_status_t)nabtoTunnelOpenTcp:(NSString *)host onPort:(int)port {
+    if (tunnel) {
+        return NABTO_INVALID_TUNNEL;
+    }
     return [self nabtoTunnelOpenTcp:&tunnel toHost:host onPort:port];
 }
 
@@ -186,7 +189,9 @@ void nabtoLogCallback(const char* line, size_t size) {
 }
 
 - (nabto_status_t)nabtoTunnelClose {
-    return [self nabtoTunnelClose:tunnel];
+    nabto_status_t status = [self nabtoTunnelClose:tunnel];
+    tunnel = NULL;
+    return status;
 }
 
 - (nabto_status_t)nabtoTunnelClose:(nabto_tunnel_t)handle {
