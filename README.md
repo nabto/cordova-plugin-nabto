@@ -43,38 +43,81 @@ document.addEventListener('deviceready', function() {
 }, false);
 ```
 
-## API
+## Nabto API
 
 See *www/nabto.js* for API implementation details.
 
-Start Nabto and open a session with optional username and password. Callback is invoked with a `NabtoStatus` object if something went wrong.
+All callbacks are invoked with a `NabtoStatus` object as the first argument if something went wrong, otherwise the first argument is set to undefined.
+
+Start Nabto and open a session with optional username and password.
 ```js
 nabto.startup([username, password, ]callback)
 ```
 
-Shuts down Nabto. Callback is invoked with a `NabtoStatus` object if something went wrong.
+Shuts down Nabto.
 ```js
 nabto.shutdown(callback)
 ```
 
-Makes a Nabto request to a uNabto device url. Callback is invoked with a `NabtoStatus` and a response object.
+Makes a Nabto request to a uNabto device url.
+Callback is invoked with a response object.
 ```js
 nabto.fetchUrl(url, callback)
 ```
 
-Get the active session token. Callback is invoked with a string.
+Get the active session token.
+Callback is invoked with a string.
 ```js
 nabto.getSessionToken(callback)
 ```
 
-Get local Nabto devices. Callback is invoked with an array of device strings.
+Get local Nabto devices.
+Callback is invoked with an array of device strings.
 ```js
 nabto.getLocalDevices(callback)
 ```
 
-Get Nabto client version. Callback is invoked with a string.
+Get Nabto client version.
+Callback is invoked with a string.
 ```js
 nabto.version(callback)
+```
+
+## Nabto Tunnel API
+
+Open a TCP tunnel over Nabto to the given host and port.
+Use `nabto.tunnelPort` to get the tunnel's local port.
+```js
+nabto.tunnelOpenTcp(host, port, callback)
+```
+
+Get the Nabto tunnel version.
+Callback is invoked with a version number.
+```js
+nabto.tunnelVersion(callback)
+```
+
+Get the open tunnel state.
+Callback is invoked with a `NabtoTunnelState` object.
+```js
+nabto.tunnelState(callback)
+```
+
+Get the last error of the open tunnel.
+Callback is invoked with a `NabtoStatus` object.
+```js
+nabto.tunnelLastError(callback)
+```
+
+Get the open tunnel local port.
+Callback is invoked with a port number.
+```js
+nabto.tunnelPort(callback)
+```
+
+Close the previously opened tunnel.
+```js
+nabto.tunnelClose(callback)
 ```
 
 ## Source File Structure
