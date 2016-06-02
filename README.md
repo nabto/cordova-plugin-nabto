@@ -9,6 +9,7 @@ Nabto provides a full communication infrastructure to allow direct, encrypted co
 - Only Android and iOS support
 - No Nabto streaming API
 - Handling of rare other Cordova errors (becomes a `NabtoStatus`)
+- An HTML device driver containing the uNabto interface (`unabto_queries.xml`) is still required to communicate with the device
 
 ## Installation
 
