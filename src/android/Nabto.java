@@ -86,6 +86,19 @@ public class Nabto extends CordovaPlugin {
         }
 
         session = nabto.openSession(user, pass);
+        if (session.getStatus() == NabtoStatus.NO_PROFILE ||
+                session.getStatus() == NabtoStatus.OPEN_CERT_OR_PK_FAILED) {
+            status = nabto.createProfile(user, pass);
+            if (status == NabtoStatus.OK) {
+                session = nabto.openSession(user, pass);
+            }
+            else {
+                cc.error(status.ordinal());
+                session = null;
+                return;
+            }
+        }
+
         if (session.getStatus() != NabtoStatus.OK) {
             cc.error(session.getStatus().ordinal());
             session = null;
@@ -96,7 +109,6 @@ public class Nabto extends CordovaPlugin {
     }
 
     /* Nabto API */
-
 
     private void startup(final String user, final String pass, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
