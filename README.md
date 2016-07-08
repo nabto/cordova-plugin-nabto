@@ -8,7 +8,7 @@ Nabto provides a full communication infrastructure to allow direct, encrypted co
 
 - Only Android and iOS support
 - No Nabto streaming API
-- Handling of rare other Cordova errors (becomes a `NabtoStatus`)
+- Returned error can be both `NabtoStatus` and `NabtoError` objects.
 - An HTML device driver containing the uNabto interface (`unabto_queries.xml`) is still required to communicate with the device
 
 ## Installation
@@ -48,7 +48,11 @@ document.addEventListener('deviceready', function() {
 
 See *www/nabto.js* for API implementation details.
 
-All callbacks are invoked with a `NabtoStatus` object as the first argument if something went wrong, otherwise the first argument is set to undefined.
+All callbacks are invoked with a status object as the first argument if something went wrong, otherwise the first argument is set to undefined.
+
+`NabtoStatus`: Maps to nabto client nabto_status enum.
+
+`NabtoError`: Represents other wrapper layer errors.
 
 Start Nabto and open a session with optional username and password.
 ```js
