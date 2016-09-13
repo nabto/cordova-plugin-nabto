@@ -162,7 +162,7 @@ src
 ## Run Tests
 
 1. Create a new Cordova project and install `cordova-plugin-nabto` as described above
-2. Also install the `cordova-plugin-nabto` /tests subproject.
+2. Also install the `/tests` subproject (cordova plugin add https://github.com/nabto/cordova-plugin-nabto.git#:/tests)
 3. Install the Cordova test framework plugin: `cordova plugin add http://git-wip-us.apache.org/repos/asf/cordova-plugin-test-framework.git`
 4. Add `<content src="cdvtests/index.html" />` to the projects `config.xml`
 5. Run on the platform you wish to test

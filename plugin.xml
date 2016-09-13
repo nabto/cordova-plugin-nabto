@@ -18,6 +18,10 @@
         <clobbers target="window.NabtoStatus"/>
     </js-module>
 
+    <js-module src="www/nabto-constants.js" name="NabtoConstants">
+        <clobbers target="window.NabtoConstants"/>
+    </js-module>
+
     <js-module src="www/nabto-error.js" name="NabtoError">
         <clobbers target="window.NabtoError"/>
     </js-module>
@@ -83,6 +87,19 @@
 
         <source-file src="src/nabto/ios/lib/libnabto_client_api_static.a" framework="true" />
         <source-file src="src/nabto/ios/lib/libnabto_static_external.a" framework="true" />
+    </platform>
+
+    <!-- browser -->
+    <platform name="browser">
+      <config-file target="config.xml" parent="/*">
+	<feature name="Nabto">
+	  <param name="browser-package" value="NabtoMock" />
+	</feature>
+      </config-file>
+      
+      <js-module src="src/browser/NabtoProxy.js" name="NabtoProxy">
+	<runs />
+      </js-module>
     </platform>
 
 </plugin>

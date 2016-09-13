@@ -11,6 +11,11 @@ var exec = require('cordova/exec'),
 
 function Nabto() {}
 
+function nextTick(cb, arg) {
+  // ensure all callbacks are invoked asynchronously (do not release zalgo (http://goo.gl/dP5Bbz))
+  setTimeout(function() { cb(arg); }, 0);
+}
+
 Nabto.prototype.startup = function(user, pass, cb) {
   if (typeof user === 'function') {
     cb = user;
@@ -21,43 +26,53 @@ Nabto.prototype.startup = function(user, pass, cb) {
   pass = pass || '123456';
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
-    }, 'Nabto', 'startup', [user, pass]);
+    function success() { cb(); },
+    function error(apiStatus) {
+      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+    },
+    'Nabto', 'startup', [user, pass]);
 };
 
 Nabto.prototype.shutdown = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
-    }, 'Nabto', 'shutdown', []);
+    function success() { cb(); },
+    function error(apiStatus) {
+      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+    }, 
+  'Nabto', 'shutdown', []);
 };
 
-Nabto.prototype.fetchUrl = function(url, cb) {
+Nabto.prototype.rpc = function(url, cb) {
   cb = cb || function() {};
   if (typeof url !== "string") {
-    return cb(new NabtoError(NabtoError.INVALID_ARG));
+    return nextTick(cb, new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.CDV_INVALID_ARG));
   }
 
   exec(
-    function(result) {
+    function success(fetchResult) {
       var obj, err;
-
       try {
         obj = JSON.parse(result);
       } catch (e) {
-        err = new NabtoError(NabtoError.PARSE_ERROR);
-      } finally {
-        cb(err, obj);
+        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.CDV_UNEXPECTED_DATA, e);
+	return cb(err, obj);
       }
+      if (obj.response) {
+	// ok
+	err = null;
+      } else if (obj.error) {
+	err = new NabtoStatus(NabtoStatus.Category.P2P, null, obj.error);
+      } else {
+        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.CDV_UNEXPECTED_DATA, e);
+      }
+      return cb(err, obj.response);	  
     },
-    function(status) {
-      cb(new NabtoStatus(status));
-    }, 'Nabto', 'fetchUrl', [url]);
+    function error(apiStatus) {
+      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+    },
+    'Nabto', 'fetchUrl', [url]);
 };
 
 Nabto.prototype.getSessionToken = function(cb) {
