@@ -108,38 +108,59 @@ NabtoStatus.prototype.handleApiError = function(status) {
  *     "header" : "Device Unavailable (1000015)"
  *   }
  *
-* and
-* 
-*    "error": {
-*        "event": "2000065",
-*        "header": "Error in device application (2000065)",
-*        "detail": "NP_E_INV_QUERY_ID",
-*        "body": "Communication with the device succeeded, but the application on the device returned error code NP_E_INV_QUERY_ID"
-*    }
+ * and
+ * 
+ *    "error": {
+ *        "event": "2000065",
+ *        "header": "Error in device application (2000065)",
+ *        "detail": "NP_E_INV_QUERY_ID",
+ *        "body": "Communication with the device succeeded, but the application on the device returned error code NP_E_INV_QUERY_ID"
+ *    }
  */
 NabtoStatus.prototype.handleP2pError = function(obj) {
   var error = obj.error;
+  this.inner = error;
   if (!(error && error.event)) {
     this.handleUnexpectedObject(obj);
   } else {
     if (error.event == NabtoConstants.ClientEvents.UNABTO_APPLICATION_EXCEPTION) {
-      this.handleDeviceException(error.detail);
+      this.handleDeviceException(error);
     } else {
       this.handleNabtoEvent(error);
     }
-    this.inner = obj;
   }
 };
 
 NabtoStatus.prototype.handleWrapperError = function(status) {
 };
 
-NabtoStatus.prototype.handleDeviceException = function(deviceException) {
+NabtoStatus.prototype.handleDeviceException = function(error) {
   // unabto/src/unabto/unabto_protocol_exceptions.h
-  var deviceExceptionCode = mapExceptionStringToCode(...);
-  var message = lookupDeviceMessage(deviceExceptionCode);
-  // TODO - set message
-  
+  try {
+    if (!error.detail) {
+      throw "Unexpected error object: " + error;
+    }
+    this.code = this.mapExceptionStringToCode(error.detail);
+    this.message = this.lookupDeviceMessage(this.code);
+    this.category = NabtoStatus.Category.DEVICE_EXCEPTION;
+    this.inner = error;
+  } catch (e) {
+    this.handleUnexpectedObject(error);
+  }
+};
+
+NabtoStatus.prototype.mapExceptionStringToCode = function(exception) {
+  var prefix = "NP_E_";
+  var s = exception.substring(prefix.length);
+  if (NabtoConstants.DeviceExceptions.hasOwnProperty(s)) {
+    return NabtoStatus.Code.EXC_BASE + NabtoConstants.DeviceExceptions[s];
+  } else {
+    throw "Unexpected device exception code: " + s;
+  }
+};
+
+NabtoStatus.prototype.lookupDeviceMessage = function(deviceExceptionCode) {
+  return "Access denied!";
 };
 
 NabtoStatus.prototype.handleNabtoEvent = function(obj) {

@@ -7,19 +7,19 @@
 var errors = {
   "offline": {
     "error" : {
-      "body" : "The requested device is currently not online. Make sure the device is turned on and is connected to the network.",
-      "detail" : "nabto://offline.nabto.net/wind_speed.json?",
       "event" : 1000015,
-      "header" : "Device Unavailable (1000015)"
+      "header" : "Device Unavailable (1000015)",
+      "body" : "The requested device is currently not online. Make sure the device is turned on and is connected to the network.",
+      "detail" : "nabto://offline.nabto.net/wind_speed.json?"
     }
   },
 
   "exception": {
-    "error" : {
-      "body" : "Communication with the device succeeded, but the application on the device returned error code NO_ACCESS",
-      "detail" : "nabto://demo.nabto.net/wind_speed.json?",
-      "event" : 2000065,
-      "header" : "Error in device application (2000065)"
+    "error": {
+      "event": 2000065,
+      "header": "Error in device application (2000065)",
+      "body": "Communication with the device succeeded, but the application on the device returned error code NP_E_NO_ACCESS",
+      "detail": "NP_E_NO_ACCESS"
     }
   }
 };
@@ -50,7 +50,7 @@ exports.defineAutoTests = function () {
       expect(s.category).toBe(NabtoStatus.Category.P2P);
       expect(s.code).toBe(NabtoStatus.Code.P2P_DEVICE_OFFLINE);
       expect(s.message).toMatch(/not online/i);
-      expect(s.inner).toEqual(errors.offline);
+      expect(s.inner).toEqual(errors.offline.error);
     });
 
     it('should handle nabto error event with device exception', function() {
@@ -58,7 +58,8 @@ exports.defineAutoTests = function () {
       expect(s.category).toBe(NabtoStatus.Category.DEVICE_EXCEPTION);
       expect(s.code).toBe(NabtoStatus.Code.EXC_NO_ACCESS);
       expect(s.message).toMatch(/access denied/i);
-      expect(s.inner).toEqual(errors.exception);
+      console.log(`Is ${JSON.stringify(s.inner)} equal to ${JSON.stringify(errors.exception)}?`);
+      expect(s.inner).toEqual(errors.exception.error);
     });
 
     it('should gracefully handle unexpected input', function() {
