@@ -4,7 +4,7 @@
 
 /*
  * Simplified wrapper for Nabto error handling at the 4 different
- * possible layers. A single error code attribute covers all layers
+ * possible layers. The single error code attribute covers all layers
  * (categories):
  *
  * CDV_xxx error codes: An error occurred in the Cordova wrapper, for
@@ -67,8 +67,8 @@ NabtoStatus.Code.P2P_ENCRYPTION_MISMATCH      = 3120;
 NabtoStatus.Code.P2P_DEVICE_BUSY              = 3121;
 NabtoStatus.Code.P2P_DEVICE_REATTACHING       = 3124;
 NabtoStatus.Code.P2P_CERT_CREATION_ERROR      = 3205;
+NabtoStatus.Code.P2P_TIMEOUT                  = 3215; // TIME_OUT, CONNECT_TIMEOUT
 NabtoStatus.Code.P2P_INTERFACE_DEF_INVALID    = 3223;
-NabtoStatus.Code.P2P_TIMEOUT                  = 3225; // TIME_OUT, CONNECT_TIMEOUT
 NabtoStatus.Code.P2P_NO_SUCH_REQUEST          = 3227; // NO_SUCH_REQ, FILE_NOT_FOUND
 NabtoStatus.Code.P2P_PARAM_PARSE_ERROR        = 3229; 
 NabtoStatus.Code.P2P_PARAM_MISSING            = 3230; 
@@ -90,6 +90,9 @@ NabtoStatus.Code.EXC_NO_QUERY_ID      = 4011;
 ////////////////////////////////////////////////////////////////////////////////
 
 NabtoStatus.Message = {};
+NabtoStatus.Message[NabtoStatus.Code.CDV_INVALID_ARG]           = "Invalid argument specified to Cordova wrapper";		    
+NabtoStatus.Message[NabtoStatus.Code.CDV_UNEXPECTED_DATA]       = "Unexpected status data from SDK";		    
+
 NabtoStatus.Message[NabtoStatus.Code.API_NOT_INITIALIZED]       = "API not initialized";
 NabtoStatus.Message[NabtoStatus.Code.API_INVALID_SESSION]       = "Invalid Nabto session";
 NabtoStatus.Message[NabtoStatus.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
@@ -118,9 +121,6 @@ NabtoStatus.Message[NabtoStatus.Code.EXC_RSP_TOO_LARGE]         = "Internal erro
 NabtoStatus.Message[NabtoStatus.Code.EXC_OUT_OF_RESOURCES]      = "The remote device is out of ressources (most likely out of memory)";
 NabtoStatus.Message[NabtoStatus.Code.EXC_SYSTEM_ERROR]          = "Internal error in the remote application";
 NabtoStatus.Message[NabtoStatus.Code.EXC_NO_QUERY_ID]           = "Query id (opcode) missing in request";
-
-NabtoStatus.Message[NabtoStatus.Code.CDV_INVALID_ARG]           = "Invalid argument specified to Cordova wrapper";		    
-NabtoStatus.Message[NabtoStatus.Code.CDV_UNEXPECTED_DATA]       = "Unexpected status data from SDK";		    
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -271,7 +271,11 @@ NabtoStatus.prototype.handleNabtoEvent = function(obj) {
   case NabtoConstants.ClientEvents.ENCRYPTION_MISMATCH:
     this.code = NabtoStatus.Code.P2P_ENCRYPTION_MISMATCH;
     break;
-        
+
+  case NabtoConstants.ClientEvents.MICROSERVER_BUSY:
+    this.code = NabtoStatus.Code.P2P_DEVICE_BUSY;
+    break;
+
   case NabtoConstants.ClientEvents.MICROSERVER_REATTACHING:
     this.code = NabtoStatus.Code.P2P_DEVICE_REATTACHING;
     break;

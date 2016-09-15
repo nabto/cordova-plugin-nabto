@@ -58,7 +58,6 @@ exports.defineAutoTests = function () {
       expect(s.category).toBe(NabtoStatus.Category.DEVICE_EXCEPTION);
       expect(s.code).toBe(NabtoStatus.Code.EXC_NO_ACCESS);
       expect(s.message).toMatch(/access denied/i);
-      console.log(`Is ${JSON.stringify(s.inner)} equal to ${JSON.stringify(errors.exception)}?`);
       expect(s.inner).toEqual(errors.exception.error);
     });
 
@@ -69,10 +68,46 @@ exports.defineAutoTests = function () {
       expect(s.code).toBe(NabtoStatus.Code.CDV_UNEXPECTED_DATA);
       expect(s.inner).toMatch(/unexpected object/i);
       expect(s.message).toMatch(/unexpected status/i);
-      
+    });
+
+    function hasPrefix(s, prefix) {
+      return s.substr(0, prefix.length) === prefix;
+    }
+
+    function clone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+    
+    function toNabtoEventCode(code) {
+      // code = 3120;
+      // event_code = 1000020
+      if (Math.floor(code / 1000) != 3) {
+	throw `unexpected base for nabto event: ${code/1000}`;
+      }
+      var base = (code - 3000);
+      var major = Math.floor(base / 100) * 1000000;
+      var minor = base - Math.floor((base / 100)) * 100;
+      var event = major + minor;
+      return event;
+    }
+
+    it('should handle nabto events correctly', function() {
+      for (var p in NabtoStatus.Code) {
+	if (NabtoStatus.Code.hasOwnProperty(p)) {
+	  if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
+	    var response = clone(errors.offline);
+	    response.error.event = toNabtoEventCode(NabtoStatus.Code[p]);
+	    var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, response);
+	    if (s.code == NabtoStatus.Code.P2P_OTHER) {
+	      expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
+	    } else {
+	      expect(s.code).toBe(NabtoStatus.Code[p]);
+	    }
+	  }
+	}
+      }
     });
     
-
   });
 
   describe('Nabto', function () {
