@@ -160,7 +160,18 @@ NabtoStatus.prototype.mapExceptionStringToCode = function(exception) {
 };
 
 NabtoStatus.prototype.lookupDeviceMessage = function(deviceExceptionCode) {
-  return "Access denied!";
+  switch (deviceExceptionCode) {
+  case NabtoStatus.Code.EXC_NOT_READY       : return "Not ready: The remote application is not ready yet (still initializing)";
+  case NabtoStatus.Code.EXC_NO_ACCESS       : return "Access denied: The remote application does not allow this request to be answered"; 
+  case NabtoStatus.Code.EXC_TOO_SMALL       : return "The request is too small, i.e. required fields are not present";
+  case NabtoStatus.Code.EXC_TOO_LARGE       : return "The request is larger than expected";
+  case NabtoStatus.Code.EXC_INV_QUERY_ID    : return "Invalid query id: The remote application could not recognize the query id (opcode)";
+  case NabtoStatus.Code.EXC_RSP_TOO_LARGE   : return "Internal error in the remote application, response buffer too small";
+  case NabtoStatus.Code.EXC_OUT_OF_RESOURCES: return "The remote device is out of ressources (most likely out of memory)";
+  case NabtoStatus.Code.EXC_SYSTEM_ERROR    : return "Internal error in the remote application";
+  case NabtoStatus.Code.EXC_NO_QUERY_ID     : return "Query id (opcode) missing in request";
+  default: throw "Unexpected device exception: " + deviceExceptionCode;
+  }
 };
 
 NabtoStatus.prototype.handleNabtoEvent = function(obj) {
