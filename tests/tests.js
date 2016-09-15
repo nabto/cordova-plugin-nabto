@@ -67,7 +67,9 @@ exports.defineAutoTests = function () {
       var s = new NabtoStatus(NabtoStatus.Category.P2P, NabtoConstants.ClientApiErrors.OK, dummy);
       expect(s.category).toBe(NabtoStatus.Category.WRAPPER);
       expect(s.code).toBe(NabtoStatus.Code.CDV_UNEXPECTED_DATA);
-      expect(s.message).toMatch(/unexpected/i);
+      expect(s.inner).toMatch(/unexpected object/i);
+      expect(s.message).toMatch(/unexpected status/i);
+      
     });
     
 
