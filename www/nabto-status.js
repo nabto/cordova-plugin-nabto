@@ -54,10 +54,12 @@ NabtoStatus.Code.CDV_INVALID_ARG     =  1000;
 NabtoStatus.Code.CDV_UNEXPECTED_DATA =  1001;
 
 // relevant error codes mapped from nabto_client_api.h
-NabtoStatus.Code.API_NOT_INITIALIZED  = 2003;
-NabtoStatus.Code.API_INVALID_SESSION  = 2004;
-NabtoStatus.Code.API_CERT_OPEN_FAIL   = 2005;
-NabtoStatus.Code.API_ERROR            = 2100;
+NabtoStatus.Code.API_CERT_OPEN_FAIL          = 2001;
+NabtoStatus.Code.API_NOT_INITIALIZED         = 2003;
+NabtoStatus.Code.API_INVALID_SESSION         = 2004;
+NabtoStatus.Code.API_UNLOCK_KEY_BAD_PASSWORD = 2006;
+NabtoStatus.Code.API_SERVER_LOGIN_FAILURE    = 2007;
+NabtoStatus.Code.API_ERROR                   = 2100;
 
 // relevant error codes mapped from nabto::Events
 NabtoStatus.Code.P2P_ACCESS_DENIED_CONNECT    = 3111; // access denied for connection attempt
@@ -118,7 +120,7 @@ NabtoStatus.Message[NabtoStatus.Code.EXC_TOO_SMALL]             = "The request i
 NabtoStatus.Message[NabtoStatus.Code.EXC_TOO_LARGE]             = "The request is larger than expected";
 NabtoStatus.Message[NabtoStatus.Code.EXC_INV_QUERY_ID]          = "Invalid query id: The remote application could not recognize the query id (opcode)";
 NabtoStatus.Message[NabtoStatus.Code.EXC_RSP_TOO_LARGE]         = "Internal error in the remote application, response buffer too small";
-NabtoStatus.Message[NabtoStatus.Code.EXC_OUT_OF_RESOURCES]      = "The remote device is out of ressources (most likely out of memory)";
+NabtoStatus.Message[NabtoStatus.Code.EXC_OUT_OF_RESOURCES]      = "The remote device is out of resources (most likely out of memory)";
 NabtoStatus.Message[NabtoStatus.Code.EXC_SYSTEM_ERROR]          = "Internal error in the remote application";
 NabtoStatus.Message[NabtoStatus.Code.EXC_NO_QUERY_ID]           = "Query id (opcode) missing in request";
 
@@ -150,10 +152,10 @@ function NabtoStatus(category, status, innerError) {
 
 }
 
-NabtoStatus.prototype.initStatus = function(category, status, innerError) {
+NabtoStatus.prototype.initStatus = function(category, status, doc) {
   switch (category) {
   case NabtoStatus.Category.API:     this.handleApiError(status); break;
-  case NabtoStatus.Category.P2P:     this.handleP2pError(innerError); break;
+  case NabtoStatus.Category.P2P:     this.handleP2pError(doc); break;
   case NabtoStatus.Category.WRAPPER: this.handleWrapperError(status); break;
   default:
     throw new Error("Invalid category: " + category);
@@ -181,9 +183,16 @@ NabtoStatus.prototype.handleApiError = function(status) {
   case NabtoConstants.ClientApiErrors.INVALID_SESSION:
     this.code = NabtoStatus.Code.API_INVALID_SESSION;
     break;
-    
-  case NabtoConstants.ClientApiErrors.OPEN_CERT_OR_PK_FAILED:
+
   case NabtoConstants.ClientApiErrors.UNLOCK_PK_FAILED:
+    this.code = NabtoStatus.Code.API_UNLOCK_KEY_BAD_PASSWORD;
+    break;
+
+  case NabtoConstants.ClientApiErrors.PORTAL_LOGIN_FAILURE:
+    this.code = NabtoStatus.Code.API_SERVER_LOGIN_FAILURE;
+    break;
+
+  case NabtoConstants.ClientApiErrors.OPEN_CERT_OR_PK_FAILED:
   case NabtoConstants.ClientApiErrors.NO_PROFILE:
     this.code = NabtoStatus.Code.API_CERT_OPEN_FAIL;
     break;
@@ -226,7 +235,8 @@ NabtoStatus.prototype.handleP2pError = function(obj) {
 };
 
 NabtoStatus.prototype.handleWrapperError = function(status) {
-  throw "Not implemented";
+  this.code = status;
+  this.category = NabtoStatus.Category.WRAPPER;
 };
 
 NabtoStatus.prototype.handleDeviceException = function(error) {
@@ -294,6 +304,7 @@ NabtoStatus.prototype.handleNabtoEvent = function(obj) {
     break;
         
   case NabtoConstants.ClientEvents.QUERY_MODEL_NO_SUCH_REQUEST:
+  case NabtoConstants.ClientEvents.FILE_NOT_FOUND:
     this.code = NabtoStatus.Code.P2P_NO_SUCH_REQUEST;
     break;
         

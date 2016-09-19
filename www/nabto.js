@@ -5,15 +5,16 @@
 /* globals cordova */
 
 var exec = require('cordova/exec'),
-  NabtoStatus = require('./NabtoStatus'),
-  NabtoError = require('./NabtoError'),
-  NabtoTunnelState = require('./NabtoTunnelState');
+    NabtoStatus = require('./NabtoStatus'),
+    NabtoError = require('./NabtoError'),
+    NabtoTunnelState = require('./NabtoTunnelState');
 
 function Nabto() {}
 
 function nextTick(cb, arg) {
   // ensure all callbacks are invoked asynchronously (do not release zalgo (http://goo.gl/dP5Bbz))
-  setTimeout(function() { cb(arg); }, 0);
+  //    setTimeout(function() { cb(arg); }, 0);
+  cb(arg);
 }
 
 Nabto.prototype.startup = function(user, pass, cb) {
@@ -41,33 +42,35 @@ Nabto.prototype.shutdown = function(cb) {
     function error(apiStatus) {
       cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 
-  'Nabto', 'shutdown', []);
+    'Nabto', 'shutdown', []);
 };
 
-Nabto.prototype.rpc = function(url, cb) {
+Nabto.prototype.fetchUrl = function(url, cb) {
   cb = cb || function() {};
   if (typeof url !== "string") {
-    return nextTick(cb, new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.CDV_INVALID_ARG));
+    return nextTick(cb, new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_INVALID_ARG));
   }
 
   exec(
-    function success(fetchResult) {
+    function success(result) {
       var obj, err;
       try {
         obj = JSON.parse(result);
       } catch (e) {
-        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.CDV_UNEXPECTED_DATA, e);
-	return cb(err, obj);
+        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_UNEXPECTED_DATA, e);
+        return cb(err, obj);
       }
       if (obj.response) {
-	// ok
-	err = null;
+        // ok
+        err = null;
       } else if (obj.error) {
-	err = new NabtoStatus(NabtoStatus.Category.P2P, null, obj.error);
+        err = new NabtoStatus(NabtoStatus.Category.P2P, null, obj);
+	obj = null;
       } else {
-        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.CDV_UNEXPECTED_DATA, e);
+        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_UNEXPECTED_DATA);
+	obj = null;
       }
-      return cb(err, obj.response);	  
+      return cb(err, obj);       
     },
     function error(apiStatus) {
       cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
