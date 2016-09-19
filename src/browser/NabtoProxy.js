@@ -86,7 +86,7 @@ function getSessionToken(success, error, opts) {
       function() {
 	error(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
       });
-  };
+  }
   return nextTick(function() { success("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"); });
 };
 
@@ -96,7 +96,7 @@ function getLocalDevices(success, error, opts) {
       function() {
 	error(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
       });
-  };
+  }
   return nextTick(function() {
     var devices = [ "stub-device1.nabto.net",
 		    "stub-device2.nabto.net",
@@ -105,12 +105,23 @@ function getLocalDevices(success, error, opts) {
   });
 };
 
+function version(success, error, opts) {
+  if (!started) {
+    return nextTick(
+      function() {
+	error(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
+      });
+  }
+  return nextTick(function() { success("2.12345"); });
+};
+
 module.exports = {
   startup: startup,
   shutdown: shutdown,
   fetchUrl: fetchUrl,
   getSessionToken: getSessionToken,
-  getLocalDevices: getLocalDevices
+  getLocalDevices: getLocalDevices,
+  version: version
 };
 
 require('cordova/exec/proxy').add('Nabto', module.exports);

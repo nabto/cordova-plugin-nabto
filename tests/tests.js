@@ -193,15 +193,15 @@ exports.defineAutoTests = function () {
       });
     });
 
-    /*
-    it('api error with invalid password - fails in all but stub', function(done) {
-      nabto.startup('bad_password', 'hesthest', function(error, result) {
-        expect(result).not.toBeDefined();
-        expect(error.code).toBe(NabtoStatus.Code.API_UNLOCK_KEY_BAD_PASSWORD);
-        done();
+    if (device.platform === 'browser') {
+      it('api error with invalid password - fails in all but stub', function(done) {
+	nabto.startup('bad_password', 'hesthest', function(error, result) {
+          expect(result).not.toBeDefined();
+          expect(error.code).toBe(NabtoStatus.Code.API_UNLOCK_KEY_BAD_PASSWORD);
+          done();
+	});
       });
-    });*/
-
+    }
 
     it('starts up nabto with username/password', function(done) {
       nabto.startup('guest', 'blank', function(error) {
@@ -212,7 +212,7 @@ exports.defineAutoTests = function () {
 
     it('fetches a nabto url', function(done) {
       nabto.fetchUrl(testUrl, function(error, result) {
-        expect(error).toBeNull();
+        expect(error).not.toBeDefined();
         expect(result.response.speed_m_s).toBeDefined();
         done();
       });
@@ -222,7 +222,7 @@ exports.defineAutoTests = function () {
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
         expect(error.code).toBe(NabtoStatus.Code.P2P_DEVICE_OFFLINE);
-        expect(result).toBeNull();
+        expect(result).not.toBeDefined();
         done();
       });
     });
@@ -252,8 +252,6 @@ exports.defineAutoTests = function () {
       });
     });
 
-    /*
-
     it('can return nabto client version', function(done) {
       nabto.version(function(error, version) {
         expect(error).not.toBeDefined();
@@ -272,6 +270,7 @@ exports.defineAutoTests = function () {
     });
   });
 
+  /*
   describe('Nabto Tunnel', function() {
     var device = 'streamdemo.nabto.net',
       remotePort = 80;
@@ -304,43 +303,58 @@ exports.defineAutoTests = function () {
       });
     });
 
-    it('opens a nabto tunnel and wait for it to connect', function(done) {
-      nabto.tunnelOpenTcp(device, remotePort, function(error) {
-        expect(error).not.toBeDefined();
-        var interval = setInterval(function() {
-          nabto.tunnelState(function(error, state) {
-            if (state.value <= NabtoTunnelState.NTCS_CONNECTING) { return; }
-            clearInterval(interval);
-            expect(state.value).toBeGreaterThan(NabtoTunnelState.NTCS_UNKNOWN);
-            done();
-          });
-        }, 500);
+    if (device.platform !== 'browser') {
+
+      // TODO
+      it('opens a nabto tunnel and wait for it to connect', function(done) {
+	nabto.tunnelOpenTcp(device, remotePort, function(error) {
+          expect(error).not.toBeDefined();
+          var interval = setInterval(function() {
+            nabto.tunnelState(function(error, state) {
+              if (state.value <= NabtoTunnelState.NTCS_CONNECTING) { return; }
+              clearInterval(interval);
+              expect(state.value).toBeGreaterThan(NabtoTunnelState.NTCS_UNKNOWN);
+              done();
+            });
+          }, 500);
+	});
       });
-    });
-
-    it('fails to open a second tunnel', function(done) {
-      nabto.tunnelOpenTcp('2' + device, remotePort, function(error) {
-        expect(error.value).toBe(NabtoStatus.INVALID_TUNNEL);
-        done();
-      });
-    });
-
-    it('gets tunnel port and has a connection', function(done) {
-      nabto.tunnelPort(function(error, port) {
-        expect(error).not.toBeDefined();
-        expect(port).toBeGreaterThan(1000);
-
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-          if (xhttp.readyState !== 4) { return; }
-          expect(xhttp.status).toBe(200);
-          expect(xhttp.responseText).toContain('Serve a large file');
+      
+      it('fails to open a second tunnel', function(done) {
+	nabto.tunnelOpenTcp('2' + device, remotePort, function(error) {
+          expect(error.value).toBe(NabtoStatus.INVALID_TUNNEL);
           done();
-        };
-        xhttp.open('GET', 'http://localhost:' + port, true);
-        xhttp.send();
+	});
       });
-    });
+      
+      it('gets tunnel port and has a connection', function(done) {
+	nabto.tunnelPort(function(error, port) {
+          expect(error).not.toBeDefined();
+          expect(port).toBeGreaterThan(1000);
+	  
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (xhttp.readyState !== 4) { return; }
+            expect(xhttp.status).toBe(200);
+            expect(xhttp.responseText).toContain('Serve a large file');
+            done();
+          };
+          xhttp.open('GET', 'http://localhost:' + port, true);
+          xhttp.send();
+	});
+      });
+
+      it('closes tunnel', function(done) {
+	nabto.tunnelClose(function(error) {
+          expect(error).not.toBeDefined();
+          // Wait for tunnel to close
+          setTimeout(function() {
+            done();
+          }, 500);
+	});
+      });
+      
+    }
 
     it('gets tunnel version', function(done) {
       nabto.tunnelVersion(function(error, version) {
@@ -349,17 +363,8 @@ exports.defineAutoTests = function () {
         done();
       });
     });
-
-    it('closes tunnel', function(done) {
-      nabto.tunnelClose(function(error) {
-        expect(error).not.toBeDefined();
-        // Wait for tunnel to close
-        setTimeout(function() {
-          done();
-        }, 500);
-      });
-    });
-
+    
+    
     it('does not connect to nonexisting device', function(done) {
       nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
         expect(error).not.toBeDefined();
@@ -426,8 +431,8 @@ exports.defineAutoTests = function () {
       expect(state.toString()).toBe('NTCS_CLOSED');
     });
 
-*/
   });
+*/
 };
 
 exports.defineManualTests = function(contentEl, createActionButton) {

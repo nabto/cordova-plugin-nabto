@@ -62,13 +62,13 @@ Nabto.prototype.fetchUrl = function(url, cb) {
       }
       if (obj.response) {
         // ok
-        err = null;
+        err = undefined;
       } else if (obj.error) {
-        err = new NabtoStatus(NabtoStatus.Category.P2P, null, obj);
-	obj = null;
+        err = new NabtoStatus(NabtoStatus.Category.P2P, undefined, obj);
+	obj = undefined;
       } else {
         err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_UNEXPECTED_DATA);
-	obj = null;
+	obj = undefined;
       }
       return cb(err, obj);       
     },
