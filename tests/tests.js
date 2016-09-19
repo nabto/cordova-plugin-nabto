@@ -235,7 +235,7 @@ exports.defineAutoTests = function () {
         done();
       });
     });
-/*
+
     it('can get local nabto devices', function(done) {
       nabto.getLocalDevices(function(error, devices) {
         expect(error).not.toBeDefined();
@@ -251,6 +251,8 @@ exports.defineAutoTests = function () {
         done();
       });
     });
+
+    /*
 
     it('can return nabto client version', function(done) {
       nabto.version(function(error, version) {

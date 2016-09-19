@@ -90,11 +90,27 @@ function getSessionToken(success, error, opts) {
   return nextTick(function() { success("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"); });
 };
 
+function getLocalDevices(success, error, opts) {
+  if (!started) {
+    return nextTick(
+      function() {
+	error(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
+      });
+  };
+  return nextTick(function() {
+    var devices = [ "stub-device1.nabto.net",
+		    "stub-device2.nabto.net",
+		    "stub-device3.nabto.net"];
+    success(devices);
+  });
+};
+
 module.exports = {
   startup: startup,
   shutdown: shutdown,
   fetchUrl: fetchUrl,
-  getSessionToken: getSessionToken
+  getSessionToken: getSessionToken,
+  getLocalDevices: getLocalDevices
 };
 
 require('cordova/exec/proxy').add('Nabto', module.exports);
