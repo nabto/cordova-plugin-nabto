@@ -226,7 +226,7 @@ exports.defineAutoTests = function () {
         done();
       });
     });
-/*
+
     it('can get active session token', function(done) {
       nabto.getSessionToken(function(error, token) {
         expect(error).not.toBeDefined();
@@ -235,7 +235,7 @@ exports.defineAutoTests = function () {
         done();
       });
     });
-
+/*
     it('can get local nabto devices', function(done) {
       nabto.getLocalDevices(function(error, devices) {
         expect(error).not.toBeDefined();

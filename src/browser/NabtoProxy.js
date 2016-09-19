@@ -80,10 +80,21 @@ function fetchUrl(success, error, opts) {
 
 };
 
+function getSessionToken(success, error, opts) {
+  if (!started) {
+    return nextTick(
+      function() {
+	error(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
+      });
+  };
+  return nextTick(function() { success("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"); });
+};
+
 module.exports = {
-    startup: startup,
-    shutdown: shutdown,
-    fetchUrl: fetchUrl
+  startup: startup,
+  shutdown: shutdown,
+  fetchUrl: fetchUrl,
+  getSessionToken: getSessionToken
 };
 
 require('cordova/exec/proxy').add('Nabto', module.exports);

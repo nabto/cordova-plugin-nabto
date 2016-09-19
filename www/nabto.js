@@ -13,8 +13,8 @@ function Nabto() {}
 
 function nextTick(cb, arg) {
   // ensure all callbacks are invoked asynchronously (do not release zalgo (http://goo.gl/dP5Bbz))
-  //    setTimeout(function() { cb(arg); }, 0);
-  cb(arg);
+  setTimeout(function() { cb(arg); }, 0);
+//  cb(arg); /* good for debugging */
 }
 
 Nabto.prototype.startup = function(user, pass, cb) {
