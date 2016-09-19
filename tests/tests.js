@@ -109,6 +109,18 @@ exports.defineAutoTests = function () {
 	}
       }
     });
+
+    it('should provide an error message for each error code', function() {
+      for (var p in NabtoStatus.Code) {
+	if (NabtoStatus.Code.hasOwnProperty(p)) {
+	  if (NabtoStatus.Message[NabtoStatus.Code[p]]) {
+	    expect(NabtoStatus.Message[NabtoStatus.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
+	  } else {
+	    expect(p).toBe("Missing an error message"); // clumsy way to get a custom error message to include erroneous prop
+	  }
+	}
+      }
+    });
     
   });
 

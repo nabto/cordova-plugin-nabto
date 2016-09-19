@@ -97,6 +97,8 @@ NabtoStatus.Message[NabtoStatus.Code.CDV_UNEXPECTED_DATA]       = "Unexpected st
 
 NabtoStatus.Message[NabtoStatus.Code.API_NOT_INITIALIZED]       = "API not initialized";
 NabtoStatus.Message[NabtoStatus.Code.API_INVALID_SESSION]       = "Invalid Nabto session";
+NabtoStatus.Message[NabtoStatus.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key could not be opened (decrypted) using specified password";
+NabtoStatus.Message[NabtoStatus.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
 NabtoStatus.Message[NabtoStatus.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
 NabtoStatus.Message[NabtoStatus.Code.API_ERROR]                 = "An API error occurred";		    
 
@@ -113,7 +115,9 @@ NabtoStatus.Message[NabtoStatus.Code.P2P_TIMEOUT]               = "Timeout when 
 NabtoStatus.Message[NabtoStatus.Code.P2P_NO_SUCH_REQUEST]       = "The specified request does not exist in the interface definition";
 NabtoStatus.Message[NabtoStatus.Code.P2P_PARAM_PARSE_ERROR]     = "The parameter value could not be parsed according to the interface defintion";
 NabtoStatus.Message[NabtoStatus.Code.P2P_PARAM_MISSING]         = "A parameter is missing for this request according to the interface definition";		    
+NabtoStatus.Message[NabtoStatus.Code.P2P_OTHER]                 = "An error occurred - please consult log files for more information";
                                                                     
+NabtoStatus.Message[NabtoStatus.Code.EXC_BASE]                  = "(n/a)";
 NabtoStatus.Message[NabtoStatus.Code.EXC_NOT_READY]             = "Not ready: The remote application is not ready yet (still initializing)";
 NabtoStatus.Message[NabtoStatus.Code.EXC_NO_ACCESS]             = "Access denied: The remote application does not allow this request to be answered";  // function level authorization failed 
 NabtoStatus.Message[NabtoStatus.Code.EXC_TOO_SMALL]             = "The request is too small, i.e. required fields are not present";
