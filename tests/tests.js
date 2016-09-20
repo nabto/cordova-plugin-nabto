@@ -273,7 +273,7 @@ exports.defineAutoTests = function () {
   // tunnel tests - some work in browser
   
   describe('Nabto Tunnel', function() {
-    var device = 'streamdemo.nabto.net',
+    var nabtoDevice = 'streamdemo.nabto.net',
 	remotePort = 80;
     
     it('starts nabto', function(done) {
@@ -294,7 +294,7 @@ exports.defineAutoTests = function () {
     it('handles invalid arguments to tunnelOpenTcp', function(done) {
       nabto.tunnelOpenTcp(function(error) {
         expect(error.error).toBe(NabtoError.INVALID_ARG);
-        nabto.tunnelOpenTcp(device, '5555', function(error) {
+        nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
           expect(error.error).toBe(NabtoError.INVALID_ARG);
           nabto.tunnelOpenTcp(123, remotePort, function(error) {
             expect(error.error).toBe(NabtoError.INVALID_ARG);
@@ -303,12 +303,12 @@ exports.defineAutoTests = function () {
         });
       });
     });
-    
+
     if (device.platform !== 'browser') {
       
       // TODO
       it('opens a nabto tunnel and wait for it to connect', function(done) {
-	nabto.tunnelOpenTcp(device, remotePort, function(error) {
+	nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
           expect(error).not.toBeDefined();
           var interval = setInterval(function() {
             nabto.tunnelState(function(error, state) {
@@ -322,7 +322,7 @@ exports.defineAutoTests = function () {
       });
       
       it('fails to open a second tunnel', function(done) {
-	nabto.tunnelOpenTcp('2' + device, remotePort, function(error) {
+	nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
           expect(error.value).toBe(NabtoStatus.INVALID_TUNNEL);
           done();
 	});
