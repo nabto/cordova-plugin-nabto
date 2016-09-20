@@ -82,11 +82,11 @@ Nabto.prototype.getSessionToken = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(token) {
+    function success(token) {
       cb(undefined, token);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'getSessionToken', []);
 };
 
@@ -97,8 +97,8 @@ Nabto.prototype.getLocalDevices = function(cb) {
     function(devices) {
       cb(undefined, devices);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function(apiStatus) {
+      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'getLocalDevices', []);
 };
 
@@ -109,8 +109,8 @@ Nabto.prototype.version = function(cb) {
     function(version) {
       cb(undefined, version);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function(apiStatus) {
+      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'version', []);
 };
 
@@ -120,13 +120,13 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
     if (typeof host === 'function') {
       cb = host;
     }
-    return cb(new NabtoError(NabtoError.INVALID_ARG));
+    return cb(new NabtoStatus(NabtoStatus.Category.API, NabtoStatus.Code.INVALID_ARG));
   }
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function success() { cb(); },
+    function error(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'tunnelOpenTcp', [host, port]);
 };
 
@@ -134,11 +134,11 @@ Nabto.prototype.tunnelVersion = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(version) {
+    function success(version) {
       cb(undefined, version);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'tunnelVersion', []);
 };
 
@@ -146,11 +146,11 @@ Nabto.prototype.tunnelState = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(state) {
+    function success(state) {
       cb(undefined, new NabtoTunnelState(state));
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'tunnelState', []);
 };
 
@@ -158,11 +158,11 @@ Nabto.prototype.tunnelLastError = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(status) {
+    function success(status) {
       cb(new NabtoStatus(status));
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'tunnelLastError', []);
 };
 
@@ -170,11 +170,11 @@ Nabto.prototype.tunnelPort = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(port) {
+    function success(port) {
       cb(undefined, port);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'tunnelPort', []);
 };
 
@@ -182,9 +182,9 @@ Nabto.prototype.tunnelClose = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function success() { cb(); },
+    function error(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
     }, 'Nabto', 'tunnelClose', []);
 };
 

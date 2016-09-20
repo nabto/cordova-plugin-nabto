@@ -270,18 +270,19 @@ exports.defineAutoTests = function () {
     });
   });
 
-  /*
+  // tunnel tests - some work in browser
+  
   describe('Nabto Tunnel', function() {
     var device = 'streamdemo.nabto.net',
-      remotePort = 80;
-
+	remotePort = 80;
+    
     it('starts nabto', function(done) {
       nabto.startup(function(error) {
         expect(error).not.toBeDefined();
         done();
       });
     });
-
+      
     it('gets tunnel state on closed tunnel', function(done) {
       nabto.tunnelState(function(error, state) {
         expect(error).not.toBeDefined();
@@ -289,7 +290,7 @@ exports.defineAutoTests = function () {
         done();
       });
     });
-
+    
     it('handles invalid arguments to tunnelOpenTcp', function(done) {
       nabto.tunnelOpenTcp(function(error) {
         expect(error.error).toBe(NabtoError.INVALID_ARG);
@@ -302,9 +303,9 @@ exports.defineAutoTests = function () {
         });
       });
     });
-
+    
     if (device.platform !== 'browser') {
-
+      
       // TODO
       it('opens a nabto tunnel and wait for it to connect', function(done) {
 	nabto.tunnelOpenTcp(device, remotePort, function(error) {
@@ -354,8 +355,6 @@ exports.defineAutoTests = function () {
 	});
       });
       
-    }
-
     it('gets tunnel version', function(done) {
       nabto.tunnelVersion(function(error, version) {
         expect(error).not.toBeDefined();
@@ -409,6 +408,9 @@ exports.defineAutoTests = function () {
         });
       }, 500);
     });
+
+    }
+
   });
 
   describe('Nabto Tunnel State', function() {
@@ -430,10 +432,10 @@ exports.defineAutoTests = function () {
       state = new NabtoTunnelState(-10);
       expect(state.toString()).toBe('NTCS_CLOSED');
     });
-
   });
-*/
+
 };
+
 
 exports.defineManualTests = function(contentEl, createActionButton) {
   createActionButton('Simple Test !!', function() {
