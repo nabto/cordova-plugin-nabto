@@ -48,7 +48,7 @@ exports.defineAutoTests = function () {
     });
 
     it('should handle ok api result with nabto error event', function() {
-      var s = new NabtoStatus(NabtoStatus.Category.P2P, NabtoConstants.ClientApiErrors.OK, errors.offline);
+      var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, errors.offline);
       expect(s.category).toBe(NabtoStatus.Category.P2P);
       expect(s.code).toBe(NabtoStatus.Code.P2P_DEVICE_OFFLINE);
       expect(s.message).toMatch(/not online/i);
@@ -56,7 +56,7 @@ exports.defineAutoTests = function () {
     });
 
     it('should handle nabto error event with device exception', function() {
-      var s = new NabtoStatus(NabtoStatus.Category.P2P, NabtoConstants.ClientApiErrors.OK, errors.exception);
+      var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, errors.exception);
       expect(s.category).toBe(NabtoStatus.Category.DEVICE_EXCEPTION);
       expect(s.code).toBe(NabtoStatus.Code.EXC_NO_ACCESS);
       expect(s.message).toMatch(/access denied/i);
@@ -65,7 +65,7 @@ exports.defineAutoTests = function () {
 
     it('should gracefully handle unexpected input', function() {
       var dummy = { "foo": "bar" };
-      var s = new NabtoStatus(NabtoStatus.Category.P2P, NabtoConstants.ClientApiErrors.OK, dummy);
+      var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, dummy);
       expect(s.category).toBe(NabtoStatus.Category.WRAPPER);
       expect(s.code).toBe(NabtoStatus.Code.CDV_UNEXPECTED_DATA);
       expect(s.inner).toMatch(/unexpected object/i);
@@ -270,20 +270,21 @@ exports.defineAutoTests = function () {
     });
   });
 
-  // tunnel tests - some work in browser
-  
   describe('Nabto Tunnel', function() {
     var nabtoDevice = 'streamdemo.nabto.net',
-	remotePort = 80;
-    
-    it('starts nabto', function(done) {
+	remotePort = 80;    
+
+    if (device.platform !== 'browser') {
+
+      it('starts nabto', function(done) {
       nabto.startup(function(error) {
         expect(error).not.toBeDefined();
         done();
       });
-    });
+      });
       
-    it('gets tunnel state on closed tunnel', function(done) {
+
+      it('gets tunnel state on closed tunnel', function(done) {
       nabto.tunnelState(function(error, state) {
         expect(error).not.toBeDefined();
         expect(state.value).toBe(-1);
@@ -293,20 +294,17 @@ exports.defineAutoTests = function () {
     
     it('handles invalid arguments to tunnelOpenTcp', function(done) {
       nabto.tunnelOpenTcp(function(error) {
-        expect(error.error).toBe(NabtoError.INVALID_ARG);
+        expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
         nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
-          expect(error.error).toBe(NabtoError.INVALID_ARG);
+          expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
           nabto.tunnelOpenTcp(123, remotePort, function(error) {
-            expect(error.error).toBe(NabtoError.INVALID_ARG);
+            expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
             done();
           });
         });
       });
     });
 
-    if (device.platform !== 'browser') {
-      
-      // TODO
       it('opens a nabto tunnel and wait for it to connect', function(done) {
 	nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
           expect(error).not.toBeDefined();
@@ -358,7 +356,7 @@ exports.defineAutoTests = function () {
     it('gets tunnel version', function(done) {
       nabto.tunnelVersion(function(error, version) {
         expect(error).not.toBeDefined();
-        expect(version).toBeGreaterThan(0);
+        expect(version).toBeDefined();
         done();
       });
     });
@@ -380,7 +378,8 @@ exports.defineAutoTests = function () {
 
     it('gets last error', function(done) {
       nabto.tunnelLastError(function(error) {
-        expect(error.toString()).toBe('UNKNOWN');
+        expect(error).toBeDefined();
+	expect(error.category).toBe(NabtoStatus.Category.P2P);
         done();
       });
     });

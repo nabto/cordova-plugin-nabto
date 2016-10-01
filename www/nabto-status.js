@@ -159,7 +159,7 @@ function NabtoStatus(category, status, innerError) {
 NabtoStatus.prototype.initStatus = function(category, status, doc) {
   switch (category) {
   case NabtoStatus.Category.API:     this.handleApiError(status); break;
-  case NabtoStatus.Category.P2P:     this.handleP2pError(doc); break;
+  case NabtoStatus.Category.P2P:     this.handleP2pError(status, doc); break;
   case NabtoStatus.Category.WRAPPER: this.handleWrapperError(status); break;
   default:
     throw new Error("Invalid category: " + category);
@@ -224,7 +224,12 @@ NabtoStatus.prototype.handleApiError = function(status) {
  *        "body": "Communication with the device succeeded, but the application on the device returned error code NP_E_INV_QUERY_ID"
  *    }
  */
-NabtoStatus.prototype.handleP2pError = function(obj) {
+NabtoStatus.prototype.handleP2pError = function(status, obj) {
+  if (typeof(status) === 'number' && typeof(obj) === 'undefined') {
+    // a few functions inject a Nabto event code directly instead of through an error document
+    this.handleNabtoEvent(status);
+    return;
+  }
   var error = obj.error;
   this.inner = error;
   if (!(error && error.event)) {
@@ -233,7 +238,7 @@ NabtoStatus.prototype.handleP2pError = function(obj) {
     if (error.event == NabtoConstants.ClientEvents.UNABTO_APPLICATION_EXCEPTION) {
       this.handleDeviceException(error);
     } else {
-      this.handleNabtoEvent(error);
+      this.handleNabtoEvent(error.event);
     }
   }
 };
@@ -267,8 +272,8 @@ NabtoStatus.prototype.mapExceptionStringToCode = function(exception) {
   }
 };
 
-NabtoStatus.prototype.handleNabtoEvent = function(obj) {
-  switch (obj.event) {
+NabtoStatus.prototype.handleNabtoEvent = function(event) {
+  switch (event) {
 
   case NabtoConstants.ClientEvents.ACCESS_DENIED:
     this.code = NabtoStatus.Code.P2P_ACCESS_DENIED_CONNECT;

@@ -120,7 +120,7 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
     if (typeof host === 'function') {
       cb = host;
     }
-    return cb(new NabtoStatus(NabtoStatus.Category.API, NabtoStatus.Code.INVALID_ARG));
+    return nextTick(cb, new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_INVALID_ARG));
   }
 
   exec(
@@ -158,8 +158,8 @@ Nabto.prototype.tunnelLastError = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function success(status) {
-      cb(new NabtoStatus(status));
+    function success(apiStatus) {
+      return cb(new NabtoStatus(NabtoStatus.Category.P2P, apiStatus, undefined));
     },
     function error(apiStatus) {
       return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
