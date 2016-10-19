@@ -2,7 +2,7 @@
  * Copyright (C) 2008-2016 Nabto - All Rights Reserved.
  */
 
-/* globals cordova, nabto, NabtoStatus, NabtoError, NabtoTunnelState */
+/* globals cordova, nabto, NabtoError, NabtoTunnelState */
 
 var errors = {
   "offline": {
@@ -28,46 +28,46 @@ function xdescribe(title, func) {}
 
 exports.defineAutoTests = function () {
   
-  describe('NabtoStatus', function () {
+  describe('NabtoError', function () {
     
-    it('should have NabtoStatus available', function() {
-      expect(NabtoStatus).toBeDefined();
+    it('should have NabtoError available', function() {
+      expect(NabtoError).toBeDefined();
     });
 
     it('should provide toString function', function() {
-      var s = new NabtoStatus(NabtoStatus.Category.API, NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
+      var s = new NabtoError(NabtoError.Category.API, NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
       expect(s).toMatch("API_NOT_INITIALIZED");
     });
     
     it('should handle api error', function() {
-      var s = new NabtoStatus(NabtoStatus.Category.API, NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
-      expect(s.category).toBe(NabtoStatus.Category.API);
-      expect(s.code).toBe(NabtoStatus.Code.API_NOT_INITIALIZED);
+      var s = new NabtoError(NabtoError.Category.API, NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
+      expect(s.category).toBe(NabtoError.Category.API);
+      expect(s.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
       expect(s.message).toMatch(/initialized/i);
       expect(s.inner).toBe(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
     });
 
     it('should handle ok api result with nabto error event', function() {
-      var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, errors.offline);
-      expect(s.category).toBe(NabtoStatus.Category.P2P);
-      expect(s.code).toBe(NabtoStatus.Code.P2P_DEVICE_OFFLINE);
+      var s = new NabtoError(NabtoError.Category.P2P, 0, errors.offline);
+      expect(s.category).toBe(NabtoError.Category.P2P);
+      expect(s.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
       expect(s.message).toMatch(/not online/i);
       expect(s.inner).toEqual(errors.offline.error);
     });
 
     it('should handle nabto error event with device exception', function() {
-      var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, errors.exception);
-      expect(s.category).toBe(NabtoStatus.Category.DEVICE_EXCEPTION);
-      expect(s.code).toBe(NabtoStatus.Code.EXC_NO_ACCESS);
+      var s = new NabtoError(NabtoError.Category.P2P, 0, errors.exception);
+      expect(s.category).toBe(NabtoError.Category.DEVICE_EXCEPTION);
+      expect(s.code).toBe(NabtoError.Code.EXC_NO_ACCESS);
       expect(s.message).toMatch(/access denied/i);
       expect(s.inner).toEqual(errors.exception.error);
     });
 
     it('should gracefully handle unexpected input', function() {
       var dummy = { "foo": "bar" };
-      var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, dummy);
-      expect(s.category).toBe(NabtoStatus.Category.WRAPPER);
-      expect(s.code).toBe(NabtoStatus.Code.CDV_UNEXPECTED_DATA);
+      var s = new NabtoError(NabtoError.Category.P2P, 0, dummy);
+      expect(s.category).toBe(NabtoError.Category.WRAPPER);
+      expect(s.code).toBe(NabtoError.Code.CDV_UNEXPECTED_DATA);
       expect(s.inner).toMatch(/unexpected object/i);
       expect(s.message).toMatch(/unexpected status/i);
     });
@@ -94,16 +94,16 @@ exports.defineAutoTests = function () {
     }
 
     it('should handle nabto events correctly', function() {
-      for (var p in NabtoStatus.Code) {
-	if (NabtoStatus.Code.hasOwnProperty(p)) {
+      for (var p in NabtoError.Code) {
+	if (NabtoError.Code.hasOwnProperty(p)) {
 	  if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
 	    var response = clone(errors.offline);
-	    response.error.event = toNabtoEventCode(NabtoStatus.Code[p]);
-	    var s = new NabtoStatus(NabtoStatus.Category.P2P, 0, response);
-	    if (s.code == NabtoStatus.Code.P2P_OTHER) {
+	    response.error.event = toNabtoEventCode(NabtoError.Code[p]);
+	    var s = new NabtoError(NabtoError.Category.P2P, 0, response);
+	    if (s.code == NabtoError.Code.P2P_OTHER) {
 	      expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
 	    } else {
-	      expect(s.code).toBe(NabtoStatus.Code[p]);
+	      expect(s.code).toBe(NabtoError.Code[p]);
 	    }
 	  }
 	}
@@ -111,10 +111,10 @@ exports.defineAutoTests = function () {
     });
 
     it('should provide an error message for each error code', function() {
-      for (var p in NabtoStatus.Code) {
-	if (NabtoStatus.Code.hasOwnProperty(p)) {
-	  if (NabtoStatus.Message[NabtoStatus.Code[p]]) {
-	    expect(NabtoStatus.Message[NabtoStatus.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
+      for (var p in NabtoError.Code) {
+	if (NabtoError.Code.hasOwnProperty(p)) {
+	  if (NabtoError.Message[NabtoError.Code[p]]) {
+	    expect(NabtoError.Message[NabtoError.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
 	  } else {
 	    expect(p).toBe("Missing an error message"); // clumsy way to get a custom error message to include erroneous prop
 	  }
@@ -171,7 +171,7 @@ exports.defineAutoTests = function () {
 
     it('cannot fetch url with non-open nabto', function(done) {
       nabto.fetchUrl(testUrl, function(error, result) {
-        expect(error.code).toBe(NabtoStatus.Code.API_NOT_INITIALIZED);
+        expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
         done();
       });
     });
@@ -180,7 +180,7 @@ exports.defineAutoTests = function () {
     it('gets error with invalid arguments to fetchUrl', function(done) {
       nabto.fetchUrl(123, function(error, result) {
         expect(result).not.toBeDefined();
-        expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
+        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
         done();
       });
     });
@@ -188,7 +188,7 @@ exports.defineAutoTests = function () {
     it('api error with invalid username', function(done) {
       nabto.startup('nonexisting', '1234567', function(error, result) {
         expect(result).not.toBeDefined();
-        expect(error.code).toBe(NabtoStatus.Code.API_SERVER_LOGIN_FAILURE);
+        expect(error.code).toBe(NabtoError.Code.API_SERVER_LOGIN_FAILURE);
         done();
       });
     });
@@ -197,7 +197,7 @@ exports.defineAutoTests = function () {
       it('api error with invalid password - fails in all but stub', function(done) {
 	nabto.startup('bad_password', 'hesthest', function(error, result) {
           expect(result).not.toBeDefined();
-          expect(error.code).toBe(NabtoStatus.Code.API_UNLOCK_KEY_BAD_PASSWORD);
+          expect(error.code).toBe(NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD);
           done();
 	});
       });
@@ -221,7 +221,7 @@ exports.defineAutoTests = function () {
     it('returns json error when fetching an offline device', function(done) {
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
-        expect(error.code).toBe(NabtoStatus.Code.P2P_DEVICE_OFFLINE);
+        expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
         expect(result).not.toBeDefined();
         done();
       });
@@ -294,11 +294,11 @@ exports.defineAutoTests = function () {
     
     it('handles invalid arguments to tunnelOpenTcp', function(done) {
       nabto.tunnelOpenTcp(function(error) {
-        expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
+        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
         nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
-          expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
+          expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
           nabto.tunnelOpenTcp(123, remotePort, function(error) {
-            expect(error.code).toBe(NabtoStatus.Code.CDV_INVALID_ARG);
+            expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
             done();
           });
         });
@@ -321,7 +321,7 @@ exports.defineAutoTests = function () {
       
       it('fails to open a second tunnel', function(done) {
 	nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
-          expect(error.value).toBe(NabtoStatus.INVALID_TUNNEL);
+          expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
           done();
 	});
       });
@@ -379,7 +379,7 @@ exports.defineAutoTests = function () {
     it('gets last error', function(done) {
       nabto.tunnelLastError(function(error) {
         expect(error).toBeDefined();
-	expect(error.category).toBe(NabtoStatus.Category.P2P);
+	expect(error.category).toBe(NabtoError.Category.P2P);
         done();
       });
     });
@@ -393,7 +393,7 @@ exports.defineAutoTests = function () {
 
     it('closes a non-open tunnel', function(done) {
       nabto.tunnelClose(function(error) {
-        expect(error.value).toBe(NabtoStatus.INVALID_TUNNEL);
+        expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
         done();
       });
     });
@@ -438,7 +438,7 @@ exports.defineAutoTests = function () {
 
 exports.defineManualTests = function(contentEl, createActionButton) {
   createActionButton('Simple Test !!', function() {
-    var s = new NabtoStatus(1000015);
+    var s = new NabtoError(1000015);
     console.log(s);
   });
 };

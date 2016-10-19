@@ -14,10 +14,6 @@
         <clobbers target="nabto"/>
     </js-module>
 
-    <js-module src="www/nabto-status.js" name="NabtoStatus">
-        <clobbers target="window.NabtoStatus"/>
-    </js-module>
-
     <js-module src="www/nabto-constants.js" name="NabtoConstants">
         <clobbers target="window.NabtoConstants"/>
     </js-module>

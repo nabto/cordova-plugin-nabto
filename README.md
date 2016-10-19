@@ -30,10 +30,10 @@ document.addEventListener('deviceready', function() {
 
     // Make a Nabto request to a device
     var url = 'nabto://demo.nabto.net/wind_speed.json?';
-    nabto.fetchUrl(url, function(status, result) {
+    nabto.fetchUrl(url, function(error, result) {
 
       // Print out the response
-      if (!status && result.response) {
+      if (!error && result.response) {
         console.log(result.response);
       }
 
@@ -48,7 +48,7 @@ document.addEventListener('deviceready', function() {
 
 See *www/nabto.js* for API implementation details.
 
-All callbacks are invoked with a status object as the first argument if something went wrong, otherwise the first argument is set to undefined.
+All callbacks are invoked with an error object as the first argument if something went wrong, otherwise the first argument is set to undefined.
 
 `NabtoStatus`: Maps to nabto client nabto_status enum.
 

@@ -5,7 +5,6 @@
 /* globals cordova */
 
 var exec = require('cordova/exec'),
-    NabtoStatus = require('./NabtoStatus'),
     NabtoError = require('./NabtoError'),
     NabtoTunnelState = require('./NabtoTunnelState');
 
@@ -28,8 +27,7 @@ Nabto.prototype.startup = function(user, pass, cb) {
 
   exec(
     function success() { cb(); },
-    function error(apiStatus) {
-      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
     'Nabto', 'startup', [user, pass]);
 };
@@ -40,7 +38,7 @@ Nabto.prototype.shutdown = function(cb) {
   exec(
     function success() { cb(); },
     function error(apiStatus) {
-      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 
     'Nabto', 'shutdown', []);
 };
@@ -48,7 +46,7 @@ Nabto.prototype.shutdown = function(cb) {
 Nabto.prototype.fetchUrl = function(url, cb) {
   cb = cb || function() {};
   if (typeof url !== "string") {
-    return nextTick(cb, new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_INVALID_ARG));
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
 
   exec(
@@ -57,23 +55,23 @@ Nabto.prototype.fetchUrl = function(url, cb) {
       try {
         obj = JSON.parse(result);
       } catch (e) {
-        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_UNEXPECTED_DATA, e);
+        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA, e);
         return cb(err, obj);
       }
       if (obj.response) {
         // ok
         err = undefined;
       } else if (obj.error) {
-        err = new NabtoStatus(NabtoStatus.Category.P2P, undefined, obj);
+        err = new NabtoError(NabtoError.Category.P2P, undefined, obj);
 	obj = undefined;
       } else {
-        err = new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_UNEXPECTED_DATA);
+        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA);
 	obj = undefined;
       }
       return cb(err, obj);       
     },
     function error(apiStatus) {
-      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
     'Nabto', 'fetchUrl', [url]);
 };
@@ -86,7 +84,7 @@ Nabto.prototype.getSessionToken = function(cb) {
       cb(undefined, token);
     },
     function error(apiStatus) {
-      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'getSessionToken', []);
 };
 
@@ -98,7 +96,7 @@ Nabto.prototype.getLocalDevices = function(cb) {
       cb(undefined, devices);
     },
     function(apiStatus) {
-      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'getLocalDevices', []);
 };
 
@@ -110,7 +108,7 @@ Nabto.prototype.version = function(cb) {
       cb(undefined, version);
     },
     function(apiStatus) {
-      cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'version', []);
 };
 
@@ -120,13 +118,13 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
     if (typeof host === 'function') {
       cb = host;
     }
-    return nextTick(cb, new NabtoStatus(NabtoStatus.Category.WRAPPER, NabtoStatus.Code.CDV_INVALID_ARG));
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
 
   exec(
     function success() { cb(); },
     function error(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelOpenTcp', [host, port]);
 };
 
@@ -138,7 +136,7 @@ Nabto.prototype.tunnelVersion = function(cb) {
       cb(undefined, version);
     },
     function error(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelVersion', []);
 };
 
@@ -150,7 +148,7 @@ Nabto.prototype.tunnelState = function(cb) {
       cb(undefined, new NabtoTunnelState(state));
     },
     function error(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelState', []);
 };
 
@@ -159,10 +157,10 @@ Nabto.prototype.tunnelLastError = function(cb) {
 
   exec(
     function success(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.P2P, apiStatus, undefined));
+      return cb(new NabtoError(NabtoError.Category.P2P, apiStatus, undefined));
     },
     function error(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelLastError', []);
 };
 
@@ -174,7 +172,7 @@ Nabto.prototype.tunnelPort = function(cb) {
       cb(undefined, port);
     },
     function error(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelPort', []);
 };
 
@@ -184,7 +182,7 @@ Nabto.prototype.tunnelClose = function(cb) {
   exec(
     function success() { cb(); },
     function error(apiStatus) {
-      return cb(new NabtoStatus(NabtoStatus.Category.API, apiStatus));
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelClose', []);
 };
 
