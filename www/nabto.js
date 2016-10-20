@@ -5,11 +5,16 @@
 /* globals cordova */
 
 var exec = require('cordova/exec'),
-  NabtoStatus = require('./NabtoStatus'),
-  NabtoError = require('./NabtoError'),
-  NabtoTunnelState = require('./NabtoTunnelState');
+    NabtoError = require('./NabtoError'),
+    NabtoTunnelState = require('./NabtoTunnelState');
 
 function Nabto() {}
+
+function nextTick(cb, arg) {
+  // ensure all callbacks are invoked asynchronously (do not release zalgo (http://goo.gl/dP5Bbz))
+  setTimeout(function() { cb(arg); }, 0);
+//  cb(arg); /* good for debugging */
+}
 
 Nabto.prototype.startup = function(user, pass, cb) {
   if (typeof user === 'function') {
@@ -21,54 +26,65 @@ Nabto.prototype.startup = function(user, pass, cb) {
   pass = pass || '123456';
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
-    }, 'Nabto', 'startup', [user, pass]);
+    function success() { cb(); },
+    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'startup', [user, pass]);
 };
 
 Nabto.prototype.shutdown = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
-    }, 'Nabto', 'shutdown', []);
+    function success() { cb(); },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 
+    'Nabto', 'shutdown', []);
 };
 
 Nabto.prototype.fetchUrl = function(url, cb) {
   cb = cb || function() {};
   if (typeof url !== "string") {
-    return cb(new NabtoError(NabtoError.INVALID_ARG));
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
 
   exec(
-    function(result) {
+    function success(result) {
       var obj, err;
-
       try {
         obj = JSON.parse(result);
       } catch (e) {
-        err = new NabtoError(NabtoError.PARSE_ERROR);
-      } finally {
-        cb(err, obj);
+        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA, e);
+        return cb(err, obj);
       }
+      if (obj.response) {
+        // ok
+        err = undefined;
+      } else if (obj.error) {
+        err = new NabtoError(NabtoError.Category.P2P, undefined, obj);
+	obj = undefined;
+      } else {
+        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA);
+	obj = undefined;
+      }
+      return cb(err, obj);       
     },
-    function(status) {
-      cb(new NabtoStatus(status));
-    }, 'Nabto', 'fetchUrl', [url]);
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'fetchUrl', [url]);
 };
 
 Nabto.prototype.getSessionToken = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(token) {
+    function success(token) {
       cb(undefined, token);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'getSessionToken', []);
 };
 
@@ -79,8 +95,8 @@ Nabto.prototype.getLocalDevices = function(cb) {
     function(devices) {
       cb(undefined, devices);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'getLocalDevices', []);
 };
 
@@ -91,8 +107,8 @@ Nabto.prototype.version = function(cb) {
     function(version) {
       cb(undefined, version);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'version', []);
 };
 
@@ -102,13 +118,13 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
     if (typeof host === 'function') {
       cb = host;
     }
-    return cb(new NabtoError(NabtoError.INVALID_ARG));
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function success() { cb(); },
+    function error(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelOpenTcp', [host, port]);
 };
 
@@ -116,11 +132,11 @@ Nabto.prototype.tunnelVersion = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(version) {
+    function success(version) {
       cb(undefined, version);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelVersion', []);
 };
 
@@ -128,11 +144,11 @@ Nabto.prototype.tunnelState = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(state) {
+    function success(state) {
       cb(undefined, new NabtoTunnelState(state));
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelState', []);
 };
 
@@ -140,11 +156,11 @@ Nabto.prototype.tunnelLastError = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(status) {
-      cb(new NabtoStatus(status));
+    function success(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.P2P, apiStatus, undefined));
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelLastError', []);
 };
 
@@ -152,11 +168,11 @@ Nabto.prototype.tunnelPort = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function(port) {
+    function success(port) {
       cb(undefined, port);
     },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function error(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelPort', []);
 };
 
@@ -164,9 +180,9 @@ Nabto.prototype.tunnelClose = function(cb) {
   cb = cb || function() {};
 
   exec(
-    function() { cb(); },
-    function(status) {
-      cb(new NabtoStatus(status));
+    function success() { cb(); },
+    function error(apiStatus) {
+      return cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'tunnelClose', []);
 };
 
