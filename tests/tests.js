@@ -212,12 +212,24 @@ exports.defineAutoTests = function () {
 
     it('fetches a nabto url', function(done) {
       nabto.fetchUrl(testUrl, function(error, result) {
-        expect(error).not.toBeDefined();
+	expect(error).not.toBeDefined();
         expect(result.response.speed_m_s).toBeDefined();
         done();
       });
     });
 
+    it('invokes an rpc function', function(done) {
+      var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed' type='uint32'/></response></query></unabto_queries>";
+      nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
+	expect(error).not.toBeDefined();
+        nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+          expect(error).not.toBeDefined();
+          expect(result.response.speed_m_s).toBeDefined();
+          done();
+	});
+      });
+    });
+    
     it('returns json error when fetching an offline device', function(done) {
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();

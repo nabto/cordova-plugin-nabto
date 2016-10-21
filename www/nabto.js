@@ -43,7 +43,7 @@ Nabto.prototype.shutdown = function(cb) {
     'Nabto', 'shutdown', []);
 };
 
-Nabto.prototype.fetchUrl = function(url, cb) {
+var rpcStyleInvoker = function(url, cb, apiFunction) {
   cb = cb || function() {};
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
@@ -73,7 +73,28 @@ Nabto.prototype.fetchUrl = function(url, cb) {
     function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'fetchUrl', [url]);
+    'Nabto', apiFunction, [url]);
+};
+
+// legacy htmldd based invocation - but same interface from javascript as rpcInvoke (as mimetype is hidden)
+Nabto.prototype.fetchUrl = function(url, cb) {
+  return rpcStyleInvoker(url, cb, 'fetchUrl');
+};
+
+// requires prior invocation of setRpcInterface
+Nabto.prototype.rpcInvoke = function(url, cb) {
+  return rpcStyleInvoker(url, cb, 'rpcInvoke');
+};
+
+Nabto.prototype.rpcSetDefaultInterface = function(url, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb(undefined);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'rpcSetDefaultInterface', []);
 };
 
 Nabto.prototype.getSessionToken = function(cb) {

@@ -10,11 +10,23 @@
 
 #define NABTOLOG 0
 
+void simulatorSymlinkDocDir() {
+#if TARGET_OS_SIMULATOR
+    NSString* homeDirectory = [[NSProcessInfo processInfo] environment][@"SIMULATOR_HOST_HOME"];
+    NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSString *documentsDirectoryPath = documentsDirectory.path;
+    NSString *simlinkPath = [homeDirectory stringByAppendingFormat:@"/SimulatorDocuments"];
+    unlink(simlinkPath.UTF8String);
+    symlink(documentsDirectoryPath.UTF8String, simlinkPath.UTF8String);
+#endif
+}
+
 + (id)sharedManager {
     static Manager *sharedMyManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedMyManager = [[self alloc] init];
+        simulatorSymlinkDocDir();
     });
     return sharedMyManager;
 }
