@@ -55,7 +55,7 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
       try {
         obj = JSON.parse(result);
       } catch (e) {
-        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA, e);
+        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_MALFORMED_JSON, result);
         return cb(err, obj);
       }
       if (obj.response) {

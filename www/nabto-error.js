@@ -52,6 +52,7 @@ NabtoError.Code = {};
 // wrapper specific codes
 NabtoError.Code.CDV_INVALID_ARG     =  1000;
 NabtoError.Code.CDV_UNEXPECTED_DATA =  1001;
+NabtoError.Code.CDV_MALFORMED_JSON  =  1002;
 
 // relevant error codes mapped from nabto_client_api.h
 NabtoError.Code.API_CERT_OPEN_FAIL          = 2001;
@@ -59,6 +60,8 @@ NabtoError.Code.API_NOT_INITIALIZED         = 2003;
 NabtoError.Code.API_INVALID_SESSION         = 2004;
 NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD = 2006;
 NabtoError.Code.API_SERVER_LOGIN_FAILURE    = 2007;
+NabtoError.Code.API_RPC_INTERFACE_NOT_SET   = 2027;
+NabtoError.Code.API_RPC_NO_SUCH_REQUEST     = 2028;
 NabtoError.Code.API_ERROR                   = 2100;
 
 // relevant error codes mapped from nabto::Events
@@ -93,13 +96,15 @@ NabtoError.Code.EXC_NO_QUERY_ID      = 4011;
 
 NabtoError.Message = {};
 NabtoError.Message[NabtoError.Code.CDV_INVALID_ARG]           = "Invalid argument specified to Cordova wrapper";		    
-NabtoError.Message[NabtoError.Code.CDV_UNEXPECTED_DATA]       = "Unexpected status data from SDK";		    
+NabtoError.Message[NabtoError.Code.CDV_UNEXPECTED_DATA]       = "Unexpected status data from SDK";		 NabtoError.Message[NabtoError.Code.CDV_MALFORMED_JSON]        = "SDK did not return valid JSON";
 
 NabtoError.Message[NabtoError.Code.API_NOT_INITIALIZED]       = "API not initialized";
 NabtoError.Message[NabtoError.Code.API_INVALID_SESSION]       = "Invalid Nabto session";
 NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key could not be opened (decrypted) using specified password";
 NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
 NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
+NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
+NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
 NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID] = "Error parsing the RPC interface definition file (see log for details)";		    
@@ -171,7 +176,7 @@ NabtoError.prototype.lookupMessage = function(code) {
 };
 
 NabtoError.prototype.handleApiError = function(status) {
-  if (status > NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION_ARGUMENT) {
+  if (status > NabtoConstants.ClientApiErrors.NABTO_RPC_NO_SUCH_REQUEST) {
     return this.handleUnexpected(`Unexpected API status [${status}]`);
   }
 
@@ -200,7 +205,15 @@ NabtoError.prototype.handleApiError = function(status) {
   case NabtoConstants.ClientApiErrors.NO_PROFILE:
     this.code = NabtoError.Code.API_CERT_OPEN_FAIL;
     break;
-    
+
+  case NabtoConstants.ClientApiErrors.RPC_INTERFACE_NOT_SET:
+    this.code = NabtoError.Code.API_RPC_INTERFACE_NOT_SET;
+    break;
+
+  case NabtoConstants.ClientApiErrors.RPC_NO_SUCH_REQUEST:
+    this.code = NabtoError.Code.API_RPC_NO_SUCH_REQUEST;
+    break;
+
   defau1t:
     this.code = NabtoError.Code.API_ERROR;
     break;

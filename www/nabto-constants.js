@@ -27,7 +27,11 @@ NabtoConstants.ClientApiErrors.ILLEGAL_PARAMETER              = 20;
 NabtoConstants.ClientApiErrors.INVALID_RESOURCE               = 21;
 NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION          = 22;
 NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION_ARGUMENT = 23;
-
+NabtoConstants.ClientApiErrors.ABORTED                        = 24;
+NabtoConstants.ClientApiErrors.STREAM_CLOSED                  = 25;
+NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE       = 26;
+NabtoConstants.ClientApiErrors.RPC_INTERFACE_NOT_SET          = 27;
+NabtoConstants.ClientApiErrors.RPC_NO_SUCH_REQUEST            = 28;
 
 ////////////////////////////////////////////////////////////////////////////////
 // from unabto/src/unabto/unabto_protocol_exceptions.h

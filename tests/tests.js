@@ -225,7 +225,7 @@ exports.defineAutoTests = function () {
         done();
       });
     });
-/*
+
     it('invokes an rpc function', function(done) {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
@@ -237,7 +237,7 @@ exports.defineAutoTests = function () {
 	});
       });
     });
- */  
+
     it('returns json error when fetching an offline device', function(done) {
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
