@@ -26,7 +26,6 @@ void simulatorSymlinkDocDir() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedMyManager = [[self alloc] init];
-        simulatorSymlinkDocDir();
     });
     return sharedMyManager;
 }
@@ -114,6 +113,19 @@ void nabtoLogCallback(const char* line, size_t size) {
 
 - (nabto_status_t)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType {
     return nabtoFetchUrl(session, [url UTF8String], resultBuffer, resultLength, mimeType);
+}
+
+- (nabto_status_t)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse {
+    return nabtoRpcInvoke(session, [url UTF8String], jsonResponse);
+}
+
+- (nabto_status_t)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
+    return nabtoRpcSetDefaultInterface(session, [interfaceDefinition UTF8String], errorMessage);
+}
+
+
+- (nabto_status_t)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
+    return nabtoRpcSetInterface(session, [host UTF8String], [interfaceDefinition UTF8String], errorMessage);
 }
 
 - (nabto_status_t)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType {

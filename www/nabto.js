@@ -86,7 +86,7 @@ Nabto.prototype.rpcInvoke = function(url, cb) {
   return rpcStyleInvoker(url, cb, 'rpcInvoke');
 };
 
-Nabto.prototype.rpcSetDefaultInterface = function(url, cb) {
+Nabto.prototype.rpcSetDefaultInterface = function(interfaceXml, cb) {
   cb = cb || function() {};
   exec(
     function success() {
@@ -94,7 +94,18 @@ Nabto.prototype.rpcSetDefaultInterface = function(url, cb) {
     },
     function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'rpcSetDefaultInterface', []);
+    }, 'Nabto', 'rpcSetDefaultInterface', [interfaceXml]);
+};
+
+Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb(undefined);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'rpcSetInterface', [host, interfaceXml]);
 };
 
 Nabto.prototype.getSessionToken = function(cb) {

@@ -15,7 +15,7 @@ Nabto provides a full communication infrastructure to allow direct, encrypted co
 
 1. Download Nabto libraries and assets to *cordova-plugin-nabto/src/nabto/* (See "Source File Structure" section). This step can be skipped if installing directly from [npm](https://www.npmjs.com/).
 2. Install cordova plugin: `cordova plugin add cordova-plugin-nabto`.
-3. For iOS projects replace linker flag "-ObjC" with "-force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++".
+3. For iOS projects replace linker flag "-ObjC" with "-force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++" (in platforms/ios/cordova/build.xcconfig)
 4. Start using as described in the Example and API section.
 
 ## Example

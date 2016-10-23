@@ -18,7 +18,8 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
         else {
-            status = [[Manager sharedManager] nabtoOpenSession:[command.arguments objectAtIndex:0] withPassword:[command.arguments objectAtIndex:1]];
+            status = [[Manager sharedManager] nabtoOpenSession:[command.arguments objectAtIndex:0]
+                                                  withPassword:[command.arguments objectAtIndex:1]];
             if (status == NABTO_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             }
@@ -54,10 +55,78 @@
         size_t resultLen = 0;
         char *resultMimeType = 0;
 
-        status = [[Manager sharedManager] nabtoFetchUrl:[command.arguments objectAtIndex:0] withResultBuffer:&resultBuffer resultLength:&resultLen mimeType:&resultMimeType];
+        status = [[Manager sharedManager] nabtoFetchUrl:[command.arguments objectAtIndex:0]
+                                       withResultBuffer:&resultBuffer
+                                           resultLength:&resultLen
+                                               mimeType:&resultMimeType];
         if (status == NABTO_OK) {
             NSData *data = [NSData dataWithBytes:resultBuffer length:resultLen];
-            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                    messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+        }
+        else {
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+        }
+
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }];
+}
+
+- (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult *res = nil;
+
+        nabto_status_t status;
+        char *jsonString = 0;
+
+        status = [[Manager sharedManager] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
+                                        withResultBuffer:&jsonString];
+        if (status == NABTO_OK) {
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                    messageAsString:[NSString stringWithUTF8String:jsonString]];
+        }
+        else {
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+        }
+
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }];
+}
+
+- (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult *res = nil;
+
+        nabto_status_t status;
+        char *jsonErrorString = 0;
+
+        status = [[Manager sharedManager] nabtoRpcSetDefaultInterface:[command.arguments objectAtIndex:0]
+                                                     withErrorMessage:&jsonErrorString];
+        if (status == NABTO_OK) {
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+//            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithUTF8String:jsonErrorString]];
+        }
+        else {
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+        }
+
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }];
+}
+
+- (void)rpcSetInterface:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult *res = nil;
+
+        nabto_status_t status;
+        char *jsonErrorString = 0;
+
+        status = [[Manager sharedManager] nabtoRpcSetInterface:[command.arguments objectAtIndex:0]
+                                       withInterfaceDefinition:[command.arguments objectAtIndex:1]
+                                              withErrorMessage:&jsonErrorString];
+        if (status == NABTO_OK) {
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+//            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithUTF8String:jsonErrorString]];
         }
         else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
