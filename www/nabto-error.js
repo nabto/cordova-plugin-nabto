@@ -156,7 +156,11 @@ function NabtoError(category, status, innerError) {
   });
 
   this.__defineGetter__('message', function() {
-    return this.lookupMessage(this.code);
+    var msg = this.lookupMessage(this.code);
+    if (!msg) {
+      msg = `Category ${this.category}, inner: ${this.inner}`;
+    }
+    return msg;
   });
 
 }
