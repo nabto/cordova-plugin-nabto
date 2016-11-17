@@ -6,7 +6,7 @@ SDKS=nabto-sdk-ios-3.0.15-beta1.tar.gz
 
 for f in ${SDKS}; do
     tmp=`mktemp`
-    url=https://download.nabto.com/npm-libs/x-$f
+    url=https://download.nabto.com/npm-libs/$f
     curl -# $url > $tmp
     if [ $? != "0" ]; then
        echo "FATAL: Download of $url failed."
