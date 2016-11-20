@@ -55,18 +55,20 @@ NabtoError.Code.CDV_UNEXPECTED_DATA =  1001;
 NabtoError.Code.CDV_MALFORMED_JSON  =  1002;
 
 // relevant error codes mapped from nabto_client_api.h
-NabtoError.Code.API_CERT_OPEN_FAIL          = 2001;
-NabtoError.Code.API_NOT_INITIALIZED         = 2003;
-NabtoError.Code.API_INVALID_SESSION         = 2004;
-NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD = 2006;
-NabtoError.Code.API_SERVER_LOGIN_FAILURE    = 2007;
-NabtoError.Code.API_RPC_INTERFACE_NOT_SET   = 2027;
-NabtoError.Code.API_RPC_NO_SUCH_REQUEST     = 2028;
-NabtoError.Code.API_ERROR                   = 2100;
+NabtoError.Code.API_CERT_OPEN_FAIL              = 2001;
+NabtoError.Code.API_NOT_INITIALIZED             = 2003;
+NabtoError.Code.API_INVALID_SESSION             = 2004;
+NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD     = 2006;
+NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
+NabtoError.Code.API_RPC_INTERFACE_NOT_SET       = 2027;
+NabtoError.Code.API_RPC_NO_SUCH_REQUEST         = 2028;
+NabtoError.Code.API_RPC_DEVICE_OFFLINE          = 2029;
+NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE = 2030;
+NabtoError.Code.API_ERROR                       = 2100;
 
 // relevant error codes mapped from nabto::Events
 NabtoError.Code.P2P_ACCESS_DENIED_CONNECT    = 3111; // access denied for connection attempt
-NabtoError.Code.P2P_DEVICE_OFFLINE           = 3115;
+NabtoError.Code.P2P_DEVICE_OFFLINE           = 3115; // deprecated, for legacy clients only (rpc has specific offline error code above (2029))
 NabtoError.Code.P2P_CONNECTION_PROBLEM       = 3116; 
 NabtoError.Code.P2P_ENCRYPTION_MISMATCH      = 3120;
 NabtoError.Code.P2P_DEVICE_BUSY              = 3121;
@@ -105,6 +107,8 @@ NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified u
 NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
 NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
+NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Requested device is offline";
+NabtoError.Message[NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE] = "Could note decode response from device";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
 NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID] = "Error parsing the RPC interface definition file (see log for details)";		    
@@ -180,10 +184,6 @@ NabtoError.prototype.lookupMessage = function(code) {
 };
 
 NabtoError.prototype.handleApiError = function(status) {
-  if (status > NabtoConstants.ClientApiErrors.NABTO_RPC_NO_SUCH_REQUEST) {
-    return this.handleUnexpected(`Unexpected API status [${status}]`);
-  }
-
   this.inner = status;
   this.category = NabtoError.Category.API;
   
@@ -218,7 +218,16 @@ NabtoError.prototype.handleApiError = function(status) {
     this.code = NabtoError.Code.API_RPC_NO_SUCH_REQUEST;
     break;
 
+  case NabtoConstants.ClientApiErrors.RPC_DEVICE_OFFLINE:
+    this.code = NabtoError.Code.API_RPC_DEVICE_OFFLINE;
+    break;
+
+  case NabtoConstants.ClientApiErrors.RPC_RESPONSE_DECODE_FAILURE:
+    this.code = NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE;
+    break;
+
   defau1t:
+    console.log(`Unexpected API status ${status}`);
     this.code = NabtoError.Code.API_ERROR;
     break;
   }

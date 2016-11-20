@@ -238,12 +238,25 @@ exports.defineAutoTests = function () {
       });
     });
 
-    it('returns json error when fetching an offline device', function(done) {
+    it('returns json error when fetching an offline device through legacy fetchurl', function(done) {
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
         expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
         expect(result).not.toBeDefined();
         done();
+      });
+    });
+
+    it('returns an api rpc error when fetching an offline device through rpc invoke', function(done) {
+      var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
+      nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
+	expect(error).not.toBeDefined();
+        nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
+           expect(error).toBeDefined();
+           expect(error.code).toBe(NabtoError.Code.API_RPC_DEVICE_OFFLINE);
+           expect(result).not.toBeDefined();
+           done();
+        });
       });
     });
 
