@@ -63,6 +63,7 @@
             NSData *data = [NSData dataWithBytes:resultBuffer length:resultLen];
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            nabtoFree(resultBuffer);
         }
         else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
@@ -84,6 +85,7 @@
         if (status == NABTO_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[NSString stringWithUTF8String:jsonString]];
+            nabtoFree(jsonString);
         }
         else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
@@ -98,15 +100,12 @@
         CDVPluginResult *res = nil;
 
         nabto_status_t status;
-        char *jsonErrorString = 0;
-
         status = [[Manager sharedManager] nabtoRpcSetDefaultInterface:[command.arguments objectAtIndex:0]
-                                                     withErrorMessage:&jsonErrorString];
+                                                     withErrorMessage:0];
         if (status == NABTO_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-//            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithUTF8String:jsonErrorString]];
-        }
-        else {
+        } else {
+            // TODO: propagate XML parse errors
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 
@@ -119,16 +118,13 @@
         CDVPluginResult *res = nil;
 
         nabto_status_t status;
-        char *jsonErrorString = 0;
-
         status = [[Manager sharedManager] nabtoRpcSetInterface:[command.arguments objectAtIndex:0]
                                        withInterfaceDefinition:[command.arguments objectAtIndex:1]
-                                              withErrorMessage:&jsonErrorString];
+                                              withErrorMessage:0];
         if (status == NABTO_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-//            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithUTF8String:jsonErrorString]];
-        }
-        else {
+        } else {
+            // TODO: propagate XML parse errors
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 
