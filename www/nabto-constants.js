@@ -34,6 +34,8 @@ NabtoConstants.ClientApiErrors.RPC_INTERFACE_NOT_SET          = 27;
 NabtoConstants.ClientApiErrors.RPC_NO_SUCH_REQUEST            = 28;
 NabtoConstants.ClientApiErrors.RPC_DEVICE_OFFLINE             = 29;
 NabtoConstants.ClientApiErrors.RPC_RESPONSE_DECODE_FAILURE    = 30;
+NabtoConstants.ClientApiErrors.RPC_COMMUNICATION_PROBLEM      = 31;
+NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT                = 32;
 
 ////////////////////////////////////////////////////////////////////////////////
 // from unabto/src/unabto/unabto_protocol_exceptions.h

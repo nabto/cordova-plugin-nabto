@@ -17,9 +17,8 @@
  * low level API.
  *
  * P2P_xxx error codes: These error codes mean that the interaction
- * with the low level Nabto API went ok - but an error occurred when
- * invoking the remote Nabto device, for instance the device is not
- * online.
+ * with the low level Nabto API went ok - but anerror occurred when
+ * invoking the remote Nabto device.
  *
  * EXC_xxx error codes: The communication with the remote device was
  * ok, but an application exception occurred on the device when
@@ -64,6 +63,8 @@ NabtoError.Code.API_RPC_INTERFACE_NOT_SET       = 2027;
 NabtoError.Code.API_RPC_NO_SUCH_REQUEST         = 2028;
 NabtoError.Code.API_RPC_DEVICE_OFFLINE          = 2029;
 NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE = 2030;
+NabtoError.Code.API_RPC_COMMUNICATION_PROBLEM   = 2031;
+NabtoError.Code.API_CONNECT_TIMEOUT             = 2032;
 NabtoError.Code.API_ERROR                       = 2100;
 
 // relevant error codes mapped from nabto::Events
@@ -107,8 +108,10 @@ NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified u
 NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
 NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
-NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Requested device is offline";
-NabtoError.Message[NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE] = "Could note decode response from device";
+NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Device is offline";
+NabtoError.Message[NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE] = "Could not decode response from device";
+NabtoError.Message[NabtoError.Code.API_RPC_COMMUNICATION_PROBLEM] = "Error communicating with device";
+NabtoError.Message[NabtoError.Code.API_CONNECT_TIMEOUT]       = "Timeout when connecting to device";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
 NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID] = "Error parsing the RPC interface definition file (see log for details)";		    
@@ -162,7 +165,7 @@ function NabtoError(category, status, innerError) {
   this.__defineGetter__('message', function() {
     var msg = this.lookupMessage(this.code);
     if (!msg) {
-      msg = `Category ${this.category}, inner: ${this.inner}`;
+      msg = `Code ${this.toString()} (${this.code}), Category ${this.category}, inner: ${this.inner}`;
     }
     return msg;
   });
@@ -224,6 +227,18 @@ NabtoError.prototype.handleApiError = function(status) {
 
   case NabtoConstants.ClientApiErrors.RPC_RESPONSE_DECODE_FAILURE:
     this.code = NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE;
+    break;
+
+  case NabtoConstants.ClientApiErrors.RPC_COMMUNICATION_PROBLEM:
+    this.code = NabtoError.Code.API_RPC_COMMUNICATION_PROBLEM;
+    break;
+
+  case NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT:
+    this.code = NabtoError.Code.API_CONNECT_TIMEOUT;
+    break;
+
+  case NabtoConstants.ClientApiErrors.FAILED:
+    this.code = NabtoError.Code.API_ERROR;
     break;
 
   defau1t:
