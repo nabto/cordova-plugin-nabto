@@ -207,40 +207,39 @@ public class Nabto extends CordovaPlugin {
 
     private void rpcSetDefaultInterface(final String interfaceXml, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable(){
-                @override
-                public void run() {
-                    if (session == null){
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                        return;
-                    }
-                    RpcResult result = nabto.rpcSetDefaultInterface(interfaceXml, session);
-                    if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                        return;
-                    }
-                    cc.success();
+            @override
+            public void run() {
+                if (session == null){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
                 }
-            });
+                RpcResult result = nabto.rpcSetDefaultInterface(interfaceXml, session);
+                if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
                     
     }
 
     private void rpcSetInterface(final String host, final String interfaceXml, final CallbackContext cc){
-            cordova.getThreadPool().execute(new Runnable(){
-                @override
-                public void run() {
-                    if (session == null){
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                        return;
-                    }
-
-                    RpcResult result = nabto.rpcSetInterface(host,interfaceXml, session);
-                    if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                        return;
-                    }
-                    cc.success();
+        cordova.getThreadPool().execute(new Runnable(){
+            @override
+            public void run() {
+                if (session == null){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
                 }
-                });
+                RpcResult result = nabto.rpcSetInterface(host,interfaceXml, session);
+                if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
                 
     }
     
@@ -308,7 +307,7 @@ public class Nabto extends CordovaPlugin {
             return;
         }
         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
-        cc.success(info.getNabtoState().ordinal() - 1);
+        cc.success(info.getTunnelState().ordinal() - 1);
     }
 
     private void tunnelLastError(CallbackContext cc) {
@@ -317,7 +316,7 @@ public class Nabto extends CordovaPlugin {
             return;
         }
         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
-        cc.success(info.getNabtoStatus().ordinal() - 1);
+        cc.success(info.getTunnelStatus().ordinal() - 1);
     }
 
     private void tunnelPort(CallbackContext cc) {
@@ -326,7 +325,7 @@ public class Nabto extends CordovaPlugin {
             return;
         }
         TunnelInfoResult info = nabto.tunnelInfo(tunnel.getTunnel());
-        cc.success(info.getNabtoPort());
+        cc.success(info.getPort());
     }
 
     private void tunnelClose(CallbackContext cc) {
@@ -334,7 +333,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        NabtoStatus status = nabto.tunnelCloseTcp(tunnel);
+        NabtoStatus status = nabto.tunnelClose(tunnel);
         tunnel = null;
         if (status != NabtoStatus.OK) {
             cc.error(status.ordinal());
