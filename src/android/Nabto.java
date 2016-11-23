@@ -196,7 +196,7 @@ public class Nabto extends CordovaPlugin {
                 }
 
                 try {
-                    String stringResult = new String(result.getResult(), "UTF-8");
+                    String stringResult = new String(result.getJson(), "UTF-8");
                     cc.success(stringResult);
                 } catch (UnsupportedEncodingException e) {
                     cc.error("Nabto request parse error");
@@ -282,7 +282,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session.getSession());
+        tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session);
         NabtoStatus status = tunnel.getStatus();
         if (status != NabtoStatus.OK) {
             tunnel = null;
@@ -307,7 +307,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.tunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.tunnelInfo(tunnel);
         cc.success(info.getNabtoState().ordinal() - 1);
     }
 
@@ -316,8 +316,8 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.tunnelInfo(tunnel.getTunnel());
-        cc.success(info.getStatus().ordinal() - 1);
+        TunnelInfo info = nabto.tunnelInfo(tunnel);
+        cc.success(info.getNabtoStatus().ordinal() - 1);
     }
 
     private void tunnelPort(CallbackContext cc) {
@@ -334,7 +334,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        NabtoStatus status = nabto.tunnelCloseTcp(tunnel.getTunnel());
+        NabtoStatus status = nabto.tunnelCloseTcp(tunnel);
         tunnel = null;
         if (status != NabtoStatus.OK) {
             cc.error(status.ordinal());
