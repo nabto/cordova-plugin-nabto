@@ -219,7 +219,7 @@ public class Nabto extends CordovaPlugin {
                     }
                     cc.success();
                 }
-            }
+            });
                     
     }
 
@@ -239,7 +239,7 @@ public class Nabto extends CordovaPlugin {
                     }
                     cc.success();
                 }
-            }
+                });
                 
     }
     
