@@ -306,7 +306,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.TunnelInfo(tunnel.getTunnel());
         cc.success(info.getNabtoState().ordinal() - 1);
     }
 
@@ -315,7 +315,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.TunnelInfo(tunnel.getTunnel());
         cc.success(info.getStatus().ordinal() - 1);
     }
 
@@ -324,7 +324,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.TunnelInfo(tunnel.getTunnel());
         cc.success(info.getNabtoPort());
     }
 
@@ -333,7 +333,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        NabtoStatus status = nabto.nabtoTunnelCloseTcp(tunnel.getTunnel());
+        NabtoStatus status = nabto.TunnelCloseTcp(tunnel.getTunnel());
         tunnel = null;
         if (status != NabtoStatus.OK) {
             cc.error(status.ordinal());
