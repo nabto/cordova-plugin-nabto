@@ -195,12 +195,12 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                try {
-                    String stringResult = new String(result.getJson());
-                    cc.success(stringResult);
-                } catch (UnsupportedEncodingException e) {
-                    cc.error("Nabto request parse error");
-                }
+//                try {
+                String stringResult = new String(result.getJson());
+                cc.success(stringResult);
+//                } catch (UnsupportedEncodingException e) {
+//                    cc.error("Nabto request parse error");
+//                }
             }
         });
     }
