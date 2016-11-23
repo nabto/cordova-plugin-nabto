@@ -49,8 +49,8 @@
         <source-file src="src/android/api/TunnelInfo.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/UrlFetchResult.java" target-dir="src/com/nabto/api" />
 
-        <source-file src="src/nabto/android-arm/lib/libnabto_client_api_jni.so" target-dir="libs/armeabi"/>
         <source-file src="src/nabto/android-armv7/lib/libnabto_client_api_jni.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/nabto/android-arm64/lib/libnabto_client_api_jni.so" target-dir="libs/armeabi-64"/>
         <source-file src="src/nabto/android-x86/lib/libnabto_client_api_jni.so" target-dir="libs/x86"/>
 
         <source-file src="src/nabto/ios/share" target-dir="assets" />

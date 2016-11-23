@@ -39,6 +39,15 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("fetchUrl")) {
             fetchUrl(args.getString(0), callbackContext);
         }
+        else if (action.equals("rpcInvoke")) {
+            rpcInvoke(args.getString(0), callbackContext);
+        }
+        else if (action.equals("rpcSetDefaultInterface")) {
+            rpcSetDefaultInterface(args.getString(0), callbackContext);
+        }
+        else if (action.equals("rpcSetInterface")) {
+            rpcSetInterface(args.getString(0),args.getString(1), callbackContext);
+        }
         else if (action.equals("getSessionToken")) {
             getSessionToken(callbackContext);
         }
@@ -170,6 +179,70 @@ public class Nabto extends CordovaPlugin {
         });
     }
 
+    private void rpcInvoke(final String url, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (session == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+
+                UrlFetchResult result = nabto.rpcInvoke(url, session);
+                if (result.getNabtoStatus() != NabtoStatus.OK) {
+                    cc.error(result.getNabtoStatus().ordinal());
+                    return;
+                }
+
+                try {
+                    String stringResult = new String(result.getResult(), "UTF-8");
+                    cc.success(stringResult);
+                } catch (UnsupportedEncodingException e) {
+                    cc.error("Nabto request parse error");
+                }
+            }
+        });
+    }
+
+    private void rpcSetDefaultInterface(final String interfaceXml, final CallbackContext cc){
+        cordova.getThreadPool().execute(new Runnable(){
+                @override
+                public void run() {
+                    if (session == null){
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    RpcResult result = nabto.rpcSetDefaultInterface(interfaceXml, session);
+                    if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    cc.success();
+                }
+            }
+                    
+    }
+
+    private void rpcSetInterface(final String host, final String interfaceXml, final CallbackContext cc){
+            cordova.getThreadPool().execute(new Runnable(){
+                @override
+                public void run() {
+                    if (session == null){
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+
+                    RpcResult result = nabto.rpcSetInterface(host,interfaceXml, session);
+                    if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    cc.success();
+                }
+            }
+                
+    }
+    
     private void getSessionToken(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
