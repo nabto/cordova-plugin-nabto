@@ -196,7 +196,7 @@ public class Nabto extends CordovaPlugin {
                 }
 
                 try {
-                    String stringResult = new String(result.getJson(), "UTF-8");
+                    String stringResult = new String(result.getJson());
                     cc.success(stringResult);
                 } catch (UnsupportedEncodingException e) {
                     cc.error("Nabto request parse error");
@@ -307,7 +307,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.tunnelInfo(tunnel);
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
         cc.success(info.getNabtoState().ordinal() - 1);
     }
 
@@ -316,7 +316,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.tunnelInfo(tunnel);
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
         cc.success(info.getNabtoStatus().ordinal() - 1);
     }
 
@@ -325,7 +325,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.tunnelInfo(tunnel.getTunnel());
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel.getTunnel());
         cc.success(info.getNabtoPort());
     }
 
