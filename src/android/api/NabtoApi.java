@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2008-2016 Nabto - All Rights Reserved.
- */
 package com.nabto.api;
 
 import java.io.BufferedInputStream;

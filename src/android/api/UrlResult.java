@@ -1,29 +1,56 @@
-/*
- * Copyright (C) 2008-2016 Nabto - All Rights Reserved.
- */
-
 package com.nabto.api;
 
+/**
+ * Result object of the functions {@link NabtoApi#fetchUrl(String, Session)}, and
+ * {@link NabtoApi#submitPostData(String, byte[], String, Session)}.
+ * <p>
+ *     If {@link #getStatus()} is different from {@link NabtoStatus#OK}, the return values of
+ *     both {@link #getResult()} and {@link #getMimeType()} are undefined.
+ * </p>
+ */
 public class UrlResult {
     private byte[] result;
     private String mimeType;
-    private NabtoStatus nabtoStatus;
+    private NabtoStatus status;
 
-    public UrlResult(byte[] _result, String _mimeType, int _nabtoStatus) {
-        this.result = _result;
-        this.mimeType = _mimeType;
-        this.nabtoStatus = NabtoStatus.fromInteger(_nabtoStatus);
+    UrlResult(byte[] result, String mimeType, int nabtoStatus) {
+        this.result = result;
+        this.mimeType = mimeType;
+        this.status = NabtoStatus.fromInteger(nabtoStatus);
     }
 
+    /**
+     * The content returned from the device.
+     * <p>
+     *     If {@link #getStatus()} is different from {@link NabtoStatus#OK}, the return value
+     *     is undefined.
+     * </p>
+     *
+     * @return The content returned from the device.
+     */
     public byte[] getResult() {
         return result;
     }
 
-    public String getMimetype() {
+    /**
+     * The MIME type of the content returned from the device.
+     * <p>
+     *     If {@link #getStatus()} is different from {@link NabtoStatus#OK}, the return value
+     *     is undefined.
+     * </p>
+     *
+     * @return The MIME type of content returned from the device.
+     */
+    public String getMimeType() {
         return mimeType;
     }
 
-    public NabtoStatus getNabtoStatus() {
-        return nabtoStatus;
+    /**
+     * The success of the function call which returned this {@link UrlResult} object.
+     *
+     * @return The success of the function call.
+     */
+    public NabtoStatus getStatus() {
+        return status;
     }
 }
