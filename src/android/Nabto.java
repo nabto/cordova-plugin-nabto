@@ -206,8 +206,7 @@ public class Nabto extends CordovaPlugin {
     }
 
     private void rpcSetDefaultInterface(final String interfaceXml, final CallbackContext cc){
-        cordova.getThreadPool().execute(new Runnable(){
-            @override
+        cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 if (session == null){
                     cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
@@ -226,7 +225,6 @@ public class Nabto extends CordovaPlugin {
 
     private void rpcSetInterface(final String host, final String interfaceXml, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable(){
-            @override
             public void run() {
                 if (session == null){
                     cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
@@ -316,7 +314,7 @@ public class Nabto extends CordovaPlugin {
             return;
         }
         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
-        cc.success(info.getTunnelStatus().ordinal() - 1);
+        cc.success(info.getStatus().ordinal() - 1);
     }
 
     private void tunnelPort(CallbackContext cc) {
@@ -324,7 +322,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfoResult info = nabto.tunnelInfo(tunnel.getTunnel());
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
         cc.success(info.getPort());
     }
 
