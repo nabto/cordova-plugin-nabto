@@ -165,7 +165,7 @@ public class Nabto extends CordovaPlugin {
 
                 UrlResult result = nabto.fetchUrl(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
-                    cc.error(result.getNabtoStatus().ordinal());
+                    cc.error(result.getStatus().ordinal());
                     return;
                 }
 
@@ -189,8 +189,8 @@ public class Nabto extends CordovaPlugin {
                 }
 
                 UrlResult result = nabto.rpcInvoke(url, session);
-                if (result.getNabtoStatus() != NabtoStatus.OK) {
-                    cc.error(result.getNabtoStatus().ordinal());
+                if (result.getStatus() != NabtoStatus.OK) {
+                    cc.error(result.getStatus().ordinal());
                     return;
                 }
 
@@ -257,7 +257,7 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                String[] devices = nabto.nabtoGetLocalDevices();
+                String[] devices = nabto.getLocalDevices();
                 JSONArray jsonArray = new JSONArray(Arrays.asList(devices));
                 cc.success(jsonArray);
             }
@@ -316,7 +316,7 @@ public class Nabto extends CordovaPlugin {
             return;
         }
         TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
-        cc.success(info.getNabtoStatus().ordinal() - 1);
+        cc.success(info.getStatus().ordinal() - 1);
     }
 
     private void tunnelPort(CallbackContext cc) {
