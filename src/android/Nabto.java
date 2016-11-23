@@ -12,6 +12,7 @@ import android.content.Context;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collection;
 
 public class Nabto extends CordovaPlugin {
     private NabtoApi nabto = null;
@@ -188,7 +189,7 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                UrlResult result = nabto.rpcInvoke(url, session);
+                RpcResult result = nabto.rpcInvoke(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
                     cc.error(result.getStatus().ordinal());
                     return;
@@ -281,7 +282,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        tunnel = nabto.TunnelOpenTcp(0, host, "localhost", port, session.getSession());
+        tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session.getSession());
         NabtoStatus status = tunnel.getStatus();
         if (status != NabtoStatus.OK) {
             tunnel = null;
@@ -306,7 +307,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.TunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.tunnelInfo(tunnel.getTunnel());
         cc.success(info.getNabtoState().ordinal() - 1);
     }
 
@@ -315,7 +316,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.TunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.tunnelInfo(tunnel.getTunnel());
         cc.success(info.getStatus().ordinal() - 1);
     }
 
@@ -324,7 +325,7 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.TunnelInfo(tunnel.getTunnel());
+        TunnelInfo info = nabto.tunnelInfo(tunnel.getTunnel());
         cc.success(info.getNabtoPort());
     }
 
@@ -333,7 +334,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        NabtoStatus status = nabto.TunnelCloseTcp(tunnel.getTunnel());
+        NabtoStatus status = nabto.tunnelCloseTcp(tunnel.getTunnel());
         tunnel = null;
         if (status != NabtoStatus.OK) {
             cc.error(status.ordinal());
