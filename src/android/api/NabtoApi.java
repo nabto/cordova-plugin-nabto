@@ -48,6 +48,9 @@ public class NabtoApi {
     private String password;
 
     
+    public boolean initialised = false;
+
+    
     public NabtoApi(Context context) {
         ApplicationInfo info = context.getApplicationInfo();
 
@@ -1080,6 +1083,27 @@ public class NabtoApi {
         return status;
     }
 
+    
+    public void pause(Session session) {
+        if (session != null) {
+            closeSession(session);
+        }
+        shutdown();
+    }
+
+    public Session resume() {
+        startup();
+        Session s = null;
+        if (initialised) {
+             s = openSession(this.email, this.password);
+            if (s.getStatus() != NabtoStatus.OK) {
+                Log.d(this.getClass().getSimpleName(), "Failed to resume api");
+            }
+        }
+        return s;
+    }
+
+    
     /**
      * Opens a TCP tunnel to a remote server through a Nabto enabled device.
      * <p>

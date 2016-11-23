@@ -163,7 +163,7 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                UrlFetchResult result = nabto.fetchUrl(url, session);
+                UrlResult result = nabto.fetchUrl(url, session);
                 if (result.getNabtoStatus() != NabtoStatus.OK) {
                     cc.error(result.getNabtoStatus().ordinal());
                     return;
@@ -188,7 +188,7 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                UrlFetchResult result = nabto.rpcInvoke(url, session);
+                UrlResult result = nabto.rpcInvoke(url, session);
                 if (result.getNabtoStatus() != NabtoStatus.OK) {
                     cc.error(result.getNabtoStatus().ordinal());
                     return;
