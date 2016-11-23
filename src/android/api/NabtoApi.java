@@ -43,6 +43,11 @@ public class NabtoApi {
     private File nabtoHomeDirectory;
     private File nabtoResourceDirectory;
 
+    
+    private String email;
+    private String password;
+
+    
     public NabtoApi(Context context) {
         ApplicationInfo info = context.getApplicationInfo();
 
