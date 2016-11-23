@@ -257,8 +257,8 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                String[] devices = nabto.getLocalDevices();
-                JSONArray jsonArray = new JSONArray(Arrays.asList(devices));
+                Collection<String> devices = nabto.getLocalDevices();
+                JSONArray jsonArray = new JSONArray(devices); //Arrays.asList(devices));
                 cc.success(jsonArray);
             }
         });
@@ -281,7 +281,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        tunnel = nabto.nabtoTunnelOpenTcp(0, host, "localhost", port, session.getSession());
+        tunnel = nabto.TunnelOpenTcp(0, host, "localhost", port, session.getSession());
         NabtoStatus status = tunnel.getStatus();
         if (status != NabtoStatus.OK) {
             tunnel = null;
