@@ -117,6 +117,14 @@ public class NabtoApi {
         return NabtoCApiWrapper.nabtoVersion();
     }
 
+    public NabtoStatus init(String email, String password) {
+        this.email = email;
+        this.password = password;
+        initialised = true;
+        return NabtoStatus.OK;
+    }
+
+    
     /**
      * Initializes the Nabto client API.
      *
