@@ -164,7 +164,7 @@ public class Nabto extends CordovaPlugin {
                 }
 
                 UrlResult result = nabto.fetchUrl(url, session);
-                if (result.getNabtoStatus() != NabtoStatus.OK) {
+                if (result.getStatus() != NabtoStatus.OK) {
                     cc.error(result.getNabtoStatus().ordinal());
                     return;
                 }
@@ -268,7 +268,7 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                String version = nabto.nabtoVersion();
+                String version = nabto.version();
                 cc.success(version);
             }
         });
