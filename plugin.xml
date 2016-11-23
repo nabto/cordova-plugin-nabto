@@ -41,6 +41,7 @@
         <source-file src="src/android/api/NabtoState.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoStatus.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/RpcResult.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/StreamConnectionTypeResult.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/StreamOptionName.java" target-dir="src/com/nabto/api" />
