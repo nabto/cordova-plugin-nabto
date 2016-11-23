@@ -4,12 +4,12 @@
 
 package com.nabto.api;
 
-public class UrlFetchResult {
+public class UrlResult {
     private byte[] result;
     private String mimeType;
     private NabtoStatus nabtoStatus;
 
-    public UrlFetchResult(byte[] _result, String _mimeType, int _nabtoStatus) {
+    public UrlResult(byte[] _result, String _mimeType, int _nabtoStatus) {
         this.result = _result;
         this.mimeType = _mimeType;
         this.nabtoStatus = NabtoStatus.fromInteger(_nabtoStatus);

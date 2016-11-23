@@ -40,14 +40,14 @@
         <source-file src="src/android/api/NabtoConnectionType.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoState.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoStatus.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/RpcResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/StreamConnectionTypeResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/StreamOptionName.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/StreamReadResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/TunnelInfo.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/UrlFetchResult.java" target-dir="src/com/nabto/api" />
 
         <source-file src="src/nabto/android-armv7/lib/libnabto_client_api_jni.so" target-dir="libs/armeabi-v7a"/>
