@@ -57,8 +57,10 @@ NabtoError.Code.CDV_MALFORMED_JSON  =  1002;
 NabtoError.Code.API_CERT_OPEN_FAIL              = 2001;
 NabtoError.Code.API_NOT_INITIALIZED             = 2003;
 NabtoError.Code.API_INVALID_SESSION             = 2004;
+NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED      = 2005;
 NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD     = 2006;
 NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
+NabtoError.Code.API_CERT_SAVING_FAILURE         = 2009;
 NabtoError.Code.API_RPC_INTERFACE_NOT_SET       = 2027;
 NabtoError.Code.API_RPC_NO_SUCH_REQUEST         = 2028;
 NabtoError.Code.API_RPC_DEVICE_OFFLINE          = 2029;
@@ -101,11 +103,13 @@ NabtoError.Message = {};
 NabtoError.Message[NabtoError.Code.CDV_INVALID_ARG]           = "Invalid argument specified to Cordova wrapper";		    
 NabtoError.Message[NabtoError.Code.CDV_UNEXPECTED_DATA]       = "Unexpected status data from SDK";		 NabtoError.Message[NabtoError.Code.CDV_MALFORMED_JSON]        = "SDK did not return valid JSON";
 
+NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
 NabtoError.Message[NabtoError.Code.API_NOT_INITIALIZED]       = "API not initialized";
 NabtoError.Message[NabtoError.Code.API_INVALID_SESSION]       = "Invalid Nabto session";
+NabtoError.Message[NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED] = "Error opening keypair";
 NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key could not be opened (decrypted) using specified password";
 NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
-NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
+NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
 NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
 NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Device is offline";
@@ -202,6 +206,14 @@ NabtoError.prototype.handleApiError = function(status) {
 
   case NabtoConstants.ClientApiErrors.UNLOCK_PK_FAILED:
     this.code = NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD;
+    break;
+
+  case NabtoConstants.ClientApiErrors.OPEN_CERT_OR_PK_FAILED:
+    this.code = NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED;
+    break;
+
+  case NabtoConstants.ClientApiErrors.CERT_SAVING_FAILURE:
+    this.code = NabtoError.Code.API_CERT_SAVING_FAILURE;
     break;
 
   case NabtoConstants.ClientApiErrors.PORTAL_LOGIN_FAILURE:

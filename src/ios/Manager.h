@@ -20,6 +20,7 @@
 
 - (NSString *)nabtoVersion;
 
+- (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password;
 - (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password;
 - (nabto_status_t)nabtoOpenSessionGuest;
 - (nabto_status_t)nabtoCloseSession;

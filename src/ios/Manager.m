@@ -102,6 +102,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return status;
 }
 
+- (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
+    return nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]);
+}
+
 - (nabto_status_t)nabtoOpenSessionGuest {
     NSString *email = @"guest";
     NSString *password = @"";

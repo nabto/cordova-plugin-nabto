@@ -32,6 +32,17 @@ Nabto.prototype.startup = function(user, pass, cb) {
     'Nabto', 'startup', [user, pass]);
 };
 
+Nabto.prototype.createKeyPair = function(user, pass, cb) {
+  cb = cb || function() {};
+  exec(
+      function success() { cb(); },
+      function error(apiStatus) {
+          cb(new NabtoError(NabtoError.Category.API, apiStatus));
+      },
+      'Nabto', 'createKeyPair', [user, pass]
+  );
+};
+
 Nabto.prototype.shutdown = function(cb) {
   cb = cb || function() {};
 
