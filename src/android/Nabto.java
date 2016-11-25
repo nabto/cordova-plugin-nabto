@@ -34,6 +34,9 @@ public class Nabto extends CordovaPlugin {
         if (action.equals("startup")) {
             startup(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("createKeyPair")) {
+            createKeyPair(args.getString(0), args.getString(1), callbackContext);
+        }
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
         }
@@ -96,18 +99,18 @@ public class Nabto extends CordovaPlugin {
         }
 
         session = nabto.openSession(user, pass);
-        if (session.getStatus() == NabtoStatus.NO_PROFILE ||
-                session.getStatus() == NabtoStatus.OPEN_CERT_OR_PK_FAILED) {
-            status = nabto.createProfile(user, pass);
-            if (status == NabtoStatus.OK) {
-                session = nabto.openSession(user, pass);
-            }
-            else {
-                cc.error(status.ordinal());
-                session = null;
-                return;
-            }
-        }
+        // if (session.getStatus() == NabtoStatus.NO_PROFILE ||
+        //         session.getStatus() == NabtoStatus.OPEN_CERT_OR_PK_FAILED) {
+        //     status = nabto.createProfile(user, pass);
+        //     if (status == NabtoStatus.OK) {
+        //         session = nabto.openSession(user, pass);
+        //     }
+        //     else {
+        //         cc.error(status.ordinal());
+        //         session = null;
+        //         return;
+        //     }
+        // }
 
         if (session.getStatus() != NabtoStatus.OK) {
             cc.error(session.getStatus().ordinal());
@@ -138,17 +141,34 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                nabto.init(user, pass);
+//                nabto.init(user, pass);
+                nabto.startup();
                 openSession(user, pass, cc);
             }
         });
+    }
+
+    private void createKeyPair(final String user, final String pass, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+            @Override
+            public void run() {
+                NabtoStatus status = nabto.createSelfSignedProfile(user, pass);
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
+            
     }
 
     private void shutdown(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                nabto.pause(session);
+                // nabto.pause(session);
+                nabto.shutdown();
                 session = null;
                 cc.success();
             }

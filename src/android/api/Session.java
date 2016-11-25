@@ -26,7 +26,7 @@ public class Session {
      *
      * @return Session handle.
      */
-    public Object getSession() {
+    Object getSession() {
         return session;
     }
 

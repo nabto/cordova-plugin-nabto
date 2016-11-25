@@ -173,7 +173,7 @@ public enum NabtoStatus {
      */
     ERROR_CODE_COUNT;
 
-    public static NabtoStatus fromInteger(int val) {
+    static NabtoStatus fromInteger(int val) {
         if (val < NabtoStatus.values().length && val >= 0) {
             return NabtoStatus.values()[val];
         } else {
@@ -181,7 +181,7 @@ public enum NabtoStatus {
         }
     }
 
-    public int toInteger() {
+    int toInteger() {
         return this.ordinal();
     }
 }

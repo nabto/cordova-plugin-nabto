@@ -25,7 +25,7 @@ public class Tunnel {
      *
      * @return Tunnel handle.
      */
-    public Object getTunnel() {
+    Object getTunnel() {
         return tunnel;
     }
 

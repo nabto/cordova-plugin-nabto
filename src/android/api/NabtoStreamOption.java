@@ -24,7 +24,7 @@ public enum NabtoStreamOption {
     INVALID;
 
 
-    public static NabtoStreamOption fromInteger(int val) {
+    static NabtoStreamOption fromInteger(int val) {
         val--;
         if (val < NabtoStreamOption.values().length && val >= 0) {
             return NabtoStreamOption.values()[val];
@@ -33,7 +33,7 @@ public enum NabtoStreamOption {
         }
     }
 
-    public int toInteger() {
+    int toInteger() {
         return this.ordinal() + 1;
     }
 }

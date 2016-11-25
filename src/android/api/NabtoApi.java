@@ -43,14 +43,6 @@ public class NabtoApi {
     private File nabtoHomeDirectory;
     private File nabtoResourceDirectory;
 
-    
-    private String email;
-    private String password;
-
-    
-    public boolean initialised = false;
-
-    
     public NabtoApi(Context context) {
         ApplicationInfo info = context.getApplicationInfo();
 
@@ -125,14 +117,6 @@ public class NabtoApi {
         return NabtoCApiWrapper.nabtoVersion();
     }
 
-    public NabtoStatus init(String email, String password) {
-        this.email = email;
-        this.password = password;
-        initialised = true;
-        return NabtoStatus.OK;
-    }
-
-    
     /**
      * Initializes the Nabto client API.
      *
@@ -372,6 +356,38 @@ public class NabtoApi {
         }
         return status;
     }
+    /**
+     * Creates a Nabto client profile (private key + self signed certificate) on this
+     * computer for specified registered Nabto user.
+     * <p>
+     *     The {@link #startup()} function must have been called prior to calling this
+     *     function.
+     * </p>
+     *
+     * @param email     Email address of user, as registered on portal.
+     * @param password  Password for accessing portal for specified user.
+     * @return  If the function succeeds, the return value is {@link NabtoStatus#OK}.
+     *          If the function fails, the return value is one of the
+     *          following values.
+     *          <ul>
+     *              <li>{@link NabtoStatus#API_NOT_INITIALIZED}: The {@link #startup()}
+     *              function is the first function to call to initialize the Nabto client.</li>
+     *              <li>{@link NabtoStatus#UNLOCK_PK_FAILED}: Bad password was specified.</li>
+     *              <li>{@link NabtoStatus#CERT_SAVING_FAILURE}: Could not save signed certificate.</li>
+     *              <li>{@link NabtoStatus#PORTAL_LOGIN_FAILURE}: Invalid email and/or password.</li>
+     *              <li>{@link NabtoStatus#CERT_SIGNING_ERROR}: Failed to sign certificate request.</li>
+     *              <li>{@link NabtoStatus#FAILED}: Lookup failed for some unspecified reason.</li>
+     *          </ul>
+     */
+    public NabtoStatus createSelfSignedProfile(String email, String password) {
+        NabtoStatus status = NabtoStatus.fromInteger(NabtoCApiWrapper
+                .nabtoCreateSelfSignedProfile(email, password));
+        if(status != NabtoStatus.OK) {
+            Log.d(this.getClass().getSimpleName(), "Failed to create profile: " + status);
+        }
+        return status;
+    }
+
 
     /**
      * Signs up for a Nabto account on the portal (host name defined in the
@@ -1083,27 +1099,6 @@ public class NabtoApi {
         return status;
     }
 
-    
-    public void pause(Session session) {
-        if (session != null) {
-            closeSession(session);
-        }
-        shutdown();
-    }
-
-    public Session resume() {
-        startup();
-        Session s = null;
-        if (initialised) {
-             s = openSession(this.email, this.password);
-            if (s.getStatus() != NabtoStatus.OK) {
-                Log.d(this.getClass().getSimpleName(), "Failed to resume api");
-            }
-        }
-        return s;
-    }
-
-    
     /**
      * Opens a TCP tunnel to a remote server through a Nabto enabled device.
      * <p>

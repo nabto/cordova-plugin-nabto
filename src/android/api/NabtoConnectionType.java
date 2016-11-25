@@ -36,7 +36,7 @@ public enum NabtoConnectionType {
      */
     RELAY_MICRO;
 
-    public static NabtoConnectionType fromInteger(int connectionType) {
+    static NabtoConnectionType fromInteger(int connectionType) {
         if (connectionType < NabtoConnectionType.values().length && connectionType >= 0) {
             return NabtoConnectionType.values()[connectionType];
         } else {
@@ -44,7 +44,7 @@ public enum NabtoConnectionType {
         }
     }
 
-    public int toInteger() {
+    int toInteger() {
         return this.ordinal();
     }
 }

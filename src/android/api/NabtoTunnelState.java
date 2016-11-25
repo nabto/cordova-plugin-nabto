@@ -59,7 +59,7 @@ public enum NabtoTunnelState {
      */
     INVALID;
 
-    public static NabtoTunnelState fromInteger(int val) {
+    static NabtoTunnelState fromInteger(int val) {
         val++;
         if (val < NabtoTunnelState.values().length && val >= 0) {
             return NabtoTunnelState.values()[val];
@@ -68,7 +68,7 @@ public enum NabtoTunnelState {
         }
     }
 
-    public int toInteger() {
+    int toInteger() {
         return this.ordinal() - 1;
     }
 

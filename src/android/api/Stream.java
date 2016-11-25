@@ -25,7 +25,7 @@ public class Stream {
      *
      * @return Stream handle.
      */
-    public Object getStream() {
+    Object getStream() {
         return stream;
     }
 
