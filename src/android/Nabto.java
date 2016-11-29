@@ -20,16 +20,9 @@ public class Nabto extends CordovaPlugin {
     private Tunnel tunnel;
 
     // NAGSCREEN STUB VARIABLE - SHOULD BE RECEIVED FROM CORE //
-    //private JSONObject connPrepped = new JSONObject();
     private boolean connPrepped = false;
     
-    public Nabto() {
-        // try{
-        //     connPrepped.put("prep",new Boolean(false));
-        // } catch (JSONException e){
-        //     System.out.print("JSONException");
-        // }
-    }
+    public Nabto() {}
 
     /**
      * Executes the request and returns PluginResult.
@@ -107,11 +100,6 @@ public class Nabto extends CordovaPlugin {
     private void adShown(CallbackContext cc){
         // call to the core stating an ad was shown to the user
         connPrepped = true;
-        // try {
-        //     connPrepped.put("prep",true);
-        // } catch (JSONException e){
-
-        // }
         cc.success();
     }
 
@@ -121,9 +109,8 @@ public class Nabto extends CordovaPlugin {
         try {
             connPreppedJson.put("prep",connPrepped);
         } catch (JSONException e){
-
+            cc.error("JSONExeption: Could not put connPrepped");
         }
-        
         cc.success(connPreppedJson);
     }
 
