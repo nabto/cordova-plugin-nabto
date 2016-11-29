@@ -20,14 +20,15 @@ public class Nabto extends CordovaPlugin {
     private Tunnel tunnel;
 
     // NAGSCREEN STUB VARIABLE - SHOULD BE RECEIVED FROM CORE //
-    private JSONObject connPrepped = new JSONObject();
-
+    //private JSONObject connPrepped = new JSONObject();
+    private boolean connPrepped = false;
+    
     public Nabto() {
-        try{
-            connPrepped.put("prep",new Boolean(false));
-        } catch (JSONException e){
-            System.out.print("JSONException");
-        }
+        // try{
+        //     connPrepped.put("prep",new Boolean(false));
+        // } catch (JSONException e){
+        //     System.out.print("JSONException");
+        // }
     }
 
     /**
@@ -101,25 +102,29 @@ public class Nabto extends CordovaPlugin {
         return true;
     }
 
-    // call to the core stating an ad was shown to the user
+    /* Nabto API */
+    
     private void adShown(CallbackContext cc){
-        try {
-            connPrepped.put("prep",true);
-        } catch (JSONException e){
-
-        }
-        cc.success();
-    }
-
-    // call to the core asking if the connection is prepared
-    private void isConnPrepared(CallbackContext cc) {
-        cc.success(connPrepped);
+        // call to the core stating an ad was shown to the user
+        connPrepped = true;
         // try {
-        //     connPrepped.put("prep",false);
+        //     connPrepped.put("prep",true);
         // } catch (JSONException e){
 
         // }
-        return;
+        cc.success();
+    }
+
+    private void isConnPrepared(CallbackContext cc) {
+        // call to the core asking if the connection is prepared
+        JSONObject connPreppedJson = new JSONObject();
+        try {
+            connPreppedJson.put("prep",connPrepped);
+        } catch (JSONException e){
+
+        }
+        
+        cc.success(connPreppedJson);
     }
 
     private void openSession(String user, String pass, CallbackContext cc) {
@@ -145,7 +150,6 @@ public class Nabto extends CordovaPlugin {
         }
     }
 
-    /* Nabto API */
 
     private void startup(final String user, final String pass, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
@@ -239,12 +243,8 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-//                try {
                 String stringResult = new String(result.getJson());
                 cc.success(stringResult);
-//                } catch (UnsupportedEncodingException e) {
-//                    cc.error("Nabto request parse error");
-//                }
             }
         });
     }

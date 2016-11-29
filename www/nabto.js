@@ -97,6 +97,19 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
+  // THIS SHOULD BE DONE IN THE CORE - REMOVE ASAP
+  exec(
+  	function success(prepConn){
+  	  if(prepConn.prep == false){
+  		cb(new NabtoError(NabtoError.Category.API, "You are not prepared"));
+  		return;
+  	  }
+  	},
+  	function error(apiStatus) {
+  	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+  	},
+  	'Nabto', 'isConnPrepared',[]);
+  /// END OF REMOVE
   exec(
     function success(result) {
       var obj, err;
