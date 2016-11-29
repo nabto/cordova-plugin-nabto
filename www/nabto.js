@@ -55,11 +55,11 @@ Nabto.prototype.startup = function(user, pass, cb) {
     'Nabto', 'startup', [user, pass]);
 };
 
-Nabto.prototype.prepareConnect = function(cb) {
+Nabto.prototype.prepareInvoke = function(cb) {
   cb = cb || function(){};
   exec(
-	function success(prepConn){
-	  if (prepConn.prep == false){
+	function success(prepInvoke){
+	  if (prepInvoke.prep == false){
 		showAd(cb);
 	  }
 	  cb();
@@ -67,7 +67,7 @@ Nabto.prototype.prepareConnect = function(cb) {
 	function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-	'Nabto', 'isConnPrepared',[]);
+	'Nabto', 'isInvokePrepared',[]);
 }
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
@@ -99,8 +99,8 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   }
   // THIS SHOULD BE DONE IN THE CORE - REMOVE ASAP
   exec(
-  	function success(prepConn){
-  	  if(prepConn.prep == false){
+  	function success(prepInvoke){
+  	  if(prepInvoke.prep == false){
   		cb(new NabtoError(NabtoError.Category.API, "You are not prepared"));
   		return;
   	  }
@@ -108,7 +108,7 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   	function error(apiStatus) {
   	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
   	},
-  	'Nabto', 'isConnPrepared',[]);
+  	'Nabto', 'isInvokePrepared',[]);
   /// END OF REMOVE
   exec(
     function success(result) {

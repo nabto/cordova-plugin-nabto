@@ -20,7 +20,7 @@ public class Nabto extends CordovaPlugin {
     private Tunnel tunnel;
 
     // NAGSCREEN STUB VARIABLE - SHOULD BE RECEIVED FROM CORE //
-    private boolean connPrepped = false;
+    private boolean invokePrepped = false;
     
     public Nabto() {}
 
@@ -43,8 +43,8 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
         }
-        else if (action.equals("isConnPrepared")) {
-            isConnPrepared(callbackContext);
+        else if (action.equals("isInvokePrepared")) {
+            isInvokePrepared(callbackContext);
         }
         else if (action.equals("adShown")) {
             adShown(callbackContext);
@@ -99,19 +99,19 @@ public class Nabto extends CordovaPlugin {
     
     private void adShown(CallbackContext cc){
         // call to the core stating an ad was shown to the user
-        connPrepped = true;
+        invokePrepped = true;
         cc.success();
     }
 
-    private void isConnPrepared(CallbackContext cc) {
-        // call to the core asking if the connection is prepared
-        JSONObject connPreppedJson = new JSONObject();
+    private void isInvokePrepared(CallbackContext cc) {
+        // call to the core asking if invoke is prepared
+        JSONObject invokePreppedJson = new JSONObject();
         try {
-            connPreppedJson.put("prep",connPrepped);
+            invokePreppedJson.put("prep",invokePrepped);
         } catch (JSONException e){
-            cc.error("JSONExeption: Could not put connPrepped");
+            cc.error("JSONExeption: Could not put invokerepped");
         }
-        cc.success(connPreppedJson);
+        cc.success(invokePreppedJson);
     }
 
     private void openSession(String user, String pass, CallbackContext cc) {
