@@ -7,9 +7,9 @@ package com.nabto.api;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 import android.content.Context;
-
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,7 +19,16 @@ public class Nabto extends CordovaPlugin {
     private Session session;
     private Tunnel tunnel;
 
-    public Nabto() {}
+    // NAGSCREEN STUB VARIABLE - SHOULD BE RECEIVED FROM CORE //
+    private JSONObject connPrepped = new JSONObject();
+
+    public Nabto() {
+        try{
+            connPrepped.put("prep",new Boolean(false));
+        } catch (JSONException e){
+            System.out.print("JSONException");
+        }
+    }
 
     /**
      * Executes the request and returns PluginResult.
@@ -39,6 +48,12 @@ public class Nabto extends CordovaPlugin {
         }
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
+        }
+        else if (action.equals("isConnPrepared")) {
+            isConnPrepared(callbackContext);
+        }
+        else if (action.equals("adShown")) {
+            adShown(callbackContext);
         }
         else if (action.equals("fetchUrl")) {
             fetchUrl(args.getString(0), callbackContext);
@@ -86,6 +101,27 @@ public class Nabto extends CordovaPlugin {
         return true;
     }
 
+    // call to the core stating an ad was shown to the user
+    private void adShown(CallbackContext cc){
+        try {
+            connPrepped.put("prep",true);
+        } catch (JSONException e){
+
+        }
+        cc.success();
+    }
+
+    // call to the core asking if the connection is prepared
+    private void isConnPrepared(CallbackContext cc) {
+        cc.success(connPrepped);
+        // try {
+        //     connPrepped.put("prep",false);
+        // } catch (JSONException e){
+
+        // }
+        return;
+    }
+
     private void openSession(String user, String pass, CallbackContext cc) {
         NabtoStatus status = nabto.startup();
         if (status != NabtoStatus.OK) {
@@ -99,18 +135,6 @@ public class Nabto extends CordovaPlugin {
         }
 
         session = nabto.openSession(user, pass);
-        // if (session.getStatus() == NabtoStatus.NO_PROFILE ||
-        //         session.getStatus() == NabtoStatus.OPEN_CERT_OR_PK_FAILED) {
-        //     status = nabto.createProfile(user, pass);
-        //     if (status == NabtoStatus.OK) {
-        //         session = nabto.openSession(user, pass);
-        //     }
-        //     else {
-        //         cc.error(status.ordinal());
-        //         session = null;
-        //         return;
-        //     }
-        // }
 
         if (session.getStatus() != NabtoStatus.OK) {
             cc.error(session.getStatus().ordinal());

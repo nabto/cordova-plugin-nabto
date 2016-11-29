@@ -16,6 +16,29 @@ function nextTick(cb, arg) {
 //  cb(arg); /* good for debugging */
 }
 
+function showAd(cb){
+  var err, obj;
+  try{
+	this.browser = cordova.InAppBrowser.open('https://download.nabto.com/mkm/ad', '_blank', 'location=no');
+
+	this.browser.show();
+  } catch (e) {
+	err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CSP_UNSAFE_INLINE,e.message);
+    return cb(err, obj);
+  }
+  var self = this;
+
+  setTimeout(function() {
+    self.browser.close();
+	exec(
+	  function success(){cb();},
+	  function error(apiStatus) {
+		cb(new NabtoError(NabtoError.Category.API, apiStatus));
+      },
+	  'Nabto', 'adShown',[]);
+  }, 3000)
+}
+
 Nabto.prototype.startup = function(user, pass, cb) {
   if (typeof user === 'function') {
     cb = user;
@@ -31,6 +54,21 @@ Nabto.prototype.startup = function(user, pass, cb) {
     },
     'Nabto', 'startup', [user, pass]);
 };
+
+Nabto.prototype.prepareConnect = function(cb) {
+  cb = cb || function(){};
+  exec(
+	function success(prepConn){
+	  if (prepConn.prep == false){
+		showAd(cb);
+	  }
+	  cb();
+	},
+	function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+	'Nabto', 'isConnPrepared',[]);
+}
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
   cb = cb || function() {};
@@ -59,7 +97,6 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
-
   exec(
     function success(result) {
       var obj, err;
