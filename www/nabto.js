@@ -61,6 +61,7 @@ Nabto.prototype.prepareInvoke = function(cb) {
 	function success(prepInvoke){
 	  if (prepInvoke.prep == false){
 		showAd(cb);
+		return;
 	  }
 	  cb();
 	},
