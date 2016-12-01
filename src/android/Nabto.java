@@ -44,7 +44,8 @@ public class Nabto extends CordovaPlugin {
             shutdown(callbackContext);
         }
         else if (action.equals("isInvokePrepared")) {
-            isInvokePrepared(callbackContext);
+            isInvokePrepared(args.getJSONArray(0),callbackContext);
+//            isInvokePrepared(callbackContext);
         }
         else if (action.equals("adShown")) {
             adShown(callbackContext);
@@ -103,13 +104,16 @@ public class Nabto extends CordovaPlugin {
         cc.success();
     }
 
-    private void isInvokePrepared(CallbackContext cc) {
+    private void isInvokePrepared(JSONArray devices, CallbackContext cc) {
+//    private void isInvokePrepared(CallbackContext cc) {
         // call to the core asking if invoke is prepared
+        // Collection<String> devicesCollection = new Collection<String>(devices);
+        // boolean invokePrepped = nabto.isInvokePrepared(Collection<String> devicesCollection);
         JSONObject invokePreppedJson = new JSONObject();
         try {
             invokePreppedJson.put("prep",invokePrepped);
         } catch (JSONException e){
-            cc.error("JSONExeption: Could not put invokerepped");
+            cc.error("JSONExeption: Could not put invokePrepped");
         }
         cc.success(invokePreppedJson);
     }

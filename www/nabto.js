@@ -55,7 +55,7 @@ Nabto.prototype.startup = function(user, pass, cb) {
     'Nabto', 'startup', [user, pass]);
 };
 
-Nabto.prototype.prepareInvoke = function(cb) {
+Nabto.prototype.prepareInvoke = function(devices, cb) {
   cb = cb || function(){};
   exec(
 	function success(prepInvoke){
@@ -68,7 +68,7 @@ Nabto.prototype.prepareInvoke = function(cb) {
 	function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-	'Nabto', 'isInvokePrepared',[]);
+	'Nabto', 'isInvokePrepared',[devices]);
 }
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
@@ -99,6 +99,7 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
   // THIS SHOULD BE DONE IN THE CORE - REMOVE ASAP
+  var devices = ["device1", "device2"];
   exec(
   	function success(prepInvoke){
   	  if(prepInvoke.prep == false){
@@ -109,7 +110,7 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   	function error(apiStatus) {
   	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
   	},
-  	'Nabto', 'isInvokePrepared',[]);
+  	'Nabto', 'isInvokePrepared',[devices]);
   /// END OF REMOVE
   exec(
     function success(result) {
