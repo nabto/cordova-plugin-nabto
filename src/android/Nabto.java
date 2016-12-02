@@ -45,7 +45,6 @@ public class Nabto extends CordovaPlugin {
         }
         else if (action.equals("isInvokePrepared")) {
             isInvokePrepared(args.getJSONArray(0),callbackContext);
-//            isInvokePrepared(callbackContext);
         }
         else if (action.equals("adShown")) {
             adShown(callbackContext);
@@ -100,18 +99,38 @@ public class Nabto extends CordovaPlugin {
     
     private void adShown(CallbackContext cc){
         // call to the core stating an ad was shown to the user
+        
         invokePrepped = true;
         cc.success();
     }
 
-    private void isInvokePrepared(JSONArray devices, CallbackContext cc) {
-//    private void isInvokePrepared(CallbackContext cc) {
+    private void isInvokePrepared(JSONArray jsonDevices, CallbackContext cc) {
         // call to the core asking if invoke is prepared
-        // Collection<String> devicesCollection = new Collection<String>(devices);
-        // boolean invokePrepped = nabto.isInvokePrepared(Collection<String> devicesCollection);
+
+        /* Uncomment with core implementation
+        ArrayList<String> devices = new ArrayList<String>();
+        if (jsonDevices != null){
+            int len = jsonArray.length();
+            for (int i=0; i<len; i++){
+                devices.add(jsonDevices.get(i).toString());
+            }
+        }
+        boolean invokePrepped = nabto.isInvokePrepared(devices);
+        */
+        
+        // REMOVE WITH CORE IMPLEMENTATION
+        boolean invokePreppedTmp;
+        if(jsonDevices.length() == 0){
+            invokePreppedTmp = true;
+        } else {
+            invokePreppedTmp = invokePrepped;
+        }
+        // END
+
+        
         JSONObject invokePreppedJson = new JSONObject();
         try {
-            invokePreppedJson.put("prep",invokePrepped);
+            invokePreppedJson.put("prep",invokePreppedTmp);
         } catch (JSONException e){
             cc.error("JSONExeption: Could not put invokePrepped");
         }
