@@ -14,6 +14,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
 
+// REMOVE WITH CORE IMPLEMENTATION
+import java.lang.System;
+// END
+
+
 public class Nabto extends CordovaPlugin {
     private NabtoApi nabto = null;
     private Session session;
@@ -21,6 +26,8 @@ public class Nabto extends CordovaPlugin {
 
     // NAGSCREEN STUB VARIABLE - SHOULD BE RECEIVED FROM CORE //
     private boolean invokePrepped = false;
+    private long timerStart = 0;
+    // END
     
     public Nabto() {}
 
@@ -36,6 +43,9 @@ public class Nabto extends CordovaPlugin {
         // Nabto API
         if (action.equals("startup")) {
             startup(args.getString(0), args.getString(1), callbackContext);
+        }
+        else if (action.equals("openSession")) {
+            openSession(args.getString(0), args.getString(1), callbackContext);
         }
         else if (action.equals("createKeyPair")) {
             createKeyPair(args.getString(0), args.getString(1), callbackContext);
@@ -101,6 +111,7 @@ public class Nabto extends CordovaPlugin {
         // call to the core stating an ad was shown to the user
         
         invokePrepped = true;
+        timerStart = System.currentTimeMillis();
         cc.success();
     }
 
@@ -117,8 +128,13 @@ public class Nabto extends CordovaPlugin {
         }
         boolean invokePrepped = nabto.isInvokePrepared(devices);
         */
-        
+
         // REMOVE WITH CORE IMPLEMENTATION
+        if (timerStart != 0){
+            if (System.currentTimeMillis()-timerStart < 15*1000){
+                invokePrepped = true;
+            }
+        }
         boolean invokePreppedTmp;
         if(jsonDevices.length() == 0){
             invokePreppedTmp = true;
@@ -137,27 +153,36 @@ public class Nabto extends CordovaPlugin {
         cc.success(invokePreppedJson);
     }
 
-    private void openSession(String user, String pass, CallbackContext cc) {
-        NabtoStatus status = nabto.startup();
-        if (status != NabtoStatus.OK) {
-            cc.error(status.ordinal());
-            return;
-        }
+    private void openSession(final String user, final String pass, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (nabto == null){
+                    nabto = new NabtoApi(context);
+                }
+                NabtoStatus status = nabto.startup();
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
 
-        if (session != null) {
-            cc.success();
-            return;
-        }
+                if (session != null) {
+                    cc.success();
+                    return;
+                }
 
-        session = nabto.openSession(user, pass);
+                session = nabto.openSession(user, pass);
 
-        if (session.getStatus() != NabtoStatus.OK) {
-            cc.error(session.getStatus().ordinal());
-            session = null;
-        }
-        else {
-            cc.success();
-        }
+                if (session.getStatus() != NabtoStatus.OK) {
+                    cc.error(session.getStatus().ordinal());
+                    session = null;
+                }
+                else {
+                    cc.success();
+                }
+            }
+        });
     }
 
 
@@ -167,8 +192,11 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                if (nabto != null) {
-                    openSession(user, pass, cc);
+                // if (nabto != null) {
+                //     openSession(user, pass, cc);
+                //     return;
+                // }
+                if(nabto!=null){
                     return;
                 }
                 nabto = new NabtoApi(context);
@@ -181,7 +209,8 @@ public class Nabto extends CordovaPlugin {
 
 //                nabto.init(user, pass);
                 nabto.startup();
-                openSession(user, pass, cc);
+                // openSession(user, pass, cc);
+                cc.success();
             }
         });
     }
@@ -205,8 +234,12 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
+                // REMOVE WITH CORE IMPLEMENTATION:
+                invokePrepped = false;
+                // END
                 // nabto.pause(session);
                 nabto.shutdown();
+                nabto = null;
                 session = null;
                 cc.success();
             }

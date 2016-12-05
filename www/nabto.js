@@ -40,6 +40,26 @@ function showAd(cb){
 }
 
 Nabto.prototype.startup = function(user, pass, cb) {
+  console.log("nabto.js startup called");
+  if (typeof user === 'function') {
+    cb = user;
+    user = null;
+  }
+  cb = cb || function() {};
+  user = user || 'guest';
+  pass = pass || '123456';
+
+  exec(
+    function success() { cb();},
+    function error(apiStatus){
+	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'startup', [user, pass]);
+
+};
+
+Nabto.prototype.openSession = function(user, pass, cb) {
+  console.log("nabto.js openSession called");
   if (typeof user === 'function') {
     cb = user;
     user = null;
@@ -52,7 +72,7 @@ Nabto.prototype.startup = function(user, pass, cb) {
     function success() { cb(); },
     function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'startup', [user, pass]);
+    'Nabto', 'openSession', [user, pass]);
 };
 
 Nabto.prototype.prepareInvoke = function(devices, cb) {
