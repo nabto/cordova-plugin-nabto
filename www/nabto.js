@@ -31,9 +31,7 @@ function showAd(cb){
   self.browser.addEventListener('loadstop', function(event) {
     console.log("Event URL at loadstop: " + event.url);
     if (event.url.match("close")) {
-	  console.log("Close Event Data: " + event.url.match(/\?(.*) /));
-	  console.log("Close Event Data2: " + event.url.split('?')[1]);
-      self.browser.close();
+	  self.browser.close();
 	  // exec(
 	  // 	function success(){cb();},
 	  // 	function error(apiStatus) {
