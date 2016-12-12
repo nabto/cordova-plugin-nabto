@@ -13,23 +13,63 @@ import android.content.Context;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+
+//TAKEN FROM SPLASHSCREEN SOME MAY BE REMOVED
+
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
+import android.R;
+import android.util.Log;
+
+//END
+
+
 
 // REMOVE WITH CORE IMPLEMENTATION
 import java.lang.System;
 // END
 
-
 public class Nabto extends CordovaPlugin {
+    private static final int GRACEPERIOD = 15; // seconds
     private NabtoApi nabto = null;
     private Session session;
     private Tunnel tunnel;
 
-    // NAGSCREEN STUB VARIABLE - SHOULD BE RECEIVED FROM CORE //
-    private boolean invokePrepped = false;
+    private boolean showAdFlag = true;
     private long timerStart = 0;
-    // END
     
-    public Nabto() {}
+    private List<String> deviceCache;
+    
+    public Nabto() {
+        deviceCache = new ArrayList<String>();
+    }
 
     /**
      * Executes the request and returns PluginResult.
@@ -53,8 +93,8 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
         }
-        else if (action.equals("isInvokePrepared")) {
-            isInvokePrepared(args.getJSONArray(0),callbackContext);
+        else if (action.equals("prepareInvoke")) {
+            prepareInvoke(args.getJSONArray(0),callbackContext);
         }
         else if (action.equals("adShown")) {
             adShown(callbackContext);
@@ -106,51 +146,155 @@ public class Nabto extends CordovaPlugin {
     }
 
     /* Nabto API */
-    
+    private ImageView splashImageView;
+    private static Dialog splashDialog;
+    private int orientation;
+    private static boolean lastHideAfterDelay;
+    private void showAd() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    int drawableIdtmp = 0;
+                    String splashResource = "@drawable/ad"; //preferences.getString("SplashScreen", "ad");//"SplashScreen";
+                    drawableIdtmp = cordova.getActivity().getResources().getIdentifier(splashResource, "drawable", cordova.getActivity().getClass().getPackage().getName());
+                    if (drawableIdtmp == 0) {
+                        drawableIdtmp = cordova.getActivity().getResources().getIdentifier(splashResource, "drawable", cordova.getActivity().getPackageName());
+                    }
+                    final int drawableId = drawableIdtmp;
+                    final int splashscreenTime = 3000;
+                    final int fadeSplashScreenDuration = 500;
+                    final int effectiveSplashDuration = Math.max(0, splashscreenTime - fadeSplashScreenDuration);
+                    lastHideAfterDelay = true;
+
+                    cordova.getActivity().runOnUiThread(new Runnable() {
+                            public void run() {
+                                // Get reference to display
+                                Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
+                                Context context = webView.getContext();
+
+                                // Use an ImageView to render the image because of its flexible scaling options.
+                                splashImageView = new ImageView(context);
+                                splashImageView.setImageResource(drawableId);
+                                LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                                splashImageView.setLayoutParams(layoutParams);
+
+                                splashImageView.setMinimumHeight(display.getHeight());
+                                splashImageView.setMinimumWidth(display.getWidth());
+
+                                // TODO: Use the background color of the webView's parent instead of using the preference.
+                                splashImageView.setBackgroundColor(Color.BLACK);
+                                splashImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                                // Create and show the dialog
+                                splashDialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
+                                // check to see if the splash screen should be full screen
+                                if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                                    == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+                                    splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                                                                      WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                }
+                                splashDialog.setContentView(splashImageView);
+                                splashDialog.setCancelable(false);
+                                splashDialog.show();
+                                final Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                        public void run() {
+                                            if (lastHideAfterDelay) {
+                                                removeSplashScreen(false);
+                                            }
+                                        }
+                                    }, effectiveSplashDuration);
+
+                            }
+                        });
+                }
+            });
+
+                    
+    }
+
+       private void removeSplashScreen(final boolean forceHideImmediately) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                if (splashDialog != null && splashDialog.isShowing()) {
+                    final int fadeSplashScreenDuration = 500;
+                    // CB-10692 If the plugin is being paused/destroyed, skip the fading and hide it immediately
+                    if (fadeSplashScreenDuration > 0 && forceHideImmediately == false) {
+                        AlphaAnimation fadeOut = new AlphaAnimation(1, 0);
+                        fadeOut.setInterpolator(new DecelerateInterpolator());
+                        fadeOut.setDuration(fadeSplashScreenDuration);
+
+                        splashImageView.setAnimation(fadeOut);
+                        splashImageView.startAnimation(fadeOut);
+
+                        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
+                            }
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                if (splashDialog != null && splashDialog.isShowing()) {
+                                    splashDialog.dismiss();
+                                    splashDialog = null;
+                                    splashImageView = null;
+                                }
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+                            }
+                        });
+                    } else {
+                        splashDialog.dismiss();
+                        splashDialog = null;
+                        splashImageView = null;
+                    }
+                }
+            }
+        });
+    }
+
     private void adShown(CallbackContext cc){
         // call to the core stating an ad was shown to the user
         
-        invokePrepped = true;
-        timerStart = System.currentTimeMillis();
         cc.success();
     }
 
-    private void isInvokePrepared(JSONArray jsonDevices, CallbackContext cc) {
+    private void prepareInvoke(JSONArray jsonDevices, CallbackContext cc) {
         // call to the core asking if invoke is prepared
-
-        /* Uncomment with core implementation
-        ArrayList<String> devices = new ArrayList<String>();
-        if (jsonDevices != null){
-            int len = jsonArray.length();
-            for (int i=0; i<len; i++){
-                devices.add(jsonDevices.get(i).toString());
+        String dev;
+        for (int i = 0; i< jsonDevices.length(); i++){
+            try{
+                Log.d("Nabto.java, prepareInvoke","jsonDevices[" + i + "]: " + jsonDevices.get(i).toString());
+                //JSONObject dev2 = (JSONObject)jsonDevices.get(i);
+                dev = jsonDevices.get(i).toString();// dev2.toString();
+            } catch (JSONException e){
+                Log.d("Nabto.java(269)","Failed to get jsonDevice, should not happen");
+                continue;
             }
-        }
-        boolean invokePrepped = nabto.isInvokePrepared(devices);
-        */
-
-        // REMOVE WITH CORE IMPLEMENTATION
-        if (timerStart != 0){
-            if (System.currentTimeMillis()-timerStart < 15*1000){
-                invokePrepped = true;
+            // Log.d("prepareInvoke","dev from jsonDevices: " + dev);
+            String[] bits = dev.split("\\.");
+            // Log.d("prepareInvoke","bits.length: " + bits.length);
+            // for (int k = 0; k < bits.length; k++){
+            //     Log.d("prepareInvoke","bits[" + k + "]: " + bits[k]);
+            // }
+            bits = bits[1].split("-");
+            if (bits[bits.length-1].equals("f")){
+                Log.d("prepareInvoke","found free device");
+                showAdFlag = true;
             }
+            deviceCache.add(dev);
         }
-        boolean invokePreppedTmp;
-        if(jsonDevices.length() == 0){
-            invokePreppedTmp = true;
-        } else {
-            invokePreppedTmp = invokePrepped;
-        }
-        // END
-
         
-        JSONObject invokePreppedJson = new JSONObject();
-        try {
-            invokePreppedJson.put("prep",invokePreppedTmp);
-        } catch (JSONException e){
-            cc.error("JSONExeption: Could not put invokePrepped");
+        if (timerStart != 0){
+            if (System.currentTimeMillis()-timerStart < GRACEPERIOD*1000){
+                showAdFlag = false;
+            } 
+       }
+        if(jsonDevices.length() > 0 && showAdFlag == true){
+            this.showAd();
         }
-        cc.success(invokePreppedJson);
+        cc.success();
+        timerStart = System.currentTimeMillis();
+        showAdFlag = false;
     }
 
     private void openSession(final String user, final String pass, final CallbackContext cc) {
@@ -234,10 +378,7 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                // REMOVE WITH CORE IMPLEMENTATION:
-                invokePrepped = false;
-                // END
-                // nabto.pause(session);
+                showAdFlag = false;
                 nabto.shutdown();
                 nabto = null;
                 session = null;
@@ -280,6 +421,22 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
+                String dev = url.split("/")[2];
+                Log.d("rpcInvoke","dev from URL: " + dev);
+                boolean devKnown = false;
+                for (int i = 0; i < deviceCache.size(); i ++){
+                    Log.d("rpcInvoke","checking: " + deviceCache.get(i));
+                    if(deviceCache.get(i).equals(dev)){
+                        devKnown = true;
+                        break;
+                    }
+                }
+
+                if(!devKnown){
+                    cc.error("You are not prepared");
+                    return;
+                }
+                
                 RpcResult result = nabto.rpcInvoke(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
                     cc.error(result.getStatus().ordinal());

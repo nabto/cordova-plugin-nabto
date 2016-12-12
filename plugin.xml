@@ -33,8 +33,9 @@
                 <param name="android-package" value="com.nabto.api.Nabto"/>
             </feature>
         </config-file>
-
-        <source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
+		<resource-file src="src/android/res/ad.png" target="res/drawable/ad.png" />
+		
+		<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoClient.java" target-dir="src/com/nabto/api" />
@@ -63,6 +64,11 @@
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <uses-permission android:name="android.permission.INTERNET" />
+			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+					  android:id="@+id/ad"
+					  android:layout_width="wrap_content"
+					  android:layout_height="wrap_content"
+					  android:background="@drawable/ad" />
         </config-file>
     </platform>
 
