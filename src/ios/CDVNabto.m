@@ -11,6 +11,18 @@
 
 - (void)startup:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
+            CDVPluginResult* res = nil;
+            nabto_status_t status = [[Manager sharedManager] nabtoStartup];
+            if (status == NABTO_OK) {
+                res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            } else {
+                res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+            }
+        }];
+}
+
+- (void)startupAndOpenProfile:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
         CDVPluginResult* res = nil;
 
         nabto_status_t status = [[Manager sharedManager] nabtoStartup];
@@ -115,7 +127,7 @@
         status = [[Manager sharedManager] nabtoRpcSetDefaultInterface:[command.arguments objectAtIndex:0]
                                                      withErrorMessage:0];
 
-        // TODO: propagate XML parse errors
+        // TODO (AMP-73: Client API error details in JSON not propagated through Cordova wrapper)
         [self handleStatus:status withCommand:command];
     }];
 }
@@ -126,7 +138,7 @@
         status = [[Manager sharedManager] nabtoRpcSetInterface:[command.arguments objectAtIndex:0]
                                        withInterfaceDefinition:[command.arguments objectAtIndex:1]
                                               withErrorMessage:0];
-        // TODO: propagate XML parse errors
+        // TODO (AMP-73: Client API error details in JSON not propagated through Cordova wrapper)
         [self handleStatus:status withCommand:command];
     }];
 }

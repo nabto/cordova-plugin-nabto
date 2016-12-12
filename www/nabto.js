@@ -16,7 +16,16 @@ function nextTick(cb, arg) {
 //  cb(arg); /* good for debugging */
 }
 
-Nabto.prototype.startup = function(user, pass, cb) {
+Nabto.prototype.startup = function(cb) {
+  cb = cb || function() {};
+  exec(
+    function success() { cb(); },
+    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'startup', []);
+};
+
+Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
   if (typeof user === 'function') {
     cb = user;
     user = null;
@@ -29,7 +38,7 @@ Nabto.prototype.startup = function(user, pass, cb) {
     function success() { cb(); },
     function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'startup', [user, pass]);
+    'Nabto', 'startupAndOpenProfile', [user, pass]);
 };
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
