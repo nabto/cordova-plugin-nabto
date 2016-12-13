@@ -18,6 +18,7 @@
             } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
+            [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
         }];
 }
 
