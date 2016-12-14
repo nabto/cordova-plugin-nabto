@@ -87,19 +87,7 @@ void nabtoLogCallback(const char* line, size_t size) {
 }
 
 - (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password {
-    nabto_status_t status = nabtoOpenSession(&session, [email UTF8String], [password UTF8String]);
-
-    if (status == NABTO_OPEN_CERT_OR_PK_FAILED) {
-        // Attempt to create profile
-        status = nabtoCreateProfile([email UTF8String], [password UTF8String]);
-        if (status != NABTO_OK) {
-            NSLog(@"Failed to create profile");
-            return status;
-        }
-        // Attempt to open session again with newly created profile
-        status = nabtoOpenSession(&session, [email UTF8String], [password UTF8String]);
-    }
-    return status;
+    return nabtoOpenSession(&session, [email UTF8String], [password UTF8String]);
 }
 
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {

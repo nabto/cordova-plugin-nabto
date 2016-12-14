@@ -253,6 +253,9 @@ NabtoError.prototype.handleApiError = function(status) {
     this.code = NabtoError.Code.API_ERROR;
     break;
 
+  case NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE:
+    this.handleErrorWithDetail(status);
+
   defau1t:
     console.log(`Unexpected API status ${status}`);
     this.code = NabtoError.Code.API_ERROR;
@@ -301,6 +304,15 @@ NabtoError.prototype.handleWrapperError = function(status) {
   this.category = NabtoError.Category.WRAPPER;
 };
 
+NabtoError.prototype.handleErrorWithDetail = function(status) {
+  // TODO workaround for AMP-73: Client API error details in JSON not
+  // propagated through Cordova wrapper) - currently the only error
+  // reported with extra details is interface xml parse errors, so we
+  // cheat a bit
+  this.category = NabtoError.Category.P2P;
+  this.code = NabtoError.Code.P2P_INTERFACE_DEF_INVALID;
+};
+  
 NabtoError.prototype.handleDeviceException = function(error) {
   // unabto/src/unabto/unabto_protocol_exceptions.h
   try {

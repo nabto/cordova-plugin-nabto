@@ -16,6 +16,32 @@ function nextTick(cb, arg) {
 //  cb(arg); /* good for debugging */
 }
 
+Nabto.prototype.startup = function(cb) {
+  cb = cb || function() {};
+  exec(
+    function success() { cb(); },
+    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'startup', []);
+};
+
+Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
+  if (typeof user === 'function') {
+    cb = user;
+    user = null;
+  }
+  cb = cb || function() {};
+  user = user || 'guest';
+  pass = pass || '123456';
+
+  exec(
+    function success() { cb(); },
+    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'startupAndOpenProfile', [user, pass]);
+};
+
+
 function showAd(cb){
   var err, obj;
   try{
@@ -41,42 +67,6 @@ function showAd(cb){
     }
   });
 }
-
-Nabto.prototype.startup = function(user, pass, cb) {
-  console.log("nabto.js startup called");
-  if (typeof user === 'function') {
-    cb = user;
-    user = null;
-  }
-  cb = cb || function() {};
-  user = user || 'guest';
-  pass = pass || '123456';
-
-  exec(
-    function success() { cb();},
-    function error(apiStatus){
-	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'startup', [user, pass]);
-
-};
-
-Nabto.prototype.openSession = function(user, pass, cb) {
-  console.log("nabto.js openSession called");
-  if (typeof user === 'function') {
-    cb = user;
-    user = null;
-  }
-  cb = cb || function() {};
-  user = user || 'guest';
-  pass = pass || '123456';
-
-  exec(
-    function success() { cb(); },
-    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'openSession', [user, pass]);
-};
 
 Nabto.prototype.prepareInvoke = function(devices, cb) {
   cb = cb || function(){};
