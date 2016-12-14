@@ -725,6 +725,7 @@ public class NabtoApi {
         return rpcResult;
     }
 
+   
     /**
      * Retrieves data synchronously from specified {@code nabto://URL} on specified
      * session.

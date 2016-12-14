@@ -41,6 +41,50 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
     'Nabto', 'startupAndOpenProfile', [user, pass]);
 };
 
+
+function showAd(cb){
+  var err, obj;
+  try{
+	this.browser = cordova.InAppBrowser.open('https://download.nabto.com/mkm/ad?jhkjh', '_blank', 'location=no');
+
+	this.browser.show();
+  } catch (e) {
+	err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CSP_UNSAFE_INLINE,e.message);
+    return cb(err, obj);
+  }
+  var self = this;
+
+  self.browser.addEventListener('loadstop', function(event) {
+    console.log("Event URL at loadstop: " + event.url);
+    if (event.url.match("close")) {
+	  self.browser.close();
+	  // exec(
+	  // 	function success(){cb();},
+	  // 	function error(apiStatus) {
+	  // 	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+	  // 	},
+	  // 	'Nabto', 'adShown',[]);
+    }
+  });
+}
+
+Nabto.prototype.prepareInvoke = function(devices, cb) {
+  cb = cb || function(){};
+  exec(
+	function success(){
+	  // if (ad.showAd == true ){
+	  // 	//showAd(cb);
+	  // 	cb();
+	  // 	return;
+	  // }
+	  cb();
+	},
+	function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+	'Nabto', 'prepareInvoke',[devices]);
+}
+
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
   cb = cb || function() {};
   exec(
@@ -68,7 +112,20 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
-
+  // THIS SHOULD BE DONE IN THE CORE - REMOVE ASAP
+  // var devices = ["device1", "device2"];
+  // exec(
+  // 	function success(prepInvoke){
+  // 	  if(prepInvoke.prep == false){
+  // 		cb(new NabtoError(NabtoError.Category.API, "You are not prepared"));
+  // 		return;
+  // 	  }
+  // 	},
+  // 	function error(apiStatus) {
+  // 	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+  // 	},
+  // 	'Nabto', 'isInvokePrepared',[devices]);
+  /// END OF REMOVE
   exec(
     function success(result) {
       var obj, err;
