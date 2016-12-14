@@ -64,11 +64,13 @@ public class Nabto extends CordovaPlugin {
 
     private boolean adShown = false;
     private long timerStart = 0;
-    
+    private AdService adService;
     private List<String> deviceCache;
     
     public Nabto() {
         deviceCache = new ArrayList<String>();
+        adService = new AdService();
+        //adService = new AdService(cordova.getActivity(), webView.getContext());
     }
 
     /**
@@ -143,6 +145,7 @@ public class Nabto extends CordovaPlugin {
     }
 
     /* Nabto API */
+    /*
     private ImageView adImageView;
     private static Dialog dialog;
     private void showAd() {
@@ -179,11 +182,11 @@ public class Nabto extends CordovaPlugin {
                     // Show the dialog
                     dialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
 
-                    if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+                    //if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
+//                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
                     dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                    }
+                    //}
                     dialog.setContentView(adImageView);
                     dialog.setCancelable(false);
                     dialog.show();
@@ -208,7 +211,7 @@ public class Nabto extends CordovaPlugin {
                     }
                 }
             });
-    }
+    }*/
 
     private void prepareInvoke(final JSONArray jsonDevices, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
@@ -252,7 +255,7 @@ public class Nabto extends CordovaPlugin {
                         } 
                     }
                     if(jsonDevices.length() > 0 && showAdFlag == true && adShown == false){
-                        showAd();
+                        adService.showAd(cordova.getActivity(), webView.getContext());
                         timerStart = System.currentTimeMillis();
                         adShown = true;
                     } else {

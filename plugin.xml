@@ -37,6 +37,7 @@
 		<resource-file src="src/android/res/ad_land.png" target="res/drawable/ad_land.png" />
 		
 		<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
+		<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoClient.java" target-dir="src/com/nabto/api" />
