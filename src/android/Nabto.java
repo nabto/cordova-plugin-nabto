@@ -220,6 +220,12 @@ public class Nabto extends CordovaPlugin {
                     // call to the core asking if invoke is prepared
                     boolean showAdFlag = false;
                     String dev;
+                    if(jsonDevices.length() < 1){
+                        cc.success();
+                        Log.d("prepareInvoke", "prepareInvoke was called with empty device list");
+                        return;
+                    }
+                    
                     for (int i = 0; i< jsonDevices.length(); i++){
                         try{
                             Log.d("prepareInvoke","jsonDevices[" + i + "]: " + jsonDevices.get(i).toString());
@@ -242,8 +248,7 @@ public class Nabto extends CordovaPlugin {
                             Log.d("prepareInvoke","found non-AMP device: " + dev);
                             continue;
                         }
-                        if(deviceCache.contains(dev)){
-                        } else {
+                        if(!deviceCache.contains(dev)){
                             deviceCache.add(dev);
                         }
                     }
@@ -254,15 +259,14 @@ public class Nabto extends CordovaPlugin {
                             showAdFlag = false;
                         } 
                     }
-                    if(jsonDevices.length() > 0 && showAdFlag == true && adShown == false){
+                    if(showAdFlag == true && adShown == false){
                         adService.showAd(cordova.getActivity(), webView.getContext());
                         timerStart = System.currentTimeMillis();
                         adShown = true;
                     } else {
-                        Log.d("prepareInvoke","Not showing ad, number of devs: " + jsonDevices.length() + " showAdFlag: " + showAdFlag);
+                        Log.d("prepareInvoke","Not showing ad, showAdFlag: " + showAdFlag + " adShown: " + adShown);
                     }
                     cc.success();
-                    showAdFlag = false;
                 }
             });
     }
