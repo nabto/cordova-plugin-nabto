@@ -11,6 +11,9 @@
 /* Nabto API */
 - (void)startup:(CDVInvokedUrlCommand*)command;
 - (void)shutdown:(CDVInvokedUrlCommand*)command;
+- (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command;
+- (void)rpcSetInterface:(CDVInvokedUrlCommand*)command;
+- (void)rpcInvoke:(CDVInvokedUrlCommand*)command;
 - (void)fetchUrl:(CDVInvokedUrlCommand*)command;
 - (void)getSessionToken:(CDVInvokedUrlCommand*)command;
 - (void)getLocalDevices:(CDVInvokedUrlCommand*)command;

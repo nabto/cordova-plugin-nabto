@@ -20,6 +20,7 @@
 
 - (NSString *)nabtoVersion;
 
+- (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password;
 - (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password;
 - (nabto_status_t)nabtoOpenSessionGuest;
 - (nabto_status_t)nabtoCloseSession;
@@ -27,6 +28,10 @@
 - (nabto_status_t)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType;
 - (nabto_status_t)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType;
 
+- (nabto_status_t)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse;
+- (nabto_status_t)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage;
+- (nabto_status_t)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage;
+                             
 - (NSArray *)nabtoGetLocalDevices;
 - (NSString *)nabtoGetSessionToken;
 

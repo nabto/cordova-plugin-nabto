@@ -10,11 +10,23 @@
 
 #define NABTOLOG 0
 
+void simulatorSymlinkDocDir() {
+#if TARGET_OS_SIMULATOR
+    NSString* homeDirectory = [[NSProcessInfo processInfo] environment][@"SIMULATOR_HOST_HOME"];
+    NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSString *documentsDirectoryPath = documentsDirectory.path;
+    NSString *simlinkPath = [homeDirectory stringByAppendingFormat:@"/SimulatorDocuments"];
+    unlink(simlinkPath.UTF8String);
+    symlink(documentsDirectoryPath.UTF8String, simlinkPath.UTF8String);
+#endif
+}
+
 + (id)sharedManager {
     static Manager *sharedMyManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedMyManager = [[self alloc] init];
+        simulatorSymlinkDocDir();
     });
     return sharedMyManager;
 }
@@ -90,6 +102,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return status;
 }
 
+- (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
+    return nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]);
+}
+
 - (nabto_status_t)nabtoOpenSessionGuest {
     NSString *email = @"guest";
     NSString *password = @"";
@@ -102,6 +118,19 @@ void nabtoLogCallback(const char* line, size_t size) {
 
 - (nabto_status_t)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType {
     return nabtoFetchUrl(session, [url UTF8String], resultBuffer, resultLength, mimeType);
+}
+
+- (nabto_status_t)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse {
+    return nabtoRpcInvoke(session, [url UTF8String], jsonResponse);
+}
+
+- (nabto_status_t)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
+    return nabtoRpcSetDefaultInterface(session, [interfaceDefinition UTF8String], errorMessage);
+}
+
+
+- (nabto_status_t)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
+    return nabtoRpcSetInterface(session, [host UTF8String], [interfaceDefinition UTF8String], errorMessage);
 }
 
 - (nabto_status_t)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType {

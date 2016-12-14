@@ -16,7 +16,53 @@ function nextTick(cb, arg) {
 //  cb(arg); /* good for debugging */
 }
 
+function showAd(cb){
+  var err, obj;
+  try{
+	this.browser = cordova.InAppBrowser.open('https://download.nabto.com/mkm/ad?jhkjh', '_blank', 'location=no');
+
+	this.browser.show();
+  } catch (e) {
+	err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CSP_UNSAFE_INLINE,e.message);
+    return cb(err, obj);
+  }
+  var self = this;
+
+  self.browser.addEventListener('loadstop', function(event) {
+    console.log("Event URL at loadstop: " + event.url);
+    if (event.url.match("close")) {
+	  self.browser.close();
+	  // exec(
+	  // 	function success(){cb();},
+	  // 	function error(apiStatus) {
+	  // 	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+	  // 	},
+	  // 	'Nabto', 'adShown',[]);
+    }
+  });
+}
+
 Nabto.prototype.startup = function(user, pass, cb) {
+  console.log("nabto.js startup called");
+  if (typeof user === 'function') {
+    cb = user;
+    user = null;
+  }
+  cb = cb || function() {};
+  user = user || 'guest';
+  pass = pass || '123456';
+
+  exec(
+    function success() { cb();},
+    function error(apiStatus){
+	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'startup', [user, pass]);
+
+};
+
+Nabto.prototype.openSession = function(user, pass, cb) {
+  console.log("nabto.js openSession called");
   if (typeof user === 'function') {
     cb = user;
     user = null;
@@ -29,7 +75,35 @@ Nabto.prototype.startup = function(user, pass, cb) {
     function success() { cb(); },
     function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'startup', [user, pass]);
+    'Nabto', 'openSession', [user, pass]);
+};
+
+Nabto.prototype.prepareInvoke = function(devices, cb) {
+  cb = cb || function(){};
+  exec(
+	function success(){
+	  // if (ad.showAd == true ){
+	  // 	//showAd(cb);
+	  // 	cb();
+	  // 	return;
+	  // }
+	  cb();
+	},
+	function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+	'Nabto', 'prepareInvoke',[devices]);
+}
+
+Nabto.prototype.createKeyPair = function(user, pass, cb) {
+  cb = cb || function() {};
+  exec(
+      function success() { cb(); },
+      function error(apiStatus) {
+          cb(new NabtoError(NabtoError.Category.API, apiStatus));
+      },
+      'Nabto', 'createKeyPair', [user, pass]
+  );
 };
 
 Nabto.prototype.shutdown = function(cb) {
@@ -43,19 +117,32 @@ Nabto.prototype.shutdown = function(cb) {
     'Nabto', 'shutdown', []);
 };
 
-Nabto.prototype.fetchUrl = function(url, cb) {
+var rpcStyleInvoker = function(url, cb, apiFunction) {
   cb = cb || function() {};
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
-
+  // THIS SHOULD BE DONE IN THE CORE - REMOVE ASAP
+  // var devices = ["device1", "device2"];
+  // exec(
+  // 	function success(prepInvoke){
+  // 	  if(prepInvoke.prep == false){
+  // 		cb(new NabtoError(NabtoError.Category.API, "You are not prepared"));
+  // 		return;
+  // 	  }
+  // 	},
+  // 	function error(apiStatus) {
+  // 	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
+  // 	},
+  // 	'Nabto', 'isInvokePrepared',[devices]);
+  /// END OF REMOVE
   exec(
     function success(result) {
       var obj, err;
       try {
         obj = JSON.parse(result);
       } catch (e) {
-        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA, e);
+        err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_MALFORMED_JSON, result);
         return cb(err, obj);
       }
       if (obj.response) {
@@ -73,7 +160,39 @@ Nabto.prototype.fetchUrl = function(url, cb) {
     function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'fetchUrl', [url]);
+    'Nabto', apiFunction, [url]);
+};
+
+// legacy htmldd based invocation - but same interface from javascript as rpcInvoke (as mimetype is hidden)
+Nabto.prototype.fetchUrl = function(url, cb) {
+  return rpcStyleInvoker(url, cb, 'fetchUrl');
+};
+
+// requires prior invocation of setRpcInterface
+Nabto.prototype.rpcInvoke = function(url, cb) {
+  return rpcStyleInvoker(url, cb, 'rpcInvoke');
+};
+
+Nabto.prototype.rpcSetDefaultInterface = function(interfaceXml, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb(undefined);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'rpcSetDefaultInterface', [interfaceXml]);
+};
+
+Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb(undefined);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'rpcSetInterface', [host, interfaceXml]);
 };
 
 Nabto.prototype.getSessionToken = function(cb) {

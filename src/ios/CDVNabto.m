@@ -18,7 +18,8 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
         else {
-            status = [[Manager sharedManager] nabtoOpenSession:[command.arguments objectAtIndex:0] withPassword:[command.arguments objectAtIndex:1]];
+            status = [[Manager sharedManager] nabtoOpenSession:[command.arguments objectAtIndex:0]
+                                                  withPassword:[command.arguments objectAtIndex:1]];
             if (status == NABTO_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             }
@@ -30,18 +31,29 @@
     }];
 }
 
+- (void)handleStatus:(nabto_status_t)status withCommand:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult *res = nil;
+    if (status == NABTO_OK) {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)createKeyPair:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        nabto_status_t status = [[Manager sharedManager]
+                                    nabtoCreateSelfSignedProfile:[command.arguments objectAtIndex:0]
+                                                    withPassword:[command.arguments objectAtIndex:1]];
+        [self handleStatus:status withCommand:command];
+    }];
+}
+
 - (void)shutdown:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-        CDVPluginResult *res = nil;
-
-        nabto_status_t status = [[Manager sharedManager] nabtoShutdown];
-        if (status == NABTO_OK) {
-            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        }
-        else {
-            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
-        }
-        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+            nabto_status_t status = [[Manager sharedManager] nabtoShutdown];
+            [self handleStatus:status withCommand:command];
     }];
 }
 
@@ -54,16 +66,68 @@
         size_t resultLen = 0;
         char *resultMimeType = 0;
 
-        status = [[Manager sharedManager] nabtoFetchUrl:[command.arguments objectAtIndex:0] withResultBuffer:&resultBuffer resultLength:&resultLen mimeType:&resultMimeType];
+        status = [[Manager sharedManager] nabtoFetchUrl:[command.arguments objectAtIndex:0]
+                                       withResultBuffer:&resultBuffer
+                                           resultLength:&resultLen
+                                               mimeType:&resultMimeType];
         if (status == NABTO_OK) {
             NSData *data = [NSData dataWithBytes:resultBuffer length:resultLen];
-            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                    messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            nabtoFree(resultBuffer);
         }
         else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 
         [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }];
+}
+
+- (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
+    NSLog(@"Cordova RPC invoke begin");
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult *res = nil;
+        NSLog(@"Cordova RPC invoke runInBackground ");
+        nabto_status_t status;
+        char *jsonString = 0;
+
+        status = [[Manager sharedManager] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
+                                        withResultBuffer:&jsonString];
+        if (status == NABTO_OK) {
+            NSLog(@"Cordova RPC invoke runInBackground done ok");
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                    messageAsString:[NSString stringWithUTF8String:jsonString]];
+            nabtoFree(jsonString);
+        }
+        else {
+            NSLog(@"Cordova RPC invoke runInBackground done fail");
+            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+        }
+
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }];
+}
+
+- (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        nabto_status_t status;
+        status = [[Manager sharedManager] nabtoRpcSetDefaultInterface:[command.arguments objectAtIndex:0]
+                                                     withErrorMessage:0];
+
+        // TODO: propagate XML parse errors
+        [self handleStatus:status withCommand:command];
+    }];
+}
+
+- (void)rpcSetInterface:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        nabto_status_t status;
+        status = [[Manager sharedManager] nabtoRpcSetInterface:[command.arguments objectAtIndex:0]
+                                       withInterfaceDefinition:[command.arguments objectAtIndex:1]
+                                              withErrorMessage:0];
+        // TODO: propagate XML parse errors
+        [self handleStatus:status withCommand:command];
     }];
 }
 
@@ -128,17 +192,8 @@
 }
 
 - (void)tunnelClose:(CDVInvokedUrlCommand*)command {
-    CDVPluginResult *res = nil;
-    
     nabto_status_t status = [[Manager sharedManager] nabtoTunnelClose];
-    if (status == NABTO_OK) {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    }
-    else {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
-    }
-    
-    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    [self handleStatus:status withCommand:command];
 }
 
 @end

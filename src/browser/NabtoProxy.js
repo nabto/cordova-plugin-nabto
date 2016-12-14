@@ -80,6 +80,14 @@ function fetchUrl(success, error, opts) {
 
 };
 
+function rpcSetDefaultInterface(success, error, opts) {
+  nextTick(function() { success(); });
+}
+
+function rpcInvoke(success, error, opts) {
+  return fetchUrl(success, error, opts);
+}
+
 function getSessionToken(success, error, opts) {
   if (!started) {
     return nextTick(
@@ -120,6 +128,8 @@ function version(success, error, opts) {
 module.exports = {
   startup: startup,
   shutdown: shutdown,
+  rpcSetDefaultInterface: rpcSetDefaultInterface,
+  rpcInvoke: rpcInvoke,
   fetchUrl: fetchUrl,
   getSessionToken: getSessionToken,
   getLocalDevices: getLocalDevices,

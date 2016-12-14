@@ -7,18 +7,71 @@ package com.nabto.api;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 import android.content.Context;
-
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+
+//TAKEN FROM SPLASHSCREEN SOME MAY BE REMOVED
+
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
+import android.R;
+import android.util.Log;
+
+//END
+
+
+
+// REMOVE WITH CORE IMPLEMENTATION
+import java.lang.System;
+// END
 
 public class Nabto extends CordovaPlugin {
+    private static final int GRACEPERIOD = 15; // seconds
     private NabtoApi nabto = null;
     private Session session;
     private Tunnel tunnel;
 
-    public Nabto() {}
+    private boolean adShown = false;
+    private long timerStart = 0;
+    private AdService adService;
+    private List<String> deviceCache;
+    
+    public Nabto() {
+        deviceCache = new ArrayList<String>();
+        adService = new AdService();
+        //adService = new AdService(cordova.getActivity(), webView.getContext());
+    }
 
     /**
      * Executes the request and returns PluginResult.
@@ -33,11 +86,29 @@ public class Nabto extends CordovaPlugin {
         if (action.equals("startup")) {
             startup(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("openSession")) {
+            openSession(args.getString(0), args.getString(1), callbackContext);
+        }
+        else if (action.equals("createKeyPair")) {
+            createKeyPair(args.getString(0), args.getString(1), callbackContext);
+        }
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
         }
+        else if (action.equals("prepareInvoke")) {
+            prepareInvoke(args.getJSONArray(0),callbackContext);
+        }
         else if (action.equals("fetchUrl")) {
             fetchUrl(args.getString(0), callbackContext);
+        }
+        else if (action.equals("rpcInvoke")) {
+            rpcInvoke(args.getString(0), callbackContext);
+        }
+        else if (action.equals("rpcSetDefaultInterface")) {
+            rpcSetDefaultInterface(args.getString(0), callbackContext);
+        }
+        else if (action.equals("rpcSetInterface")) {
+            rpcSetInterface(args.getString(0),args.getString(1), callbackContext);
         }
         else if (action.equals("getSessionToken")) {
             getSessionToken(callbackContext);
@@ -73,42 +144,165 @@ public class Nabto extends CordovaPlugin {
         return true;
     }
 
-    private void openSession(String user, String pass, CallbackContext cc) {
-        NabtoStatus status = nabto.startup();
-        if (status != NabtoStatus.OK) {
-            cc.error(status.ordinal());
-            return;
-        }
+    /* Nabto API */
+    /*
+    private ImageView adImageView;
+    private static Dialog dialog;
+    private void showAd() {
+        final int adTimeout = 3000;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    int drawableId = 0;
+                    String adRef = "";
+                    if(cordova.getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+                        adRef = "@drawable/ad_land";
+                    }else{
+                        adRef = "@drawable/ad";
+                    }
+                    //String adRef = "@drawable/ad";
+                    drawableId = cordova.getActivity().getResources().getIdentifier(adRef, "drawable", cordova.getActivity().getClass().getPackage().getName());
+                    if (drawableId == 0) {
+                        drawableId = cordova.getActivity().getResources().getIdentifier(adRef, "drawable", cordova.getActivity().getPackageName());
+                    }
+                    //final int drawableId = drawableIdtmp;
 
-        if (session != null) {
-            cc.success();
-            return;
-        }
+                    // Get reference to display
+                    Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
+                    Context context = webView.getContext();
 
-        session = nabto.openSession(user, pass);
-        if (session.getStatus() == NabtoStatus.NO_PROFILE ||
-                session.getStatus() == NabtoStatus.OPEN_CERT_OR_PK_FAILED) {
-            status = nabto.createProfile(user, pass);
-            if (status == NabtoStatus.OK) {
-                session = nabto.openSession(user, pass);
-            }
-            else {
-                cc.error(status.ordinal());
-                session = null;
-                return;
-            }
-        }
+                    // Use an ImageView to render the image because of its flexible scaling options.
+                    adImageView = new ImageView(context);
+                    adImageView.setImageResource(drawableId);
+                    LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                    adImageView.setLayoutParams(layoutParams);
+                    adImageView.setMinimumHeight(display.getHeight());
+                    adImageView.setMinimumWidth(display.getWidth());
+                    adImageView.setBackgroundColor(Color.BLACK);
+                    adImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                    // Show the dialog
+                    dialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
 
-        if (session.getStatus() != NabtoStatus.OK) {
-            cc.error(session.getStatus().ordinal());
-            session = null;
-        }
-        else {
-            cc.success();
-        }
+                    //if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
+//                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+                    dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                                                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                    //}
+                    dialog.setContentView(adImageView);
+                    dialog.setCancelable(false);
+                    dialog.show();
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                            public void run() {
+                                removeAd();
+                            }
+                        }, adTimeout);
+
+                }
+            });
     }
 
-    /* Nabto API */
+    private void removeAd() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                        dialog = null;
+                        adImageView = null;
+                    }
+                }
+            });
+    }*/
+
+    private void prepareInvoke(final JSONArray jsonDevices, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+                @Override
+                public void run() {
+                    // call to the core asking if invoke is prepared
+                    boolean showAdFlag = false;
+                    String dev;
+                    if(jsonDevices.length() < 1){
+                        cc.success();
+                        Log.d("prepareInvoke", "prepareInvoke was called with empty device list");
+                        return;
+                    }
+                    
+                    for (int i = 0; i< jsonDevices.length(); i++){
+                        try{
+                            Log.d("prepareInvoke","jsonDevices[" + i + "]: " + jsonDevices.get(i).toString());
+                            dev = jsonDevices.get(i).toString();// dev2.toString();
+                        } catch (JSONException e){
+                            Log.d("prepareInvoke","Nabto.java: Failed to get jsonDevice, should not happen");
+                            continue;
+                        }
+            
+                        // Checking if free, own-it or not AMP. We should agree how to define free and own-it in url
+                        String[] bits = dev.split("\\.");
+                        bits = bits[1].split("-");
+                        if (bits[bits.length-1].equals("f")){
+                            Log.d("prepareInvoke","found free device: " + dev);
+                            showAdFlag = true;
+                        } else if (bits[bits.length-1].equals("o")){
+                            Log.d("prepareInvoke","found Own-it device: " + dev);
+                        } else {
+                            // device not on AMP, will never grant access
+                            Log.d("prepareInvoke","found non-AMP device: " + dev);
+                            continue;
+                        }
+                        if(!deviceCache.contains(dev)){
+                            deviceCache.add(dev);
+                        }
+                    }
+        
+                    if (timerStart != 0){
+                        if (System.currentTimeMillis()-timerStart < GRACEPERIOD*1000){
+                            Log.d("prepareInvoke","Invoking grace period");
+                            showAdFlag = false;
+                        } 
+                    }
+                    if(showAdFlag == true && adShown == false){
+                        adService.showAd(cordova.getActivity(), webView.getContext());
+                        timerStart = System.currentTimeMillis();
+                        adShown = true;
+                    } else {
+                        Log.d("prepareInvoke","Not showing ad, showAdFlag: " + showAdFlag + " adShown: " + adShown);
+                    }
+                    cc.success();
+                }
+            });
+    }
+
+    private void openSession(final String user, final String pass, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (nabto == null){
+                    nabto = new NabtoApi(context);
+                }
+                NabtoStatus status = nabto.startup();
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+
+                if (session != null) {
+                    cc.success();
+                    return;
+                }
+
+                session = nabto.openSession(user, pass);
+
+                if (session.getStatus() != NabtoStatus.OK) {
+                    cc.error(session.getStatus().ordinal());
+                    session = null;
+                }
+                else {
+                    cc.success();
+                }
+            }
+        });
+    }
+
 
     private void startup(final String user, final String pass, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
@@ -116,8 +310,11 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                if (nabto != null) {
-                    openSession(user, pass, cc);
+                // if (nabto != null) {
+                //     openSession(user, pass, cc);
+                //     return;
+                // }
+                if(nabto!=null){
                     return;
                 }
                 nabto = new NabtoApi(context);
@@ -128,18 +325,38 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                nabto.init(user, pass);
-                openSession(user, pass, cc);
+//                nabto.init(user, pass);
+                nabto.startup();
+                // openSession(user, pass, cc);
+                cc.success();
             }
         });
+    }
+
+    private void createKeyPair(final String user, final String pass, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+            @Override
+            public void run() {
+                NabtoStatus status = nabto.createSelfSignedProfile(user, pass);
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
+            
     }
 
     private void shutdown(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                nabto.pause(session);
+                nabto.shutdown();
+                nabto = null;
                 session = null;
+                deviceCache.clear();
+                adShown = false;
                 cc.success();
             }
         });
@@ -154,9 +371,9 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-                UrlFetchResult result = nabto.fetchUrl(url, session);
-                if (result.getNabtoStatus() != NabtoStatus.OK) {
-                    cc.error(result.getNabtoStatus().ordinal());
+                UrlResult result = nabto.fetchUrl(url, session);
+                if (result.getStatus() != NabtoStatus.OK) {
+                    cc.error(result.getStatus().ordinal());
                     return;
                 }
 
@@ -170,6 +387,80 @@ public class Nabto extends CordovaPlugin {
         });
     }
 
+    private void rpcInvoke(final String url, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (session == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+
+                // looking up the device in the Cache.
+                String dev = url.split("/")[2];
+                Log.d("rpcInvoke","dev from URL: " + dev);
+                boolean devKnown = false;
+                for (int i = 0; i < deviceCache.size(); i ++){
+                    Log.d("rpcInvoke","checking: " + deviceCache.get(i));
+                    if(deviceCache.get(i).equals(dev)){
+                        devKnown = true;
+                        break;
+                    }
+                }
+                // If the device is unknown rpcInvoke fails
+                if(!devKnown){
+                    cc.error("You are not prepared");
+                    return;
+                }
+                
+                RpcResult result = nabto.rpcInvoke(url, session);
+                if (result.getStatus() != NabtoStatus.OK) {
+                    cc.error(result.getStatus().ordinal());
+                    return;
+                }
+
+                String stringResult = new String(result.getJson());
+                cc.success(stringResult);
+            }
+        });
+    }
+
+    private void rpcSetDefaultInterface(final String interfaceXml, final CallbackContext cc){
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                if (session == null){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                RpcResult result = nabto.rpcSetDefaultInterface(interfaceXml, session);
+                if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
+                    
+    }
+
+    private void rpcSetInterface(final String host, final String interfaceXml, final CallbackContext cc){
+        cordova.getThreadPool().execute(new Runnable(){
+            public void run() {
+                if (session == null){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                RpcResult result = nabto.rpcSetInterface(host,interfaceXml, session);
+                if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
+                
+    }
+    
     private void getSessionToken(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -184,8 +475,8 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                String[] devices = nabto.nabtoGetLocalDevices();
-                JSONArray jsonArray = new JSONArray(Arrays.asList(devices));
+                Collection<String> devices = nabto.getLocalDevices();
+                JSONArray jsonArray = new JSONArray(devices); //Arrays.asList(devices));
                 cc.success(jsonArray);
             }
         });
@@ -195,7 +486,7 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                String version = nabto.nabtoVersion();
+                String version = nabto.version();
                 cc.success(version);
             }
         });
@@ -208,7 +499,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        tunnel = nabto.nabtoTunnelOpenTcp(0, host, "localhost", port, session.getSession());
+        tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session);
         NabtoStatus status = tunnel.getStatus();
         if (status != NabtoStatus.OK) {
             tunnel = null;
@@ -233,8 +524,8 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
-        cc.success(info.getNabtoState().ordinal() - 1);
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+        cc.success(info.getTunnelState().ordinal() - 1);
     }
 
     private void tunnelLastError(CallbackContext cc) {
@@ -242,8 +533,8 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
-        cc.success(info.getNabtoStatus().ordinal() - 1);
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+        cc.success(info.getStatus().ordinal() - 1);
     }
 
     private void tunnelPort(CallbackContext cc) {
@@ -251,8 +542,8 @@ public class Nabto extends CordovaPlugin {
             cc.success(-1);
             return;
         }
-        TunnelInfo info = nabto.nabtoTunnelInfo(tunnel.getTunnel());
-        cc.success(info.getNabtoPort());
+        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+        cc.success(info.getPort());
     }
 
     private void tunnelClose(CallbackContext cc) {
@@ -260,7 +551,7 @@ public class Nabto extends CordovaPlugin {
             cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
             return;
         }
-        NabtoStatus status = nabto.nabtoTunnelCloseTcp(tunnel.getTunnel());
+        NabtoStatus status = nabto.tunnelClose(tunnel);
         tunnel = null;
         if (status != NabtoStatus.OK) {
             cc.error(status.ordinal());
