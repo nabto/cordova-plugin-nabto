@@ -84,7 +84,10 @@ public class Nabto extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         // Nabto API
         if (action.equals("startup")) {
-            startup(args.getString(0), args.getString(1), callbackContext);
+            startup(callbackContext);
+        }
+        else if (action.equals("startupAndOpenProfile")) {
+            openSession(args.getString(0), args.getString(1), callbackContext);
         }
         else if (action.equals("openSession")) {
             openSession(args.getString(0), args.getString(1), callbackContext);
@@ -304,16 +307,12 @@ public class Nabto extends CordovaPlugin {
     }
 
 
-    private void startup(final String user, final String pass, final CallbackContext cc) {
+    private void startup(final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
 
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                // if (nabto != null) {
-                //     openSession(user, pass, cc);
-                //     return;
-                // }
                 if(nabto!=null){
                     return;
                 }
@@ -325,9 +324,31 @@ public class Nabto extends CordovaPlugin {
                     return;
                 }
 
-//                nabto.init(user, pass);
                 nabto.startup();
-                // openSession(user, pass, cc);
+                cc.success();
+            }
+        });
+    }
+    private void startupAndOpenProfile(final String user, final String pass, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
+
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (nabto != null) {
+                    openSession(user, pass, cc);
+                    return;
+                }
+                nabto = new NabtoApi(context);
+
+                NabtoStatus status = nabto.setStaticResourceDir();
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+
+                nabto.startup();
+                openSession(user, pass, cc);
                 cc.success();
             }
         });
