@@ -5,8 +5,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <Cordova/CDVPlugin.h>
+#import "IsShowingAd.h"
 
-@interface CDVNabto : CDVPlugin {}
+@interface CDVNabto : CDVPlugin <IsShowingAd> { 
+}
+
+
+@property (atomic, assign, getter=isShowingAd) BOOL showingAd;
 
 /* Nabto API */
 - (void)startup:(CDVInvokedUrlCommand*)command;
@@ -14,6 +19,7 @@
 - (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command;
 - (void)rpcSetInterface:(CDVInvokedUrlCommand*)command;
 - (void)rpcInvoke:(CDVInvokedUrlCommand*)command;
+- (void)prepareInvoke:(CDVInvokedUrlCommand*)command;
 - (void)fetchUrl:(CDVInvokedUrlCommand*)command;
 - (void)getSessionToken:(CDVInvokedUrlCommand*)command;
 - (void)getLocalDevices:(CDVInvokedUrlCommand*)command;
@@ -26,5 +32,10 @@
 - (void)tunnelLastError:(CDVInvokedUrlCommand*)command;
 - (void)tunnelPort:(CDVInvokedUrlCommand*)command;
 - (void)tunnelClose:(CDVInvokedUrlCommand*)command;
+
+/* Ad functionallity */
+- (void)showAd;
+- (UIViewController*) topMostController;
+
 
 @end

@@ -4,6 +4,7 @@
 
 #import "CDVNabto.h"
 #import "Manager.h"
+#import "AdViewController.h"
 
 @implementation CDVNabto
 
@@ -82,6 +83,36 @@
 
         [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
     }];
+}
+
+- (void)prepareInvoke:(CDVInvokedUrlCommand*)command {
+    NSLog(@"Cordova prepareInvoke begin");
+    
+    /*
+     if devices.length == 0
+     return;
+     for all devices:
+     if device free:
+     showAd = true
+     Save device to cache
+     if device own-it:
+     save device to cache
+     else device is not AMP
+     don't save "this device is not supported"
+     end
+     if ad has been show within grace period:
+     showAd = false
+     if showAd && previouslyShownAd = false
+     showAd()
+     previouslyShownAd = true
+     start Timer for grace period
+     callback.success();
+     */
+    
+     
+    [self showAd];
+    
+    NSLog(@"Cordova prepareInvoke end");
 }
 
 - (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
@@ -194,6 +225,30 @@
 - (void)tunnelClose:(CDVInvokedUrlCommand*)command {
     nabto_status_t status = [[Manager sharedManager] nabtoTunnelClose];
     [self handleStatus:status withCommand:command];
+}
+
+- (void)showAd {
+    @synchronized (self) {
+        if(![self isShowingAd]) {
+           self.showingAd = YES; 
+           AdViewController* avc = [[AdViewController alloc] init];
+           avc.CDV=self;
+           [[self topMostController] presentViewController:avc animated:YES completion:nil];
+        } else {
+           NSLog(@"Not showing add.. already showing");
+        }
+    }
+    
+}
+
+- (UIViewController*) topMostController {
+    UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
+
+    while (topController.presentedViewController) {
+        topController = topController.presentedViewController;
+    }
+
+    return topController;
 }
 
 @end
