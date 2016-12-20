@@ -29,14 +29,12 @@
         nabto_status_t status = [[Manager sharedManager] nabtoStartup];
         if (status != NABTO_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
-        }
-        else {
+        } else {
             status = [[Manager sharedManager] nabtoOpenSession:[command.arguments objectAtIndex:0]
                                                   withPassword:[command.arguments objectAtIndex:1]];
             if (status == NABTO_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-            }
-            else {
+            } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
         }
@@ -88,8 +86,7 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
             nabtoFree(resultBuffer);
-        }
-        else {
+        } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 
@@ -112,8 +109,7 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[NSString stringWithUTF8String:jsonString]];
             nabtoFree(jsonString);
-        }
-        else {
+        } else {
             NSLog(@"Cordova RPC invoke runInBackground done fail");
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
@@ -172,8 +168,7 @@
     nabto_status_t status = [[Manager sharedManager] nabtoTunnelOpenTcp:[command.arguments objectAtIndex:0] onPort:[[command.arguments objectAtIndex:1] intValue]];
     if (status == NABTO_OK) {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    }
-    else {
+    } else {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
     }
     
