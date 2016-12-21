@@ -19,9 +19,9 @@
     return sharedMyManager;
 }
 
-- (void) simulatorSymlinkDocDir {
+void simulatorSymlinkDocDir() {
 #if TARGET_OS_SIMULATOR
-    NSString* homeDirectory = [self getHomeDir];
+    NSString* homeDirectory = [[NSProcessInfo processInfo] environment][@"SIMULATOR_HOST_HOME"];
     NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
     NSString *documentsDirectoryPath = documentsDirectory.path;
     NSString *simlinkPath = [homeDirectory stringByAppendingFormat:@"/SimulatorDocuments"];
@@ -55,7 +55,7 @@ void nabtoLogCallback(const char* line, size_t size) {
         return NABTO_OK;
     }
     initialized = YES;
-    [self simulatorSymlinkDocDir];
+    simulatorSymlinkDocDir();
 
     NSString* dir = [self getHomeDir];
     nabto_status_t status = nabtoStartup([dir UTF8String]);
