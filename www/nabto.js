@@ -83,7 +83,7 @@ Nabto.prototype.prepareInvoke = function(devices, cb) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
 	'Nabto', 'prepareInvoke',[devices]);
-}
+};
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
   cb = cb || function() {};
@@ -93,6 +93,17 @@ Nabto.prototype.createKeyPair = function(user, pass, cb) {
           cb(new NabtoError(NabtoError.Category.API, apiStatus));
       },
       'Nabto', 'createKeyPair', [user, pass]
+  );
+};
+
+Nabto.prototype.getFingerprint = function(email, cb) {
+  cb = cb || function() {};
+  exec(
+      function success() { cb(); },
+      function error(apiStatus) {
+          cb(new NabtoError(NabtoError.Category.API, apiStatus));
+      },
+      'Nabto', 'getFingerprint', [email]
   );
 };
 

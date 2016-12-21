@@ -62,6 +62,26 @@
     }];
 }
 
+- (void)getFingerprint:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            char fingerprint[16];
+            CDVPluginResult *res = nil;
+            nabto_status_t status = [[Manager sharedManager]
+                                            nabtoGetFingerprint:[command.arguments objectAtIndex:0]
+                                                     withResult:fingerprint];
+            if (status == NABTO_OK) {
+                NSData *data = [NSData dataWithBytes:fingerprint length:sizeof(fingerprint)];
+                res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                        messageAsString:[[NSString alloc] initWithData:data
+                                                                              encoding:NSUTF8StringEncoding]];
+            } else {
+                res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+            }
+            [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        }];
+}
+
+
 - (void)shutdown:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
             nabto_status_t status = [[Manager sharedManager] nabtoShutdown];
@@ -120,7 +140,7 @@
      */
     
      
-    [self showAd];
+//    [self showAd];
     
     NSLog(@"Cordova prepareInvoke end");
 }

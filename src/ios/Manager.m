@@ -10,25 +10,24 @@
 
 #define NABTOLOG 0
 
-void simulatorSymlinkDocDir() {
++ (id)sharedManager {
+    static Manager *sharedMyManager = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedMyManager = [[self alloc] init];
+    });
+    return sharedMyManager;
+}
+
+- (void) simulatorSymlinkDocDir {
 #if TARGET_OS_SIMULATOR
-    NSString* homeDirectory = [[NSProcessInfo processInfo] environment][@"SIMULATOR_HOST_HOME"];
+    NSString* homeDirectory = [self getHomeDir];
     NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
     NSString *documentsDirectoryPath = documentsDirectory.path;
     NSString *simlinkPath = [homeDirectory stringByAppendingFormat:@"/SimulatorDocuments"];
     unlink(simlinkPath.UTF8String);
     symlink(documentsDirectoryPath.UTF8String, simlinkPath.UTF8String);
 #endif
-}
-
-+ (id)sharedManager {
-    static Manager *sharedMyManager = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedMyManager = [[self alloc] init];
-        simulatorSymlinkDocDir();
-    });
-    return sharedMyManager;
 }
 
 void nabtoLogCallback(const char* line, size_t size) {
@@ -56,6 +55,7 @@ void nabtoLogCallback(const char* line, size_t size) {
         return NABTO_OK;
     }
     initialized = YES;
+    [self simulatorSymlinkDocDir];
 
     NSString* dir = [self getHomeDir];
     nabto_status_t status = nabtoStartup([dir UTF8String]);
@@ -63,6 +63,7 @@ void nabtoLogCallback(const char* line, size_t size) {
         NSLog(@"Error setting home dir");
         return status;
     }
+    nabtoSetOption("dnsHints", "stun.nabto.net,global.cloud.nabto.com,cn-north-1.cloud.nabto.com");
 
 #if NABTOLOG
     nabtoRegisterLogCallback(nabtoLogCallback);
@@ -93,6 +94,11 @@ void nabtoLogCallback(const char* line, size_t size) {
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
     return nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]);
 }
+
+- (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result {
+    return nabtoGetFingerprint([certificateId UTF8String], result);
+}
+
 
 - (nabto_status_t)nabtoOpenSessionGuest {
     NSString *email = @"guest";
