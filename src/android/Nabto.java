@@ -57,6 +57,7 @@ import java.lang.System;
 // END
 
 public class Nabto extends CordovaPlugin {
+    private static final int AMP_ERROR_NOT_PREPARED = 101; 
     private static final int GRACEPERIOD = 15; // seconds
     private NabtoApi nabto = null;
     private Session session;
@@ -231,10 +232,10 @@ public class Nabto extends CordovaPlugin {
                     
                     for (int i = 0; i< jsonDevices.length(); i++){
                         try{
-                            Log.d("prepareInvoke","jsonDevices[" + i + "]: " + jsonDevices.get(i).toString());
+                            //Log.d("prepareInvoke","jsonDevices[" + i + "]: " + jsonDevices.get(i).toString());
                             dev = jsonDevices.get(i).toString();// dev2.toString();
                         } catch (JSONException e){
-                            Log.d("prepareInvoke","Nabto.java: Failed to get jsonDevice, should not happen");
+                            Log.w("prepareInvoke","Nabto.java: Failed to get jsonDevice, bad JSON syntax, skipping device");
                             continue;
                         }
             
@@ -259,7 +260,7 @@ public class Nabto extends CordovaPlugin {
                     if (timerStart != 0){
                         if (System.currentTimeMillis()-timerStart < GRACEPERIOD*1000){
                             Log.d("prepareInvoke","Invoking grace period");
-                            showAdFlag = false;
+                            adShown = true;
                         } 
                     }
                     if(showAdFlag == true && adShown == false){
@@ -267,7 +268,7 @@ public class Nabto extends CordovaPlugin {
                         timerStart = System.currentTimeMillis();
                         adShown = true;
                     } else {
-                        Log.d("prepareInvoke","Not showing ad, showAdFlag: " + showAdFlag + " adShown: " + adShown);
+                        //Log.d("prepareInvoke","Not showing ad, showAdFlag: " + showAdFlag + " adShown: " + adShown);
                     }
                     cc.success();
                 }
@@ -419,10 +420,10 @@ public class Nabto extends CordovaPlugin {
 
                 // looking up the device in the Cache.
                 String dev = url.split("/")[2];
-                Log.d("rpcInvoke","dev from URL: " + dev);
+                //Log.d("rpcInvoke","dev from URL: " + dev);
                 boolean devKnown = false;
                 for (int i = 0; i < deviceCache.size(); i ++){
-                    Log.d("rpcInvoke","checking: " + deviceCache.get(i));
+                    //Log.d("rpcInvoke","checking: " + deviceCache.get(i));
                     if(deviceCache.get(i).equals(dev)){
                         devKnown = true;
                         break;
@@ -430,13 +431,34 @@ public class Nabto extends CordovaPlugin {
                 }
                 // If the device is unknown rpcInvoke fails
                 if(!devKnown){
-                    cc.error("You are not prepared");
+                    JSONObject error = new JSONObject();
+                    JSONObject root = new JSONObject();
+                    try{
+                        error.put("event",AMP_ERROR_NOT_PREPARED);
+                        error.put("header","Unprepared device invoked");
+                        error.put("detail","AMP_ERROR_NOT_PREPARED");
+                        error.put("body","rpcInvoke was called with uprepared device: " + dev + ". prepareInvoke must becalled before device can be invoked");
+                        root.put("error",error);
+                    } catch (JSONException e){
+                        Log.e("rpcInvoke","could not put JSON error message");
+                        return;
+                    }
+                    //Log.w("rpcInvoke","root: " + root.toString());
+                    cc.error(root.toString());
                     return;
                 }
-                
                 RpcResult result = nabto.rpcInvoke(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
-                    cc.error(result.getStatus().ordinal());
+                    if(result.getStatus() == NabtoStatus.FAILED_WITH_JSON_MESSAGE){
+                        /*try{
+                            Log.w("rpcInvoke","result.getJson: " + result.getJson().toString());
+                        } catch (NullPointerException e){
+                            Log.w("rpcInvoke","result.getJson: NullPointerException");
+                            }*/
+                        cc.error(result.getJson());
+                    } else {
+                        cc.error(result.getStatus().ordinal());
+                    }
                     return;
                 }
 
