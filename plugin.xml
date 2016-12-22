@@ -38,21 +38,20 @@
 		
 		<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
 		<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoAndroidAssetManager.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoAssetManager.java" target-dir="src/com/nabto/api" />
+		<source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoClient.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoConnectionType.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoState.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoDefaultAssetManager.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoStatus.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoStreamOption.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoTunnelState.java" target-dir="src/com/nabto/api" />
 		<source-file src="src/android/api/RpcResult.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/StreamConnectionTypeResult.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/StreamOptionName.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/StreamReadResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/TunnelInfo.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/TunnelInfoResult.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/UrlResult.java" target-dir="src/com/nabto/api" />

@@ -30,14 +30,12 @@
         nabto_status_t status = [[Manager sharedManager] nabtoStartup];
         if (status != NABTO_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
-        }
-        else {
+        } else {
             status = [[Manager sharedManager] nabtoOpenSession:[command.arguments objectAtIndex:0]
                                                   withPassword:[command.arguments objectAtIndex:1]];
             if (status == NABTO_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-            }
-            else {
+            } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
         }
@@ -64,6 +62,31 @@
     }];
 }
 
+- (void)getFingerprint:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            char fingerprint[16];
+            CDVPluginResult *res = nil;
+            nabto_status_t status = [[Manager sharedManager]
+                                            nabtoGetFingerprint:[command.arguments objectAtIndex:0]
+                                                     withResult:fingerprint];
+            if (status == NABTO_OK) {
+                char fingerprintString[2*sizeof(fingerprint)];
+                for (size_t i=0; i<sizeof(fingerprint); i++) {
+                    sprintf(fingerprintString+2*i, "%02x", (unsigned char)(fingerprint[i]));
+                }
+                NSData *data = [NSData dataWithBytes:fingerprintString length:sizeof(fingerprintString)];
+                NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                NSLog(@"Got fingerprint [%@]", str);
+                res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                        messageAsString:str];
+            } else {
+                res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+            }
+            [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        }];
+}
+
+
 - (void)shutdown:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
             nabto_status_t status = [[Manager sharedManager] nabtoShutdown];
@@ -89,8 +112,7 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
             nabtoFree(resultBuffer);
-        }
-        else {
+        } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 
@@ -123,7 +145,7 @@
      */
     
      
-    [self showAd];
+//    [self showAd];
     
     NSLog(@"Cordova prepareInvoke end");
 }
@@ -139,13 +161,10 @@
         status = [[Manager sharedManager] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
                                         withResultBuffer:&jsonString];
         if (status == NABTO_OK) {
-            NSLog(@"Cordova RPC invoke runInBackground done ok");
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[NSString stringWithUTF8String:jsonString]];
             nabtoFree(jsonString);
-        }
-        else {
-            NSLog(@"Cordova RPC invoke runInBackground done fail");
+        } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 
@@ -203,8 +222,7 @@
     nabto_status_t status = [[Manager sharedManager] nabtoTunnelOpenTcp:[command.arguments objectAtIndex:0] onPort:[[command.arguments objectAtIndex:1] intValue]];
     if (status == NABTO_OK) {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    }
-    else {
+    } else {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
     }
     

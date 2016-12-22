@@ -96,6 +96,9 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("createKeyPair")) {
             createKeyPair(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("getFingerprint")) {
+            getFingerprint(args.getString(0), callbackContext);
+        }
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
         }
@@ -281,7 +284,7 @@ public class Nabto extends CordovaPlugin {
             @Override
             public void run() {
                 if (nabto == null){
-                    nabto = new NabtoApi(context);
+                    nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
                 }
                 NabtoStatus status = nabto.startup();
                 if (status != NabtoStatus.OK) {
@@ -317,13 +320,14 @@ public class Nabto extends CordovaPlugin {
                 if(nabto!=null){
                     return;
                 }
-                nabto = new NabtoApi(context);
+                
+                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
 
-                NabtoStatus status = nabto.setStaticResourceDir();
+/*                NabtoStatus status = nabto.setStaticResourceDir();
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
                     return;
-                }
+                    }*/
 
                 nabto.startup();
                 cc.success();
@@ -340,13 +344,15 @@ public class Nabto extends CordovaPlugin {
                     openSession(user, pass, cc);
                     return;
                 }
-                nabto = new NabtoApi(context);
+                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
+
+/*                nabto = new NabtoApi(context);
 
                 NabtoStatus status = nabto.setStaticResourceDir();
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
                     return;
-                }
+                }*/
 
                 nabto.startup();
                 openSession(user, pass, cc);
@@ -370,6 +376,22 @@ public class Nabto extends CordovaPlugin {
             
     }
 
+    private void getFingerprint(final String certId, final CallbackContext cc){
+        cordova.getThreadPool().execute(new Runnable(){
+                @Override
+                public void run(){
+                    String[] fingerprint = new String[1];
+                    fingerprint[0] = "";
+                    NabtoStatus status = nabto.getFingerprint(certId,fingerprint);
+                    if (status != NabtoStatus.OK){
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success(fingerprint[0]);
+                }
+            });
+    }
+    
     private void shutdown(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
