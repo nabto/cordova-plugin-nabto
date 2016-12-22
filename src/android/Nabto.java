@@ -283,7 +283,7 @@ public class Nabto extends CordovaPlugin {
             @Override
             public void run() {
                 if (nabto == null){
-                    nabto = new NabtoApi(context);
+                    nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
                 }
                 NabtoStatus status = nabto.startup();
                 if (status != NabtoStatus.OK) {
@@ -319,13 +319,14 @@ public class Nabto extends CordovaPlugin {
                 if(nabto!=null){
                     return;
                 }
-                nabto = new NabtoApi(context);
+                
+                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
 
-                NabtoStatus status = nabto.setStaticResourceDir();
+/*                NabtoStatus status = nabto.setStaticResourceDir();
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
                     return;
-                }
+                    }*/
 
                 nabto.startup();
                 cc.success();
@@ -342,13 +343,15 @@ public class Nabto extends CordovaPlugin {
                     openSession(user, pass, cc);
                     return;
                 }
-                nabto = new NabtoApi(context);
+                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
+
+/*                nabto = new NabtoApi(context);
 
                 NabtoStatus status = nabto.setStaticResourceDir();
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
                     return;
-                }
+                }*/
 
                 nabto.startup();
                 openSession(user, pass, cc);
