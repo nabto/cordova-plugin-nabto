@@ -149,26 +149,6 @@ public enum NabtoStatus {
     FAILED_WITH_JSON_MESSAGE,
 
     /**
-     * There was not set an RPC interface for host prior to invocation
-     */
-    RPC_INTERFACE_NOT_SET,
-
-    /**
-     * The interface set for this host does not specify this request
-     */
-    RPC_NO_SUCH_REQUEST,
-
-    /**
-     * Requested device is offline
-     */
-    RPC_DEVICE_OFFLINE,
-
-    /**
-     * Response could not be decoded.
-     */
-    RPC_RESPONSE_DECODE_FAILURE,
-
-    /**
      * Number of possible error codes. This must always be last!
      */
     ERROR_CODE_COUNT;

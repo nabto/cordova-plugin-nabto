@@ -6,7 +6,8 @@
 
 var exec = require('cordova/exec'),
     NabtoError = require('./NabtoError'),
-    NabtoTunnelState = require('./NabtoTunnelState');
+    NabtoConstants = require('./NabtoConstants'),
+	NabtoTunnelState = require('./NabtoTunnelState');
 
 function Nabto() {}
 
@@ -112,20 +113,6 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
-  // THIS SHOULD BE DONE IN THE CORE - REMOVE ASAP
-  // var devices = ["device1", "device2"];
-  // exec(
-  // 	function success(prepInvoke){
-  // 	  if(prepInvoke.prep == false){
-  // 		cb(new NabtoError(NabtoError.Category.API, "You are not prepared"));
-  // 		return;
-  // 	  }
-  // 	},
-  // 	function error(apiStatus) {
-  // 	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
-  // 	},
-  // 	'Nabto', 'isInvokePrepared',[devices]);
-  /// END OF REMOVE
   exec(
     function success(result) {
       var obj, err;
@@ -147,8 +134,12 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
       }
       return cb(err, obj);       
     },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    function error(apiError) {
+	  if(apiError == NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED){
+		cb(new NabtoError(NabtoError.Category.API,apiError));
+	  } else {
+		cb(new NabtoError(NabtoError.Category.API, NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE,apiError));
+	  }
     },
     'Nabto', apiFunction, [url]);
 };

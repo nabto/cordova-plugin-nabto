@@ -61,6 +61,7 @@ NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED      = 2005;
 NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD     = 2006;
 NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
 NabtoError.Code.API_CERT_SAVING_FAILURE         = 2009;
+NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE    = 2026;
 NabtoError.Code.API_RPC_INTERFACE_NOT_SET       = 2027;
 NabtoError.Code.API_RPC_NO_SUCH_REQUEST         = 2028;
 NabtoError.Code.API_RPC_DEVICE_OFFLINE          = 2029;
@@ -110,6 +111,7 @@ NabtoError.Message[NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED] = "Error opening 
 NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key could not be opened (decrypted) using specified password";
 NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
 NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
+NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
 NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Device is offline";
@@ -157,9 +159,11 @@ NabtoError.Category.WRAPPER          = 4;
 
 
 function NabtoError(category, status, innerError) {
+  //console.log("entering NabtoError with category: " + category + " status: " + status + " innerError: " + innerError);
   if (typeof(category) === "undefined") {
     throw new Error("Missing or invalid category");
   }
+  innerError = JSON.parse(innerError);
   this.initStatus(category, status, innerError);
   
   this.__defineGetter__('value', function() {
@@ -167,10 +171,13 @@ function NabtoError(category, status, innerError) {
   });
 
   this.__defineGetter__('message', function() {
-    var msg = this.lookupMessage(this.code);
+	var msg = this.lookupMessage(this.code);
     if (!msg) {
       msg = `Code ${this.toString()} (${this.code}), Category ${this.category}, inner: ${this.inner}`;
     }
+	if (this.code == NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE){
+	  msg = JSON.stringify(this.inner.body);
+	}
     return msg;
   });
 
@@ -178,7 +185,7 @@ function NabtoError(category, status, innerError) {
 
 NabtoError.prototype.initStatus = function(category, status, doc) {
   switch (category) {
-  case NabtoError.Category.API:     this.handleApiError(status); break;
+  case NabtoError.Category.API:     this.handleApiError(status,doc); break;
   case NabtoError.Category.P2P:     this.handleP2pError(status, doc); break;
   case NabtoError.Category.WRAPPER: this.handleWrapperError(status); break;
   default:
@@ -190,7 +197,7 @@ NabtoError.prototype.lookupMessage = function(code) {
   return NabtoError.Message[code];
 };
 
-NabtoError.prototype.handleApiError = function(status) {
+NabtoError.prototype.handleApiError = function(status,doc) {
   this.inner = status;
   this.category = NabtoError.Category.API;
   
@@ -225,26 +232,6 @@ NabtoError.prototype.handleApiError = function(status) {
     this.code = NabtoError.Code.API_CERT_OPEN_FAIL;
     break;
 
-  case NabtoConstants.ClientApiErrors.RPC_INTERFACE_NOT_SET:
-    this.code = NabtoError.Code.API_RPC_INTERFACE_NOT_SET;
-    break;
-
-  case NabtoConstants.ClientApiErrors.RPC_NO_SUCH_REQUEST:
-    this.code = NabtoError.Code.API_RPC_NO_SUCH_REQUEST;
-    break;
-
-  case NabtoConstants.ClientApiErrors.RPC_DEVICE_OFFLINE:
-    this.code = NabtoError.Code.API_RPC_DEVICE_OFFLINE;
-    break;
-
-  case NabtoConstants.ClientApiErrors.RPC_RESPONSE_DECODE_FAILURE:
-    this.code = NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE;
-    break;
-
-  case NabtoConstants.ClientApiErrors.RPC_COMMUNICATION_PROBLEM:
-    this.code = NabtoError.Code.API_RPC_COMMUNICATION_PROBLEM;
-    break;
-
   case NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT:
     this.code = NabtoError.Code.API_CONNECT_TIMEOUT;
     break;
@@ -254,7 +241,8 @@ NabtoError.prototype.handleApiError = function(status) {
     break;
 
   case NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE:
-    this.handleErrorWithDetail(status);
+    this.handleErrorWithDetail(status,doc);
+	break;
 
   defau1t:
     console.log(`Unexpected API status ${status}`);
@@ -304,14 +292,33 @@ NabtoError.prototype.handleWrapperError = function(status) {
   this.category = NabtoError.Category.WRAPPER;
 };
 
-NabtoError.prototype.handleErrorWithDetail = function(status) {
+NabtoError.prototype.handleErrorWithDetail = function(status, obj) {
+  if (typeof(status) === 'number' && typeof(obj) === 'undefined') {
+    // a few functions inject a Nabto event code directly instead of through an error document
+    this.handleNabtoEvent(status);
+    return;
+  }
+  var error = obj.error;
+  this.inner = error;
+  if (!(error && error.event)) {
+    this.handleUnexpectedObject(obj);
+  } else {
+    if (error.event == NabtoConstants.ClientEvents.UNABTO_APPLICATION_EXCEPTION) {
+      this.handleDeviceException(error);
+    } else {
+      this.handleNabtoEvent(error.event);
+    }
+  }
+};
+
+/*function(status,doc) {
   // TODO workaround for AMP-73: Client API error details in JSON not
   // propagated through Cordova wrapper) - currently the only error
   // reported with extra details is interface xml parse errors, so we
   // cheat a bit
   this.category = NabtoError.Category.P2P;
   this.code = NabtoError.Code.P2P_INTERFACE_DEF_INVALID;
-};
+};*/
   
 NabtoError.prototype.handleDeviceException = function(error) {
   // unabto/src/unabto/unabto_protocol_exceptions.h
@@ -394,7 +401,11 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
   case NabtoConstants.ClientEvents.NO_INTERNET_ACCESS:
     this.code = NabtoError.Code.P2P_NO_NETWORK;
     break;
-                
+
+  case NabtoConstants.AmpError.NOT_PREPARED:
+	this.code = NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE;
+	break;
+	
   default:    
     this.code = NabtoError.Code.P2P_OTHER;
     break;

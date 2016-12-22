@@ -30,11 +30,6 @@ NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION_ARGUMENT = 23;
 NabtoConstants.ClientApiErrors.ABORTED                        = 24;
 NabtoConstants.ClientApiErrors.STREAM_CLOSED                  = 25;
 NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE       = 26;
-NabtoConstants.ClientApiErrors.RPC_INTERFACE_NOT_SET          = 27;
-NabtoConstants.ClientApiErrors.RPC_NO_SUCH_REQUEST            = 28;
-NabtoConstants.ClientApiErrors.RPC_DEVICE_OFFLINE             = 29;
-NabtoConstants.ClientApiErrors.RPC_RESPONSE_DECODE_FAILURE    = 30;
-NabtoConstants.ClientApiErrors.RPC_COMMUNICATION_PROBLEM      = 31;
 NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT                = 32;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,6 +45,10 @@ NabtoConstants.DeviceExceptions.OUT_OF_RESOURCES =  9;
 NabtoConstants.DeviceExceptions.SYSTEM_ERROR     = 10;
 NabtoConstants.DeviceExceptions.NO_QUERY_ID      = 11;
 
+////////////////////////////////////////////////////////////////////////////////
+// AMP errors
+NabtoConstants.AmpError = {};
+NabtoConstants.AmpError.NOT_PREPARED    = 101;
 
 ////////////////////////////////////////////////////////////////////////////////
 // from nabto::Event
