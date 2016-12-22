@@ -70,10 +70,15 @@
                                             nabtoGetFingerprint:[command.arguments objectAtIndex:0]
                                                      withResult:fingerprint];
             if (status == NABTO_OK) {
-                NSData *data = [NSData dataWithBytes:fingerprint length:sizeof(fingerprint)];
+                char fingerprintString[2*sizeof(fingerprint)];
+                for (size_t i=0; i<sizeof(fingerprint); i++) {
+                    sprintf(fingerprintString+2*i, "%02x", (unsigned char)(fingerprint[i]));
+                }
+                NSData *data = [NSData dataWithBytes:fingerprintString length:sizeof(fingerprintString)];
+                NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                NSLog(@"Got fingerprint [%@]", str);
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                        messageAsString:[[NSString alloc] initWithData:data
-                                                                              encoding:NSUTF8StringEncoding]];
+                                        messageAsString:str];
             } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
@@ -156,12 +161,10 @@
         status = [[Manager sharedManager] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
                                         withResultBuffer:&jsonString];
         if (status == NABTO_OK) {
-            NSLog(@"Cordova RPC invoke runInBackground done ok");
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[NSString stringWithUTF8String:jsonString]];
             nabtoFree(jsonString);
         } else {
-            NSLog(@"Cordova RPC invoke runInBackground done fail");
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
 

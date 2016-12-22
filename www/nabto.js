@@ -99,11 +99,11 @@ Nabto.prototype.createKeyPair = function(user, pass, cb) {
 Nabto.prototype.getFingerprint = function(email, cb) {
   cb = cb || function() {};
   exec(
-      function success(fingerprint) { cb(fingerprint); },
-      function error(apiStatus) {
-          cb(new NabtoError(NabtoError.Category.API, apiStatus));
-      },
-      'Nabto', 'getFingerprint', [email]
+    function success(fingerprint) { cb(undefined, fingerprint); },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'getFingerprint', [email]
   );
 };
 
