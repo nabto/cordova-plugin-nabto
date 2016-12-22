@@ -95,6 +95,9 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("createKeyPair")) {
             createKeyPair(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("getFingerprint")) {
+            getFingerprint(args.getString(0), callbackContext);
+        }
         else if (action.equals("shutdown")) {
             shutdown(callbackContext);
         }
@@ -369,6 +372,22 @@ public class Nabto extends CordovaPlugin {
             
     }
 
+    private void getFingerprint(final String certId, final CallbackContext cc){
+        cordova.getThreadPool().execute(new Runnable(){
+                @Override
+                public void run(){
+                    String[] fingerprint = new String[1];
+                    fingerprint[0] = "";
+                    NabtoStatus status = nabto.getFingerprint(certId,fingerprint);
+                    if (status != NabtoStatus.OK){
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success(fingerprint[0]);
+                }
+            });
+    }
+    
     private void shutdown(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
