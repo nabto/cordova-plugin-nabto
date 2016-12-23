@@ -88,7 +88,7 @@ public class Nabto extends CordovaPlugin {
             startup(callbackContext);
         }
         else if (action.equals("startupAndOpenProfile")) {
-            openSession(args.getString(0), args.getString(1), callbackContext);
+            startupAndOpenProfile(args.getString(0), args.getString(1), callbackContext);
         }
         else if (action.equals("openSession")) {
             openSession(args.getString(0), args.getString(1), callbackContext);
