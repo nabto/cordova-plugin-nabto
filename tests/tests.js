@@ -33,7 +33,7 @@ exports.defineAutoTests = function () {
     it('should have NabtoError available', function() {
       expect(NabtoError).toBeDefined();
     });
-/*
+
     it('should provide toString function', function() {
       var s = new NabtoError(NabtoError.Category.API, NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
       expect(s).toMatch("API_NOT_INITIALIZED");
@@ -84,7 +84,7 @@ exports.defineAutoTests = function () {
       // code = 3120;
       // event_code = 1000020
       if (Math.floor(code / 1000) != 3) {
-	throw `unexpected base for nabto event: ${code/1000}`;
+	    throw `unexpected base for nabto event: ${code/1000}`;
       }
       var base = (code - 3000);
       var major = Math.floor(base / 100) * 1000000;
@@ -95,31 +95,31 @@ exports.defineAutoTests = function () {
 
     it('should handle nabto events correctly', function() {
       for (var p in NabtoError.Code) {
-	if (NabtoError.Code.hasOwnProperty(p)) {
-	  if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
-	    var response = clone(errors.offline);
-	    response.error.event = toNabtoEventCode(NabtoError.Code[p]);
-	    var s = new NabtoError(NabtoError.Category.P2P, 0, response);
-	    if (s.code == NabtoError.Code.P2P_OTHER) {
-	      expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
-	    } else {
-	      expect(s.code).toBe(NabtoError.Code[p]);
+	    if (NabtoError.Code.hasOwnProperty(p)) {
+	      if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
+	        var response = clone(errors.offline);
+	        response.error.event = toNabtoEventCode(NabtoError.Code[p]);
+	        var s = new NabtoError(NabtoError.Category.P2P, 0, response);
+	        if (s.code == NabtoError.Code.P2P_OTHER) {
+	          expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
+	        } else {
+	          expect(s.code).toBe(NabtoError.Code[p]);
+	        }
+	      }
 	    }
-	  }
-	}
       }
     });
 
     it('should provide an error message for each error code', function() {
       for (var p in NabtoError.Code) {
-	if (NabtoError.Code.hasOwnProperty(p)) {
-	  if (NabtoError.Message[NabtoError.Code[p]]) {
-	    expect(NabtoError.Message[NabtoError.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
-	  } else {
-	    expect(p).toBe("Missing an error message"); // clumsy way to get a custom error message to include erroneous prop
-	  }
-	}
-      }*/
+	    if (NabtoError.Code.hasOwnProperty(p)) {
+	      if (NabtoError.Message[NabtoError.Code[p]]) {
+	        expect(NabtoError.Message[NabtoError.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
+	      } else {
+	        expect(p).toBe("Missing an error message"); // clumsy way to get a custom error message to include erroneous prop
+	      }
+	    }
+      }
     });
     
   });
@@ -195,11 +195,11 @@ exports.defineAutoTests = function () {
 
     if (device.platform === 'browser') {
       it('api error with invalid password - fails in all but stub', function(done) {
-	nabto.startup('bad_password', 'hesthest', function(error, result) {
+	    nabto.startup('bad_password', 'hesthest', function(error, result) {
           expect(result).not.toBeDefined();
           expect(error.code).toBe(NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD);
           done();
-	});
+	    });
       });
     }
 
@@ -212,7 +212,7 @@ exports.defineAutoTests = function () {
 
     it('fetches a nabto url', function(done) {
       nabto.fetchUrl(testUrl, function(error, result) {
-	expect(error).not.toBeDefined();
+	    expect(error).not.toBeDefined();
         expect(result.response.speed_m_s).toBeDefined();
         done();
       });
@@ -229,12 +229,12 @@ exports.defineAutoTests = function () {
     it('invokes an rpc function', function(done) {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
-	expect(error).not.toBeDefined();
+	    expect(error).not.toBeDefined();
         nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
           expect(error).not.toBeDefined();
           expect(result.response.speed_m_s).toBeDefined();
           done();
-	});
+	    });
       });
     });
 
@@ -250,12 +250,12 @@ exports.defineAutoTests = function () {
     it('returns an api rpc error when fetching an offline device through rpc invoke', function(done) {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
-	expect(error).not.toBeDefined();
+	    expect(error).not.toBeDefined();
         nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
-           expect(error).toBeDefined();
-           expect(error.code).toBe(NabtoError.Code.API_RPC_DEVICE_OFFLINE);
-           expect(result).not.toBeDefined();
-           done();
+          expect(error).toBeDefined();
+          expect(error.code).toBe(NabtoError.Code.API_RPC_DEVICE_OFFLINE);
+          expect(result).not.toBeDefined();
+          done();
         });
       });
     });
@@ -305,41 +305,41 @@ exports.defineAutoTests = function () {
 
   describe('Nabto Tunnel', function() {
     var nabtoDevice = 'streamdemo.nabto.net',
-	remotePort = 80;    
+	    remotePort = 80;    
 
     if (device.platform !== 'browser') {
 
       it('starts nabto', function(done) {
-      nabto.startup(function(error) {
-        expect(error).not.toBeDefined();
-        done();
-      });
+        nabto.startup(function(error) {
+          expect(error).not.toBeDefined();
+          done();
+        });
       });
       
 
       it('gets tunnel state on closed tunnel', function(done) {
-      nabto.tunnelState(function(error, state) {
-        expect(error).not.toBeDefined();
-        expect(state.value).toBe(-1);
-        done();
+        nabto.tunnelState(function(error, state) {
+          expect(error).not.toBeDefined();
+          expect(state.value).toBe(-1);
+          done();
+        });
       });
-    });
-    
-    it('handles invalid arguments to tunnelOpenTcp', function(done) {
-      nabto.tunnelOpenTcp(function(error) {
-        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-        nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
+      
+      it('handles invalid arguments to tunnelOpenTcp', function(done) {
+        nabto.tunnelOpenTcp(function(error) {
           expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-          nabto.tunnelOpenTcp(123, remotePort, function(error) {
+          nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
             expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-            done();
+            nabto.tunnelOpenTcp(123, remotePort, function(error) {
+              expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
+              done();
+            });
           });
         });
       });
-    });
 
       it('opens a nabto tunnel and wait for it to connect', function(done) {
-	nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
+	    nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
           expect(error).not.toBeDefined();
           var interval = setInterval(function() {
             nabto.tunnelState(function(error, state) {
@@ -349,21 +349,21 @@ exports.defineAutoTests = function () {
               done();
             });
           }, 500);
-	});
+	    });
       });
       
       it('fails to open a second tunnel', function(done) {
-	nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
+	    nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
           expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
           done();
-	});
+	    });
       });
       
       it('gets tunnel port and has a connection', function(done) {
-	nabto.tunnelPort(function(error, port) {
+	    nabto.tunnelPort(function(error, port) {
           expect(error).not.toBeDefined();
           expect(port).toBeGreaterThan(1000);
-	  
+	      
           var xhttp = new XMLHttpRequest();
           xhttp.onreadystatechange = function() {
             if (xhttp.readyState !== 4) { return; }
@@ -373,73 +373,73 @@ exports.defineAutoTests = function () {
           };
           xhttp.open('GET', 'http://localhost:' + port, true);
           xhttp.send();
-	});
+	    });
       });
 
       it('closes tunnel', function(done) {
-	nabto.tunnelClose(function(error) {
+	    nabto.tunnelClose(function(error) {
           expect(error).not.toBeDefined();
           // Wait for tunnel to close
           setTimeout(function() {
             done();
           }, 500);
-	});
+	    });
       });
       
-    it('gets tunnel version', function(done) {
-      nabto.tunnelVersion(function(error, version) {
-        expect(error).not.toBeDefined();
-        expect(version).toBeDefined();
-        done();
+      it('gets tunnel version', function(done) {
+        nabto.tunnelVersion(function(error, version) {
+          expect(error).not.toBeDefined();
+          expect(version).toBeDefined();
+          done();
+        });
       });
-    });
-    
-    
-    it('does not connect to nonexisting device', function(done) {
-      nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
-        expect(error).not.toBeDefined();
-        var interval = setInterval(function() {
-          nabto.tunnelState(function(error, state) {
-            if (state.value === NabtoTunnelState.NTCS_CONNECTING) { return; }
-            clearInterval(interval);
-            expect(state.value).toBe(NabtoTunnelState.NTCS_CLOSED);
+      
+      
+      it('does not connect to nonexisting device', function(done) {
+        nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
+          expect(error).not.toBeDefined();
+          var interval = setInterval(function() {
+            nabto.tunnelState(function(error, state) {
+              if (state.value === NabtoTunnelState.NTCS_CONNECTING) { return; }
+              clearInterval(interval);
+              expect(state.value).toBe(NabtoTunnelState.NTCS_CLOSED);
+              done();
+            });
+          }, 500);
+        });
+      });
+
+      it('gets last error', function(done) {
+        nabto.tunnelLastError(function(error) {
+          expect(error).toBeDefined();
+	      expect(error.category).toBe(NabtoError.Category.P2P);
+          done();
+        });
+      });
+
+      it('closes tunnel', function(done) {
+        nabto.tunnelClose(function(error) {
+          expect(error).not.toBeDefined();
+          done();
+        });
+      });
+
+      it('closes a non-open tunnel', function(done) {
+        nabto.tunnelClose(function(error) {
+          expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
+          done();
+        });
+      });
+
+      it('shuts down nabto', function(done) {
+        // Wait for tunnel to close
+        setTimeout(function() {
+          nabto.shutdown(function(error) {
+            expect(error).not.toBeDefined();
             done();
           });
         }, 500);
       });
-    });
-
-    it('gets last error', function(done) {
-      nabto.tunnelLastError(function(error) {
-        expect(error).toBeDefined();
-	expect(error.category).toBe(NabtoError.Category.P2P);
-        done();
-      });
-    });
-
-    it('closes tunnel', function(done) {
-      nabto.tunnelClose(function(error) {
-        expect(error).not.toBeDefined();
-        done();
-      });
-    });
-
-    it('closes a non-open tunnel', function(done) {
-      nabto.tunnelClose(function(error) {
-        expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
-        done();
-      });
-    });
-
-    it('shuts down nabto', function(done) {
-      // Wait for tunnel to close
-      setTimeout(function() {
-        nabto.shutdown(function(error) {
-          expect(error).not.toBeDefined();
-          done();
-        });
-      }, 500);
-    });
 
     }
 
