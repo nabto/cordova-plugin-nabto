@@ -336,30 +336,36 @@ public class Nabto extends CordovaPlugin {
     }
     private void startupAndOpenProfile(final String user, final String pass, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
-
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto != null) {
-                    openSession(user, pass, cc);
-                    return;
+                @Override
+                public void run() {
+                    if (nabto == null){
+                        nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
+                    }
+                    NabtoStatus status = nabto.startup();
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+
+                    if (session != null) {
+                        cc.success();
+                        return;
+                    }
+
+                    session = nabto.openSession(user, pass);
+
+                    if (session.getStatus() != NabtoStatus.OK) {
+                        cc.error(session.getStatus().ordinal());
+                        session = null;
+                    }
+                    else {
+                        cc.success();
+                    }
                 }
-                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
-
-/*                nabto = new NabtoApi(context);
-
-                NabtoStatus status = nabto.setStaticResourceDir();
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }*/
-
-                nabto.startup();
-                openSession(user, pass, cc);
-                cc.success();
-            }
-        });
+            });
     }
+
 
     private void createKeyPair(final String user, final String pass, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
