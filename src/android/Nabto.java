@@ -402,7 +402,9 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                nabto.shutdown();
+                if(nabto != null){
+                    nabto.shutdown();
+                }
                 nabto = null;
                 session = null;
                 deviceCache.clear();
