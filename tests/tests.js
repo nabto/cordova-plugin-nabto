@@ -186,7 +186,7 @@ exports.defineAutoTests = function () {
     });
     
     it('api error with invalid username', function(done) {
-      nabto.startup('nonexisting', '1234567', function(error, result) {
+      nabto.startupAndOpenProfile('nonexisting', '1234567', function(error, result) {
         expect(result).not.toBeDefined();
         expect(error.code).toBe(NabtoError.Code.API_SERVER_LOGIN_FAILURE);
         done();
@@ -195,7 +195,7 @@ exports.defineAutoTests = function () {
 
     if (device.platform === 'browser') {
       it('api error with invalid password - fails in all but stub', function(done) {
-	    nabto.startup('bad_password', 'hesthest', function(error, result) {
+	    nabto.startupAndOpenProfile('bad_password', 'hesthest', function(error, result) {
           expect(result).not.toBeDefined();
           expect(error.code).toBe(NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD);
           done();
@@ -204,7 +204,7 @@ exports.defineAutoTests = function () {
     }
 
     it('starts up nabto with username/password', function(done) {
-      nabto.startup('guest', 'blank', function(error) {
+      nabto.startupAndOpenProfile('guest', 'blank', function(error) {
         expect(error).not.toBeDefined();
         done();
       });
