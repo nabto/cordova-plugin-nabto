@@ -17,7 +17,7 @@
  * low level API.
  *
  * P2P_xxx error codes: These error codes mean that the interaction
- * with the low level Nabto API went ok - but anerror occurred when
+ * with the low level Nabto API went ok - but an error occurred when
  * invoking the remote Nabto device.
  *
  * EXC_xxx error codes: The communication with the remote device was
@@ -49,9 +49,10 @@ var NabtoConstants = require('./NabtoConstants');
 NabtoError.Code = {};
 
 // wrapper specific codes
-NabtoError.Code.CDV_INVALID_ARG     =  1000;
-NabtoError.Code.CDV_UNEXPECTED_DATA =  1001;
-NabtoError.Code.CDV_MALFORMED_JSON  =  1002;
+NabtoError.Code.CDV_INVALID_ARG             =  1000;
+NabtoError.Code.CDV_UNEXPECTED_DATA         =  1001;
+NabtoError.Code.CDV_MALFORMED_JSON          =  1002;
+NabtoError.Code.CDV_MALFORMED_ERROR_MESSAGE =  1003;
 
 // relevant error codes mapped from nabto_client_api.h
 NabtoError.Code.API_CERT_OPEN_FAIL              = 2001;
@@ -63,10 +64,6 @@ NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
 NabtoError.Code.API_CERT_SAVING_FAILURE         = 2009;
 NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE    = 2026;
 NabtoError.Code.API_RPC_INTERFACE_NOT_SET       = 2027;
-NabtoError.Code.API_RPC_NO_SUCH_REQUEST         = 2028;
-NabtoError.Code.API_RPC_DEVICE_OFFLINE          = 2029;
-NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE = 2030;
-NabtoError.Code.API_RPC_COMMUNICATION_PROBLEM   = 2031;
 NabtoError.Code.API_CONNECT_TIMEOUT             = 2032;
 NabtoError.Code.API_ERROR                       = 2100;
 
@@ -101,8 +98,10 @@ NabtoError.Code.EXC_NO_QUERY_ID      = 4011;
 ////////////////////////////////////////////////////////////////////////////////
 
 NabtoError.Message = {};
-NabtoError.Message[NabtoError.Code.CDV_INVALID_ARG]           = "Invalid argument specified to Cordova wrapper";		    
-NabtoError.Message[NabtoError.Code.CDV_UNEXPECTED_DATA]       = "Unexpected status data from SDK";		 NabtoError.Message[NabtoError.Code.CDV_MALFORMED_JSON]        = "SDK did not return valid JSON";
+NabtoError.Message[NabtoError.Code.CDV_INVALID_ARG]             = "Invalid argument specified to Cordova wrapper";		    
+NabtoError.Message[NabtoError.Code.CDV_UNEXPECTED_DATA]         = "Unexpected status data from SDK";
+NabtoError.Message[NabtoError.Code.CDV_MALFORMED_JSON]          = "SDK did not return valid JSON";
+NabtoError.Message[NabtoError.Code.CDV_MALFORMED_ERROR_MESSAGE] = "SDK did not return a valid JSON formatted error where expected";
 
 NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
 NabtoError.Message[NabtoError.Code.API_NOT_INITIALIZED]       = "API not initialized";
@@ -111,7 +110,7 @@ NabtoError.Message[NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED] = "Error opening 
 NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key could not be opened (decrypted) using specified password";
 NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
 NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
-NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "RPC interface not set prior to invoking";
+NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "JSON object contains error message";
 NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
 NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Device is offline";
@@ -158,12 +157,14 @@ NabtoError.Category.WRAPPER          = 4;
 ////////////////////////////////////////////////////////////////////////////////
 
 
+// constructor
+
 function NabtoError(category, status, innerError) {
-  //console.log("entering NabtoError with category: " + category + " status: " + status + " innerError: " + innerError);
+  console.log(`created NabtoError with category [${category}], status [${status}] and innerError[${innerError}]`);
   if (typeof(category) === "undefined") {
     throw new Error("Missing or invalid category");
   }
-  innerError = JSON.parse(innerError);
+    
   this.initStatus(category, status, innerError);
   
   this.__defineGetter__('value', function() {
@@ -183,10 +184,10 @@ function NabtoError(category, status, innerError) {
 
 }
 
-NabtoError.prototype.initStatus = function(category, status, doc) {
+NabtoError.prototype.initStatus = function(category, status, innerError) {
   switch (category) {
-  case NabtoError.Category.API:     this.handleApiError(status,doc); break;
-  case NabtoError.Category.P2P:     this.handleP2pError(status, doc); break;
+  case NabtoError.Category.API:     this.handleApiError(status, innerError); break;
+  case NabtoError.Category.P2P:     this.handleErrorWithDetail(status, innerError); break;
   case NabtoError.Category.WRAPPER: this.handleWrapperError(status); break;
   default:
     throw new Error("Invalid category: " + category);
@@ -197,7 +198,7 @@ NabtoError.prototype.lookupMessage = function(code) {
   return NabtoError.Message[code];
 };
 
-NabtoError.prototype.handleApiError = function(status,doc) {
+NabtoError.prototype.handleApiError = function(status, innerError) {
   this.inner = status;
   this.category = NabtoError.Category.API;
   
@@ -241,14 +242,19 @@ NabtoError.prototype.handleApiError = function(status,doc) {
     break;
 
   case NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE:
-    this.handleErrorWithDetail(status,doc);
-	break;
+    this.handleErrorWithDetail(status, innerError);
+    break;
 
   defau1t:
     console.log(`Unexpected API status ${status}`);
     this.code = NabtoError.Code.API_ERROR;
     break;
   }
+};
+
+NabtoError.prototype.handleWrapperError = function(status) {
+  this.code = status;
+  this.category = NabtoError.Category.WRAPPER;
 };
 
 /* Handle output of the following form to an appropriate NabtoError:
@@ -268,12 +274,22 @@ NabtoError.prototype.handleApiError = function(status,doc) {
  *        "body": "Communication with the device succeeded, but the application on the device returned error code NP_E_INV_QUERY_ID"
  *    }
  */
-NabtoError.prototype.handleP2pError = function(status, obj) {
-  if (typeof(status) === 'number' && typeof(obj) === 'undefined') {
+NabtoError.prototype.handleErrorWithDetail = function(status, innerError) {
+  if (typeof(status) === 'number' && typeof(innerError) === 'undefined') {
     // a few functions inject a Nabto event code directly instead of through an error document
     this.handleNabtoEvent(status);
     return;
   }
+  var obj = undefined;
+  try {
+    obj = JSON.parse(innerError);
+  } catch (e) {
+    console.log(`Error parsing doc [${innerError}] from status [${status}]: ${e.stack || e}`);
+    this.inner = innerError;
+    this.handleWrapperError(NabtoError.Code.CDV_MALFORMED_ERROR_MESSAGE);
+    return;
+  }
+
   var error = obj.error;
   this.inner = error;
   if (!(error && error.event)) {
@@ -287,29 +303,6 @@ NabtoError.prototype.handleP2pError = function(status, obj) {
   }
 };
 
-NabtoError.prototype.handleWrapperError = function(status) {
-  this.code = status;
-  this.category = NabtoError.Category.WRAPPER;
-};
-
-NabtoError.prototype.handleErrorWithDetail = function(status, obj) {
-  if (typeof(status) === 'number' && typeof(obj) === 'undefined') {
-    // a few functions inject a Nabto event code directly instead of through an error document
-    this.handleNabtoEvent(status);
-    return;
-  }
-  var error = obj.error;
-  this.inner = error;
-  if (!(error && error.event)) {
-    this.handleUnexpectedObject(obj);
-  } else {
-    if (error.event == NabtoConstants.ClientEvents.UNABTO_APPLICATION_EXCEPTION) {
-      this.handleDeviceException(error);
-    } else {
-      this.handleNabtoEvent(error.event);
-    }
-  }
-};
 
 /*function(status,doc) {
   // TODO workaround for AMP-73: Client API error details in JSON not

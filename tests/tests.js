@@ -27,6 +27,8 @@ var errors = {
 function xdescribe(title, func) {}
 
 exports.defineAutoTests = function () {
+
+    try {
   
   describe('NabtoError', function () {
     
@@ -48,7 +50,7 @@ exports.defineAutoTests = function () {
     });
 
     it('should handle ok api result with nabto error event', function() {
-      var s = new NabtoError(NabtoError.Category.P2P, 0, errors.offline);
+      var s = new NabtoError(NabtoError.Category.P2P, 0, JSON.stringify(errors.offline));
       expect(s.category).toBe(NabtoError.Category.P2P);
       expect(s.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
       expect(s.message).toMatch(/not online/i);
@@ -56,7 +58,7 @@ exports.defineAutoTests = function () {
     });
 
     it('should handle nabto error event with device exception', function() {
-      var s = new NabtoError(NabtoError.Category.P2P, 0, errors.exception);
+      var s = new NabtoError(NabtoError.Category.P2P, 0, JSON.stringify(errors.exception));
       expect(s.category).toBe(NabtoError.Category.DEVICE_EXCEPTION);
       expect(s.code).toBe(NabtoError.Code.EXC_NO_ACCESS);
       expect(s.message).toMatch(/access denied/i);
@@ -65,7 +67,7 @@ exports.defineAutoTests = function () {
 
     it('should gracefully handle unexpected input', function() {
       var dummy = { "foo": "bar" };
-      var s = new NabtoError(NabtoError.Category.P2P, 0, dummy);
+      var s = new NabtoError(NabtoError.Category.P2P, 0, JSON.stringify(dummy));
       expect(s.category).toBe(NabtoError.Category.WRAPPER);
       expect(s.code).toBe(NabtoError.Code.CDV_UNEXPECTED_DATA);
       expect(s.inner).toMatch(/unexpected object/i);
@@ -99,7 +101,7 @@ exports.defineAutoTests = function () {
 	  if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
 	    var response = clone(errors.offline);
 	    response.error.event = toNabtoEventCode(NabtoError.Code[p]);
-	    var s = new NabtoError(NabtoError.Category.P2P, 0, response);
+	    var s = new NabtoError(NabtoError.Category.P2P, 0, JSON.stringify(response));
 	    if (s.code == NabtoError.Code.P2P_OTHER) {
 	      expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
 	    } else {
@@ -129,11 +131,11 @@ exports.defineAutoTests = function () {
 
     it('should have a global nabto object', function() {
       expect(nabto).toBeDefined();
-      expect(nabto.startup).toBeDefined();
+      expect(nabto.startupAndOpenProfile).toBeDefined();
     });
 
     it('starts up nabto', function(done) {
-      nabto.startup(function(error) {
+      nabto.startupAndOpenProfile(function(error) {
         expect(error).not.toBeDefined();
         done();
       });
@@ -142,9 +144,9 @@ exports.defineAutoTests = function () {
     it('can call startup multiple times', function(done) {
       // Wait a little for nabto startup to completely finish
       setTimeout(function() {
-        nabto.startup(function(error) {
+        nabto.startupAndOpenProfile(function(error) {
           expect(error).not.toBeDefined();
-          nabto.startup(function(error) {
+          nabto.startupAndOpenProfile(function(error) {
             expect(error).not.toBeDefined();
             done();
           });
@@ -186,7 +188,7 @@ exports.defineAutoTests = function () {
     });
     
     it('api error with invalid username', function(done) {
-      nabto.startup('nonexisting', '1234567', function(error, result) {
+      nabto.startupAndOpenProfile('nonexisting', '1234567', function(error, result) {
         expect(result).not.toBeDefined();
         expect(error.code).toBe(NabtoError.Code.API_SERVER_LOGIN_FAILURE);
         done();
@@ -195,7 +197,7 @@ exports.defineAutoTests = function () {
 
     if (device.platform === 'browser') {
       it('api error with invalid password - fails in all but stub', function(done) {
-	nabto.startup('bad_password', 'hesthest', function(error, result) {
+	nabto.startupAndOpenProfile('bad_password', 'hesthest', function(error, result) {
           expect(result).not.toBeDefined();
           expect(error.code).toBe(NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD);
           done();
@@ -204,7 +206,7 @@ exports.defineAutoTests = function () {
     }
 
     it('starts up nabto with username/password', function(done) {
-      nabto.startup('guest', 'blank', function(error) {
+      nabto.startupAndOpenProfile('guest', 'blank', function(error) {
         expect(error).not.toBeDefined();
         done();
       });
@@ -251,12 +253,17 @@ exports.defineAutoTests = function () {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
 	expect(error).not.toBeDefined();
-        nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
-           expect(error).toBeDefined();
-           expect(error.code).toBe(NabtoError.Code.API_RPC_DEVICE_OFFLINE);
-           expect(result).not.toBeDefined();
-           done();
-        });
+        try {
+          nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
+            expect(error).toBeDefined();
+            expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
+            expect(result).not.toBeDefined();
+            done();
+          });
+        } catch (e) {
+          console.error(`Runaway exception in RPC invoke: ${e.stack || e}`);
+          done();
+        }
       });
     });
 
@@ -310,7 +317,7 @@ exports.defineAutoTests = function () {
     if (device.platform !== 'browser') {
 
       it('starts nabto', function(done) {
-      nabto.startup(function(error) {
+      nabto.startupAndOpenProfile(function(error) {
         expect(error).not.toBeDefined();
         done();
       });
@@ -465,6 +472,11 @@ exports.defineAutoTests = function () {
       expect(state.toString()).toBe('NTCS_CLOSED');
     });
   });
+
+    } catch (e) {
+        console.error("Run away exception in SUT: " + e.stack || e);
+        throw e;
+    }
 
 };
 

@@ -85,7 +85,34 @@ function rpcSetDefaultInterface(success, error, opts) {
 }
 
 function rpcInvoke(success, error, opts) {
-  return fetchUrl(success, error, opts);
+  if (!started) {
+    return nextTick(
+      function() {
+	error(NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED);
+      });
+  };
+  if (opts && typeof(opts[0]) === 'string' && opts[0].length > 0) {
+    var url = opts[0];
+    if (url.indexOf('error') == -1) {
+      console.log("NabtoClientApi Stub - OK [" + url + "]");
+      return nextTick(function() { success(JSON.stringify(responses.ok)); } );     
+    } else {
+      if (url.indexOf('offline') != -1) {
+	console.log(`NabtoClientApi Stub rpcInvoke - ERROR (offline)`);
+	return nextTick(function() {
+          error(JSON.stringify(responses.offline));
+        });
+      } else if (url.indexOf('exception') != -1) {
+	console.log("NabtoClientApi Stub - ERROR (device exception)");
+	return nextTick(function() { success(JSON.stringify(responses.exception)); });
+      } else {
+	console.log("NabtoClientApi Stub - ERROR (other)");
+	return nextTick(function() { success("api invoked successfully, but unspecified error internally in sdk"); });
+      }
+    }
+  } else {
+    return nextTick(function() { success("bad input - probably never here as this was caught in nabto.js"); });
+  }
 }
 
 function getSessionToken(success, error, opts) {
@@ -127,6 +154,7 @@ function version(success, error, opts) {
 
 module.exports = {
   startup: startup,
+  startupAndOpenProfile: startup,
   shutdown: shutdown,
   rpcSetDefaultInterface: rpcSetDefaultInterface,
   rpcInvoke: rpcInvoke,
