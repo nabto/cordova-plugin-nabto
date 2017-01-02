@@ -476,7 +476,9 @@ exports.defineManualTests = function(contentEl, createActionButton) {
   });
   createActionButton('PrepareInvoke with free device', function() {
     var s = ["test.amp-o.appmyproduct.com","test.amp-f.appmyproduct.com"];
+    nabto.startup();
     nabto.prepareInvoke(s);
+    nabto.shutdown();
   });
   
 };
