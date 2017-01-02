@@ -4,6 +4,8 @@
 
 /* globals cordova, nabto, NabtoError, NabtoTunnelState */
 
+var GRACEPERIOD = 15; // seconds
+
 var errors = {
   "offline": {
     "error" : {
@@ -573,50 +575,47 @@ exports.defineManualTests = function(contentEl, createActionButton) {
     nabto.shutdown();
     console.log("expected result: ad should be shown if test ran outside of grace period");
   });
-  createActionButton('PrepareInvoke called twice', function() {
-    nabto.startup(); 
-    nabto.prepareInvoke(s);
-    nabto.prepareInvoke(s);
-    nabto.shutdown();
-    console.log("expected result: ad should be shown only once if test ran outside of grace period");
-  });
-  createActionButton('PrepareInvoke called twice w. 10s interval', function() {
+  createActionButton('PrepareInvoke called twice within grace period', function() {
+    console.log("test running");
     nabto.startup(); 
     nabto.prepareInvoke(s);
     setTimeout(function(){
       nabto.prepareInvoke(s);
       nabto.shutdown();
-      console.log("expected result: ad should have been shown only once if test ran outside of grace period");
-    }, 10000);
+      console.log("Test done: ad should have been shown only once and only if test ran outside of grace period");
+    }, 5000);
   });
-  createActionButton('PrepareInvoke called twice w. 10s interval and shutdown between', function() {
+  createActionButton('PrepareInvoke called twice within grace period w. shutdown between', function() {
+    console.log("test running");
     nabto.startup(); 
     nabto.prepareInvoke(s);
     nabto.shutdown();
     setTimeout(function(){
       nabto.prepareInvoke(s);
       nabto.shutdown();
-      console.log("expected result: ad should have been shown only once if test ran outside of grace period");
-    }, 10000);
+      console.log("Test done: ad should have been shown only once and only if test ran outside of grace period");
+    }, 5000);
   });
-  createActionButton('PrepareInvoke called twice w. 16s interval', function() {
+  createActionButton('PrepareInvoke called twice w. interval greater than grace period', function() {
+    console.log("test running");
     nabto.startup(); 
     nabto.prepareInvoke(s);
     setTimeout(function(){
       nabto.prepareInvoke(s);
       nabto.shutdown();
-      console.log("expected result: ad should have been shown only once if test ran outside of grace period");
-    }, 16000);
+      console.log("Test done: ad should have been shown only once and only if test ran outside of grace period");
+    }, (GRACEPERIOD+1)*1000);
   });
-  createActionButton('PrepareInvoke called twice w. 16s interval and shutdown between', function() {
+  createActionButton('PrepareInvoke called twice w. interval greater than grace period and shutdown between', function() {
+    console.log("test running");
     nabto.startup(); 
     nabto.prepareInvoke(s);
     nabto.shutdown();
     setTimeout(function(){
       nabto.prepareInvoke(s);
       nabto.shutdown();
-      console.log("expected result: ad should have been shown twice with 16s between if test ran outside of grace period");
-    }, 16000);
+      console.log("Test done: ad should have been shown twice with grace period in between, and only once after the grace period if test ran inside of grace period");
+    }, (GRACEPERIOD+1)*1000);
   });
   createActionButton('PrepareInvoke with own-it devices only', function() {
     var t = ["test.amp-o.appmyproduct.com","test.amp-o.appmyproduct.com"];
