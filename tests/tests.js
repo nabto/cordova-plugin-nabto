@@ -474,5 +474,10 @@ exports.defineManualTests = function(contentEl, createActionButton) {
     var s = new NabtoError(1000015);
     console.log(s);
   });
+  createActionButton('PrepareInvoke with free device', function() {
+    var s = ["test.amp-o.appmyproduct.com","test.amp-f.appmyproduct.com"];
+    nabto.prepareInvoke(s);
+  });
+  
 };
 
