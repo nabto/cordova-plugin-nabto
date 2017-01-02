@@ -244,16 +244,19 @@ public class Nabto extends CordovaPlugin {
             
                         // Checking if free, own-it or not AMP. We should agree how to define free and own-it in url
                         String[] bits = dev.split("\\.");
-                        bits = bits[1].split("-");
-                        if (bits[bits.length-1].equals("f")){
-                            Log.d("prepareInvoke","found free device: " + dev);
-                            showAdFlag = true;
-                        } else if (bits[bits.length-1].equals("o")){
-                            Log.d("prepareInvoke","found Own-it device: " + dev);
-                        } else {
-                            // device not on AMP, will never grant access
-                            Log.d("prepareInvoke","found non-AMP device: " + dev);
-                            continue;
+                        if (bits.length > 1){
+                            bits = bits[1].split("-");
+                            if (bits[bits.length-1].equals("f")){
+                                Log.d("prepareInvoke","found free device: " + dev);
+                                showAdFlag = true;
+                            } else if (bits[bits.length-1].equals("o")){
+                                Log.d("prepareInvoke","found Own-it device: " + dev);
+                            }else {
+                                // device not on AMP, will never grant access
+                                Log.d("prepareInvoke","found non-AMP device: " + dev);
+                            }
+                        }else {
+                            Log.d("prepareInvoke","found invalid device: " + dev);
                         }
                         if(!deviceCache.contains(dev)){
                             deviceCache.add(dev);
@@ -480,11 +483,6 @@ public class Nabto extends CordovaPlugin {
                 RpcResult result = nabto.rpcInvoke(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
                     if(result.getStatus() == NabtoStatus.FAILED_WITH_JSON_MESSAGE){
-                        /*try{
-                            Log.w("rpcInvoke","result.getJson: " + result.getJson().toString());
-                        } catch (NullPointerException e){
-                            Log.w("rpcInvoke","result.getJson: NullPointerException");
-                            }*/
                         cc.error(result.getJson());
                     } else {
                         cc.error(result.getStatus().ordinal());

@@ -126,7 +126,8 @@ exports.defineAutoTests = function () {
 
   describe('NabtoApiInteraction', function () {
     var testUrl = 'nabto://demo.nabto.net/wind_speed.json?';
-
+    var testDevice = 'demo.nabto.net';
+    
     it('should have a global nabto object', function() {
       expect(nabto).toBeDefined();
       expect(nabto.startup).toBeDefined();
@@ -170,7 +171,22 @@ exports.defineAutoTests = function () {
     });
 
     it('cannot fetch url with non-open nabto', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl(testUrl, function(error, result) {
+        expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
+        done();
+      });
+    });
+
+    it('cannot invokeRpc with non-open nabto', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke(testUrl, function(error, result) {
         expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
         done();
       });
@@ -178,7 +194,21 @@ exports.defineAutoTests = function () {
 
 
     it('gets error with invalid arguments to fetchUrl', function(done) {
+      nabto.prepareInvoke(123,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl(123, function(error, result) {
+        expect(result).not.toBeDefined();
+        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
+        done();
+      });
+    });
+    
+    it('gets error with invalid arguments to rpcInvoke', function(done) {
+      nabto.prepareInvoke(123,function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke(123, function(error, result) {
         expect(result).not.toBeDefined();
         expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
         done();
@@ -211,8 +241,26 @@ exports.defineAutoTests = function () {
     });
 
     it('fetches a nabto url', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl(testUrl, function(error, result) {
 	    expect(error).not.toBeDefined();
+        expect(result.response).toBeDefined();
+        expect(result.response.speed_m_s).toBeDefined();
+        done();
+      });
+    });
+
+    it('rpcInvoke on a nabto url', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke(testUrl, function(error, result) {
+	    expect(error).not.toBeDefined();
+        expect(result.response).toBeDefined();
         expect(result.response.speed_m_s).toBeDefined();
         done();
       });
@@ -230,8 +278,13 @@ exports.defineAutoTests = function () {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
 	    expect(error).not.toBeDefined();
+        var t = ["demo.nabto.net"];
+        nabto.prepareInvoke(t,function(error){
+          expect(error).not.toBeDefined();
+        });
         nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
           expect(error).not.toBeDefined();
+          expect(result.response).toBeDefined();
           expect(result.response.speed_m_s).toBeDefined();
           done();
 	    });
@@ -239,6 +292,10 @@ exports.defineAutoTests = function () {
     });
 
     it('returns json error when fetching an offline device through legacy fetchurl', function(done) {
+      var t = ["offline-error-216b3ea2.nabto.net"];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
         expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
@@ -251,7 +308,11 @@ exports.defineAutoTests = function () {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
 	    expect(error).not.toBeDefined();
-        nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
+        var t = ["offline-error-216b3ea2.nabto-o.net"];
+        nabto.prepareInvoke(t,function(error){
+          expect(error).not.toBeDefined();
+        });
+        nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto-o.net/wind_speed.json', function(error, result) {
           expect(error).toBeDefined();
           expect(error.code).toBe(NabtoError.Code.API_RPC_DEVICE_OFFLINE);
           expect(result).not.toBeDefined();
@@ -301,6 +362,32 @@ exports.defineAutoTests = function () {
         done();
       });
     });
+
+    it('rpcInvoke fails when not calling prepareInvoke', function(done){
+      nabto.startupAndOpenProfile('guest', 'blank', function(error) {
+        expect(error).not.toBeDefined();
+        done();
+      });
+      nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+        expect(error).toBeDefined();
+        expect(result).not.toBeDefined();
+        done();
+	  });
+
+    });
+
+    it('rpcInvoke fails when prepareInvoke called with wrong device', function(done){
+      var t = ["wrong.device.id"];
+      nabto.prepareInvoke(t, function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+        expect(error).toBeDefined();
+        expect(result).not.toBeDefined();
+        done();
+	  });
+    });
+
   });
 
   describe('Nabto Tunnel', function() {
@@ -470,15 +557,94 @@ exports.defineAutoTests = function () {
 
 
 exports.defineManualTests = function(contentEl, createActionButton) {
-  createActionButton('Simple Test !!', function() {
-    var s = new NabtoError(1000015);
-    console.log(s);
+  // PrepareInvoke tests use free devices if not specified
+  var s = ["test.amp-f.appmyproduct.com","test.amp-f.appmyproduct.com"];
+  
+  createActionButton('PrepareInvoke with free and own-it device', function() {
+    var t = ["test.amp-o.appmyproduct.com","test.amp-f.appmyproduct.com"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should be shown if test ran outside of grace period");
   });
-  createActionButton('PrepareInvoke with free device', function() {
-    var s = ["test.amp-o.appmyproduct.com","test.amp-f.appmyproduct.com"];
+  createActionButton('PrepareInvoke with free devices only', function() {
     nabto.startup();
     nabto.prepareInvoke(s);
     nabto.shutdown();
+    console.log("expected result: ad should be shown if test ran outside of grace period");
+  });
+  createActionButton('PrepareInvoke called twice', function() {
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    nabto.prepareInvoke(s);
+    nabto.shutdown();
+    console.log("expected result: ad should be shown only once if test ran outside of grace period");
+  });
+  createActionButton('PrepareInvoke called twice w. 10s interval', function() {
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("expected result: ad should have been shown only once if test ran outside of grace period");
+    }, 10000);
+  });
+  createActionButton('PrepareInvoke called twice w. 10s interval and shutdown between', function() {
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    nabto.shutdown();
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("expected result: ad should have been shown only once if test ran outside of grace period");
+    }, 10000);
+  });
+  createActionButton('PrepareInvoke called twice w. 16s interval', function() {
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("expected result: ad should have been shown only once if test ran outside of grace period");
+    }, 16000);
+  });
+  createActionButton('PrepareInvoke called twice w. 16s interval and shutdown between', function() {
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    nabto.shutdown();
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("expected result: ad should have been shown twice with 16s between if test ran outside of grace period");
+    }, 16000);
+  });
+  createActionButton('PrepareInvoke with own-it devices only', function() {
+    var t = ["test.amp-o.appmyproduct.com","test.amp-o.appmyproduct.com"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  createActionButton('PrepareInvoke with non-amp device', function() {
+    var t = ["test.nabto.com","test.nabto.com"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  createActionButton('PrepareInvoke with invalid device', function() {
+    var t = ["test.asf-sfa.asf-f.nabto.com","testcom"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  createActionButton('PrepareInvoke with empty list', function() {
+    var t = [];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
   });
   
 };

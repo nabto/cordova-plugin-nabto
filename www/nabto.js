@@ -42,33 +42,6 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
     'Nabto', 'startupAndOpenProfile', [user, pass]);
 };
 
-
-function showAd(cb){
-  var err, obj;
-  try{
-	this.browser = cordova.InAppBrowser.open('https://download.nabto.com/mkm/ad?jhkjh', '_blank', 'location=no');
-
-	this.browser.show();
-  } catch (e) {
-	err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CSP_UNSAFE_INLINE,e.message);
-    return cb(err, obj);
-  }
-  var self = this;
-
-  self.browser.addEventListener('loadstop', function(event) {
-    console.log("Event URL at loadstop: " + event.url);
-    if (event.url.match("close")) {
-	  self.browser.close();
-	  // exec(
-	  // 	function success(){cb();},
-	  // 	function error(apiStatus) {
-	  // 	  cb(new NabtoError(NabtoError.Category.API, apiStatus));
-	  // 	},
-	  // 	'Nabto', 'adShown',[]);
-    }
-  });
-}
-
 Nabto.prototype.prepareInvoke = function(devices, cb) {
   cb = cb || function(){};
   exec(
