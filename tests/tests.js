@@ -190,7 +190,7 @@ exports.defineAutoTests = function () {
     it('api error with invalid username', function(done) {
       nabto.startupAndOpenProfile('nonexisting', '1234567', function(error, result) {
         expect(result).not.toBeDefined();
-        expect(error.code).toBe(NabtoError.Code.API_SERVER_LOGIN_FAILURE);
+        expect(error.code).toBe(NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED);
         done();
       });
     });
