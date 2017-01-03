@@ -164,7 +164,13 @@ function NabtoError(category, status, innerError) {
   if (typeof(category) === "undefined") {
     throw new Error("Missing or invalid category");
   }
-    
+/*  if (status == NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE){
+    try{
+	  innerError = JSON.parse(innerError);
+    } catch (e){
+	  console.log("cannot parse innerError: " + innerError);
+    }
+  }*/
   this.initStatus(category, status, innerError);
   
   this.__defineGetter__('value', function() {

@@ -4,6 +4,8 @@
 
 /* globals cordova, nabto, NabtoError, NabtoTunnelState */
 
+var GRACEPERIOD = 15; // seconds
+
 var errors = {
   "offline": {
     "error" : {
@@ -86,7 +88,7 @@ exports.defineAutoTests = function () {
       // code = 3120;
       // event_code = 1000020
       if (Math.floor(code / 1000) != 3) {
-	throw `unexpected base for nabto event: ${code/1000}`;
+	    throw `unexpected base for nabto event: ${code/1000}`;
       }
       var base = (code - 3000);
       var major = Math.floor(base / 100) * 1000000;
@@ -97,30 +99,30 @@ exports.defineAutoTests = function () {
 
     it('should handle nabto events correctly', function() {
       for (var p in NabtoError.Code) {
-	if (NabtoError.Code.hasOwnProperty(p)) {
-	  if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
-	    var response = clone(errors.offline);
-	    response.error.event = toNabtoEventCode(NabtoError.Code[p]);
-	    var s = new NabtoError(NabtoError.Category.P2P, 0, JSON.stringify(response));
-	    if (s.code == NabtoError.Code.P2P_OTHER) {
-	      expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
-	    } else {
-	      expect(s.code).toBe(NabtoError.Code[p]);
-	    }
-	  }
-	}
+	    if (NabtoError.Code.hasOwnProperty(p)) {
+	      if (hasPrefix(p, "P2P_") && p !== "P2P_OTHER") {
+	        var response = clone(errors.offline);
+	        response.error.event = toNabtoEventCode(NabtoError.Code[p]);
+	        var s = new NabtoError(NabtoError.Category.P2P, 0, JSON.stringify(response));
+	        if (s.code == NabtoError.Code.P2P_OTHER) {
+	          expect(p).toBe("Nabto event " + response.error.event + " not handled correctly");
+	        } else {
+	          expect(s.code).toBe(NabtoError.Code[p]);
+	        }
+          }
+        }
       }
     });
 
     it('should provide an error message for each error code', function() {
       for (var p in NabtoError.Code) {
-	if (NabtoError.Code.hasOwnProperty(p)) {
-	  if (NabtoError.Message[NabtoError.Code[p]]) {
-	    expect(NabtoError.Message[NabtoError.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
-	  } else {
-	    expect(p).toBe("Missing an error message"); // clumsy way to get a custom error message to include erroneous prop
-	  }
-	}
+	    if (NabtoError.Code.hasOwnProperty(p)) {
+	      if (NabtoError.Message[NabtoError.Code[p]]) {
+	        expect(NabtoError.Message[NabtoError.Code[p]]).toBeDefined(); // no surprise (but otherwise we get a warning)
+	      } else {
+	        expect(p).toBe("Missing an error message"); // clumsy way to get a custom error message to include erroneous prop
+	      }
+	    }
       }
     });
     
@@ -128,7 +130,8 @@ exports.defineAutoTests = function () {
 
   describe('NabtoApiInteraction', function () {
     var testUrl = 'nabto://demo.nabto.net/wind_speed.json?';
-
+    var testDevice = 'demo.nabto.net';
+    
     it('should have a global nabto object', function() {
       expect(nabto).toBeDefined();
       expect(nabto.startupAndOpenProfile).toBeDefined();
@@ -172,7 +175,22 @@ exports.defineAutoTests = function () {
     });
 
     it('cannot fetch url with non-open nabto', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl(testUrl, function(error, result) {
+        expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
+        done();
+      });
+    });
+
+    it('cannot invokeRpc with non-open nabto', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke(testUrl, function(error, result) {
         expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
         done();
       });
@@ -180,7 +198,21 @@ exports.defineAutoTests = function () {
 
 
     it('gets error with invalid arguments to fetchUrl', function(done) {
+      nabto.prepareInvoke(123,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl(123, function(error, result) {
+        expect(result).not.toBeDefined();
+        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
+        done();
+      });
+    });
+    
+    it('gets error with invalid arguments to rpcInvoke', function(done) {
+      nabto.prepareInvoke(123,function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke(123, function(error, result) {
         expect(result).not.toBeDefined();
         expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
         done();
@@ -197,11 +229,11 @@ exports.defineAutoTests = function () {
 
     if (device.platform === 'browser') {
       it('api error with invalid password - fails in all but stub', function(done) {
-	nabto.startupAndOpenProfile('bad_password', 'hesthest', function(error, result) {
+	    nabto.startupAndOpenProfile('bad_password', 'hesthest', function(error, result) {
           expect(result).not.toBeDefined();
           expect(error.code).toBe(NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD);
           done();
-	});
+	    });
       });
     }
 
@@ -213,8 +245,26 @@ exports.defineAutoTests = function () {
     });
 
     it('fetches a nabto url', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl(testUrl, function(error, result) {
-	expect(error).not.toBeDefined();
+	    expect(error).not.toBeDefined();
+        expect(result.response).toBeDefined();
+        expect(result.response.speed_m_s).toBeDefined();
+        done();
+      });
+    });
+
+    it('rpcInvoke on a nabto url', function(done) {
+      var t = [testDevice];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke(testUrl, function(error, result) {
+	    expect(error).not.toBeDefined();
+        expect(result.response).toBeDefined();
         expect(result.response.speed_m_s).toBeDefined();
         done();
       });
@@ -235,6 +285,7 @@ exports.defineAutoTests = function () {
         nabto.prepareInvoke(["demo.nabto.net"],function(error,result){});
         nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
           expect(error).not.toBeDefined();
+          expect(result.response).toBeDefined();
           expect(result.response.speed_m_s).toBeDefined();
           done();
 	    });
@@ -242,6 +293,10 @@ exports.defineAutoTests = function () {
     });
 
     it('returns json error when fetching an offline device through legacy fetchurl', function(done) {
+      var t = ["offline-error-216b3ea2.nabto.net"];
+      nabto.prepareInvoke(t,function(error){
+        expect(error).not.toBeDefined();
+      });
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
         expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
@@ -310,45 +365,71 @@ exports.defineAutoTests = function () {
         done();
       });
     });
+
+    it('rpcInvoke fails when not calling prepareInvoke', function(done){
+      nabto.startupAndOpenProfile('guest', 'blank', function(error) {
+        expect(error).not.toBeDefined();
+        done();
+      });
+      nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+        expect(error).toBeDefined();
+        expect(result).not.toBeDefined();
+        done();
+	  });
+
+    });
+
+    it('rpcInvoke fails when prepareInvoke called with wrong device', function(done){
+      var t = ["wrong.device.id"];
+      nabto.prepareInvoke(t, function(error){
+        expect(error).not.toBeDefined();
+      });
+      nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+        expect(error).toBeDefined();
+        expect(result).not.toBeDefined();
+        done();
+	  });
+    });
+
   });
 
   describe('Nabto Tunnel', function() {
     var nabtoDevice = 'streamdemo.nabto.net',
-	remotePort = 80;    
+	    remotePort = 80;    
 
     if (device.platform !== 'browser') {
 
       it('starts nabto', function(done) {
-      nabto.startupAndOpenProfile(function(error) {
-        expect(error).not.toBeDefined();
-        done();
-      });
+        nabto.startupAndOpenProfile(function(error) {
+          expect(error).not.toBeDefined();
+          done();
+        });
       });
       
 
       it('gets tunnel state on closed tunnel', function(done) {
-      nabto.tunnelState(function(error, state) {
-        expect(error).not.toBeDefined();
-        expect(state.value).toBe(-1);
-        done();
+        nabto.tunnelState(function(error, state) {
+          expect(error).not.toBeDefined();
+          expect(state.value).toBe(-1);
+          done();
+        });
       });
-    });
-    
-    it('handles invalid arguments to tunnelOpenTcp', function(done) {
-      nabto.tunnelOpenTcp(function(error) {
-        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-        nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
+      
+      it('handles invalid arguments to tunnelOpenTcp', function(done) {
+        nabto.tunnelOpenTcp(function(error) {
           expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-          nabto.tunnelOpenTcp(123, remotePort, function(error) {
+          nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
             expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-            done();
+            nabto.tunnelOpenTcp(123, remotePort, function(error) {
+              expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
+              done();
+            });
           });
         });
       });
-    });
 
       it('opens a nabto tunnel and wait for it to connect', function(done) {
-	nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
+	    nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
           expect(error).not.toBeDefined();
           var interval = setInterval(function() {
             nabto.tunnelState(function(error, state) {
@@ -358,21 +439,21 @@ exports.defineAutoTests = function () {
               done();
             });
           }, 500);
-	});
+	    });
       });
       
       it('fails to open a second tunnel', function(done) {
-	nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
+	    nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
           expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
           done();
-	});
+	    });
       });
       
       it('gets tunnel port and has a connection', function(done) {
-	nabto.tunnelPort(function(error, port) {
+	    nabto.tunnelPort(function(error, port) {
           expect(error).not.toBeDefined();
           expect(port).toBeGreaterThan(1000);
-	  
+	      
           var xhttp = new XMLHttpRequest();
           xhttp.onreadystatechange = function() {
             if (xhttp.readyState !== 4) { return; }
@@ -382,73 +463,73 @@ exports.defineAutoTests = function () {
           };
           xhttp.open('GET', 'http://localhost:' + port, true);
           xhttp.send();
-	});
+	    });
       });
 
       it('closes tunnel', function(done) {
-	nabto.tunnelClose(function(error) {
+	    nabto.tunnelClose(function(error) {
           expect(error).not.toBeDefined();
           // Wait for tunnel to close
           setTimeout(function() {
             done();
           }, 500);
-	});
+	    });
       });
       
-    it('gets tunnel version', function(done) {
-      nabto.tunnelVersion(function(error, version) {
-        expect(error).not.toBeDefined();
-        expect(version).toBeDefined();
-        done();
+      it('gets tunnel version', function(done) {
+        nabto.tunnelVersion(function(error, version) {
+          expect(error).not.toBeDefined();
+          expect(version).toBeDefined();
+          done();
+        });
       });
-    });
-    
-    
-    it('does not connect to nonexisting device', function(done) {
-      nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
-        expect(error).not.toBeDefined();
-        var interval = setInterval(function() {
-          nabto.tunnelState(function(error, state) {
-            if (state.value === NabtoTunnelState.NTCS_CONNECTING) { return; }
-            clearInterval(interval);
-            expect(state.value).toBe(NabtoTunnelState.NTCS_CLOSED);
+      
+      
+      it('does not connect to nonexisting device', function(done) {
+        nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
+          expect(error).not.toBeDefined();
+          var interval = setInterval(function() {
+            nabto.tunnelState(function(error, state) {
+              if (state.value === NabtoTunnelState.NTCS_CONNECTING) { return; }
+              clearInterval(interval);
+              expect(state.value).toBe(NabtoTunnelState.NTCS_CLOSED);
+              done();
+            });
+          }, 500);
+        });
+      });
+
+      it('gets last error', function(done) {
+        nabto.tunnelLastError(function(error) {
+          expect(error).toBeDefined();
+	      expect(error.category).toBe(NabtoError.Category.P2P);
+          done();
+        });
+      });
+
+      it('closes tunnel', function(done) {
+        nabto.tunnelClose(function(error) {
+          expect(error).not.toBeDefined();
+          done();
+        });
+      });
+
+      it('closes a non-open tunnel', function(done) {
+        nabto.tunnelClose(function(error) {
+          expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
+          done();
+        });
+      });
+
+      it('shuts down nabto', function(done) {
+        // Wait for tunnel to close
+        setTimeout(function() {
+          nabto.shutdown(function(error) {
+            expect(error).not.toBeDefined();
             done();
           });
         }, 500);
       });
-    });
-
-    it('gets last error', function(done) {
-      nabto.tunnelLastError(function(error) {
-        expect(error).toBeDefined();
-	expect(error.category).toBe(NabtoError.Category.P2P);
-        done();
-      });
-    });
-
-    it('closes tunnel', function(done) {
-      nabto.tunnelClose(function(error) {
-        expect(error).not.toBeDefined();
-        done();
-      });
-    });
-
-    it('closes a non-open tunnel', function(done) {
-      nabto.tunnelClose(function(error) {
-        expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
-        done();
-      });
-    });
-
-    it('shuts down nabto', function(done) {
-      // Wait for tunnel to close
-      setTimeout(function() {
-        nabto.shutdown(function(error) {
-          expect(error).not.toBeDefined();
-          done();
-        });
-      }, 500);
-    });
 
     }
 
@@ -484,9 +565,92 @@ exports.defineAutoTests = function () {
 
 
 exports.defineManualTests = function(contentEl, createActionButton) {
-  createActionButton('Simple Test !!', function() {
-    var s = new NabtoError(1000015);
-    console.log(s);
+  // PrepareInvoke tests use free devices if not specified
+  var s = ["test.amp-f.appmyproduct.com","test.amp-f.appmyproduct.com"];
+  
+  createActionButton('PrepareInvoke with free and own-it device', function() {
+    var t = ["test.amp-o.appmyproduct.com","test.amp-f.appmyproduct.com"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should be shown if test ran outside of grace period");
   });
+  createActionButton('PrepareInvoke with free devices only', function() {
+    nabto.startup();
+    nabto.prepareInvoke(s);
+    nabto.shutdown();
+    console.log("expected result: ad should be shown if test ran outside of grace period");
+  });
+  createActionButton('PrepareInvoke called twice within grace period', function() {
+    console.log("test running");
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("Test done: ad should have been shown only once and only if test ran outside of grace period");
+    }, 5000);
+  });
+  createActionButton('PrepareInvoke called twice within grace period w. shutdown between', function() {
+    console.log("test running");
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    nabto.shutdown();
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("Test done: ad should have been shown only once and only if test ran outside of grace period");
+    }, 5000);
+  });
+  createActionButton('PrepareInvoke called twice w. interval greater than grace period', function() {
+    console.log("test running");
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("Test done: ad should have been shown only once and only if test ran outside of grace period");
+    }, (GRACEPERIOD+1)*1000);
+  });
+  createActionButton('PrepareInvoke called twice w. interval greater than grace period and shutdown between', function() {
+    console.log("test running");
+    nabto.startup(); 
+    nabto.prepareInvoke(s);
+    nabto.shutdown();
+    setTimeout(function(){
+      nabto.prepareInvoke(s);
+      nabto.shutdown();
+      console.log("Test done: ad should have been shown twice with grace period in between, and only once after the grace period if test ran inside of grace period");
+    }, (GRACEPERIOD+1)*1000);
+  });
+  createActionButton('PrepareInvoke with own-it devices only', function() {
+    var t = ["test.amp-o.appmyproduct.com","test.amp-o.appmyproduct.com"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  createActionButton('PrepareInvoke with non-amp device', function() {
+    var t = ["test.nabto.com","test.nabto.com"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  createActionButton('PrepareInvoke with invalid device', function() {
+    var t = ["test.asf-sfa.asf-f.nabto.com","testcom"];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  createActionButton('PrepareInvoke with empty list', function() {
+    var t = [];
+    nabto.startup();
+    nabto.prepareInvoke(t);
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
+  
 };
 
