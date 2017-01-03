@@ -88,7 +88,7 @@ public class Nabto extends CordovaPlugin {
             startup(callbackContext);
         }
         else if (action.equals("startupAndOpenProfile")) {
-            startupAndOpenProfile(args.getString(0), args.getString(1), callbackContext);
+            openSession(args.getString(0), args.getString(1), callbackContext);
         }
         else if (action.equals("openSession")) {
             openSession(args.getString(0), args.getString(1), callbackContext);
@@ -244,19 +244,16 @@ public class Nabto extends CordovaPlugin {
             
                         // Checking if free, own-it or not AMP. We should agree how to define free and own-it in url
                         String[] bits = dev.split("\\.");
-                        if (bits.length > 1){
-                            bits = bits[1].split("-");
-                            if (bits[bits.length-1].equals("f")){
-                                Log.d("prepareInvoke","found free device: " + dev);
-                                showAdFlag = true;
-                            } else if (bits[bits.length-1].equals("o")){
-                                Log.d("prepareInvoke","found Own-it device: " + dev);
-                            }else {
-                                // device not on AMP, will never grant access
-                                Log.d("prepareInvoke","found non-AMP device: " + dev);
-                            }
-                        }else {
-                            Log.d("prepareInvoke","found invalid device: " + dev);
+                        bits = bits[1].split("-");
+                        if (bits[bits.length-1].equals("f")){
+                            Log.d("prepareInvoke","found free device: " + dev);
+                            showAdFlag = true;
+                        } else if (bits[bits.length-1].equals("o")){
+                            Log.d("prepareInvoke","found Own-it device: " + dev);
+                        } else {
+                            // device not on AMP, will never grant access
+                            Log.d("prepareInvoke","found non-AMP device: " + dev);
+                            continue;
                         }
                         if(!deviceCache.contains(dev)){
                             deviceCache.add(dev);
@@ -339,36 +336,30 @@ public class Nabto extends CordovaPlugin {
     }
     private void startupAndOpenProfile(final String user, final String pass, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
+
         cordova.getThreadPool().execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (nabto == null){
-                        nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
-                    }
-                    NabtoStatus status = nabto.startup();
-                    if (status != NabtoStatus.OK) {
-                        cc.error(status.ordinal());
-                        return;
-                    }
-
-                    if (session != null) {
-                        cc.success();
-                        return;
-                    }
-
-                    session = nabto.openSession(user, pass);
-
-                    if (session.getStatus() != NabtoStatus.OK) {
-                        cc.error(session.getStatus().ordinal());
-                        session = null;
-                    }
-                    else {
-                        cc.success();
-                    }
+            @Override
+            public void run() {
+                if (nabto != null) {
+                    openSession(user, pass, cc);
+                    return;
                 }
-            });
-    }
+                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
 
+/*                nabto = new NabtoApi(context);
+
+                NabtoStatus status = nabto.setStaticResourceDir();
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }*/
+
+                nabto.startup();
+                openSession(user, pass, cc);
+                cc.success();
+            }
+        });
+    }
 
     private void createKeyPair(final String user, final String pass, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
@@ -405,9 +396,7 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                if(nabto != null){
-                    nabto.shutdown();
-                }
+                nabto.shutdown();
                 nabto = null;
                 session = null;
                 deviceCache.clear();
@@ -483,6 +472,11 @@ public class Nabto extends CordovaPlugin {
                 RpcResult result = nabto.rpcInvoke(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
                     if(result.getStatus() == NabtoStatus.FAILED_WITH_JSON_MESSAGE){
+                        /*try{
+                            Log.w("rpcInvoke","result.getJson: " + result.getJson().toString());
+                        } catch (NullPointerException e){
+                            Log.w("rpcInvoke","result.getJson: NullPointerException");
+                            }*/
                         cc.error(result.getJson());
                     } else {
                         cc.error(result.getStatus().ordinal());
