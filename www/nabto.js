@@ -110,7 +110,7 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
         // ok
         err = undefined;
       } else if (obj.error) {
-        err = new NabtoError(NabtoError.Category.P2P, undefined, obj);
+        err = new NabtoError(NabtoError.Category.P2P, undefined, result);
 	obj = undefined;
       } else {
         err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA);

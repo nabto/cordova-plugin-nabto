@@ -160,14 +160,19 @@
 
         status = [[Manager sharedManager] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
                                         withResultBuffer:&jsonString];
-        if (status == NABTO_OK) {
-            res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+        if (status == NABTO_OK || status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+            int cdvStatus;
+            if (status == NABTO_OK) {
+                cdvStatus = CDVCommandStatus_OK;
+            } else {
+                cdvStatus = CDVCommandStatus_ERROR;
+            }
+            res = [CDVPluginResult resultWithStatus:cdvStatus
                                     messageAsString:[NSString stringWithUTF8String:jsonString]];
             nabtoFree(jsonString);
         } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
-
         [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
     }];
 }
