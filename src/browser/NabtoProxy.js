@@ -36,7 +36,7 @@ function startup(success, error, opts) {
     if (opts[0].indexOf('bad_password') != -1) {
       return nextTick(function() { error(NabtoConstants.ClientApiErrors.UNLOCK_PK_FAILED); });
     } else if (opts[0].indexOf('nonexisting') != -1) {
-      return nextTick(function() { error(NabtoConstants.ClientApiErrors.PORTAL_LOGIN_FAILURE); }); 
+      return nextTick(function() { error(NabtoConstants.ClientApiErrors.OPEN_CERT_OR_PK_FAILED); }); 
     } else {
       throw "Unexpected stub input [" + opts[0] + "]";
     }
