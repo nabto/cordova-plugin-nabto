@@ -175,10 +175,6 @@ exports.defineAutoTests = function () {
     });
 
     it('cannot fetch url with non-open nabto', function(done) {
-      var t = [testDevice];
-      nabto.prepareInvoke(t,function(error){
-        expect(error).not.toBeDefined();
-      });
       nabto.fetchUrl(testUrl, function(error, result) {
         expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
         done();
@@ -186,10 +182,7 @@ exports.defineAutoTests = function () {
     });
 
     it('cannot invokeRpc with non-open nabto', function(done) {
-      var t = [testDevice];
-      nabto.prepareInvoke(t,function(error){
-        expect(error).not.toBeDefined();
-      });
+      nabto.prepareInvoke([testDevice],function(error){});
       nabto.rpcInvoke(testUrl, function(error, result) {
         expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
         done();
@@ -198,9 +191,6 @@ exports.defineAutoTests = function () {
 
 
     it('gets error with invalid arguments to fetchUrl', function(done) {
-      nabto.prepareInvoke(123,function(error){
-        expect(error).not.toBeDefined();
-      });
       nabto.fetchUrl(123, function(error, result) {
         expect(result).not.toBeDefined();
         expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
@@ -209,9 +199,7 @@ exports.defineAutoTests = function () {
     });
     
     it('gets error with invalid arguments to rpcInvoke', function(done) {
-      nabto.prepareInvoke(123,function(error){
-        expect(error).not.toBeDefined();
-      });
+      nabto.prepareInvoke(123,function(error){});
       nabto.rpcInvoke(123, function(error, result) {
         expect(result).not.toBeDefined();
         expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
@@ -245,24 +233,7 @@ exports.defineAutoTests = function () {
     });
 
     it('fetches a nabto url', function(done) {
-      var t = [testDevice];
-      nabto.prepareInvoke(t,function(error){
-        expect(error).not.toBeDefined();
-      });
       nabto.fetchUrl(testUrl, function(error, result) {
-	    expect(error).not.toBeDefined();
-        expect(result.response).toBeDefined();
-        expect(result.response.speed_m_s).toBeDefined();
-        done();
-      });
-    });
-
-    it('rpcInvoke on a nabto url', function(done) {
-      var t = [testDevice];
-      nabto.prepareInvoke(t,function(error){
-        expect(error).not.toBeDefined();
-      });
-      nabto.rpcInvoke(testUrl, function(error, result) {
 	    expect(error).not.toBeDefined();
         expect(result.response).toBeDefined();
         expect(result.response.speed_m_s).toBeDefined();
@@ -293,10 +264,6 @@ exports.defineAutoTests = function () {
     });
 
     it('returns json error when fetching an offline device through legacy fetchurl', function(done) {
-      var t = ["offline-error-216b3ea2.nabto.net"];
-      nabto.prepareInvoke(t,function(error){
-        expect(error).not.toBeDefined();
-      });
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
         expect(error).toBeDefined();
         expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
@@ -376,19 +343,18 @@ exports.defineAutoTests = function () {
         expect(result).not.toBeDefined();
         done();
 	  });
-
+      nabto.shutdown(function(error) {});
     });
 
     it('rpcInvoke fails when prepareInvoke called with wrong device', function(done){
-      var t = ["wrong.device.id"];
-      nabto.prepareInvoke(t, function(error){
-        expect(error).not.toBeDefined();
-      });
+      nabto.startupAndOpenProfile('guest', 'blank', function(error) {});
+      nabto.prepareInvoke(["wrong.device.id"], function(error){});
       nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
-        expect(error).toBeDefined();
         expect(result).not.toBeDefined();
+        expect(error).toBeDefined();
         done();
 	  });
+      nabto.shutdown(function(error) {});
     });
 
   });
