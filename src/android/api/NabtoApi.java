@@ -12,7 +12,6 @@ import java.util.Collection;
  * <p>Example:</p>
  * <pre>{@code
  * NabtoApi api = new NabtoApi(new NabtoAndroidAssetManager(this));
- * api.setStaticResourceDir();
  * NabtoStatus status = api.startup();
  * if (status == NabtoStatus.OK) {
  *     Session session = api.openSession("guest", "");
@@ -278,7 +277,7 @@ public class NabtoApi {
         NabtoStatus ret = NabtoCApiWrapper.nabtoGetFingerprint(certId, byteFingerprint);
         for (int i = 0; i<byteFingerprint.length; i++){
             String str = String.format("%02x",byteFingerprint[i]);
-            fingerprint[0] += i!=0 ? ":" + str : str;
+//            fingerprint[0] += i!=0 ? ":" + str : str; // removed ':' insertion here, should be done in application
         }
         return ret;
     }
