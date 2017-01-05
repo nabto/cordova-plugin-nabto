@@ -243,7 +243,13 @@ public class Nabto extends CordovaPlugin {
                         }
             
                         // Checking if free, own-it or not AMP. We should agree how to define free and own-it in url
-                        String[] bits = dev.split("\\.");
+                        if (dev.matches("^[\\w]+\\.[\\w]{5}f(\\.[\\w]+)*$")){
+                            Log.d("prepareInvoke","found free device: " + dev);
+                            showAdFlag = true;
+                        } else {
+                            Log.d("prepareInvoke","found non-free device: " + dev);
+                        }
+                        /*String[] bits = dev.split("\\.");
                         if (bits.length > 1){
                             bits = bits[1].split("-");
                             if (bits[bits.length-1].equals("f")){
@@ -258,7 +264,7 @@ public class Nabto extends CordovaPlugin {
                         }else {
                             Log.d("prepareInvoke","found invalid device: " + dev);
                         }
-
+*/
                         if(!deviceCache.contains(dev)){
                             deviceCache.add(dev);
                         }
