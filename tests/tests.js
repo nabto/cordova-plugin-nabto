@@ -532,10 +532,10 @@ exports.defineAutoTests = function () {
 
 exports.defineManualTests = function(contentEl, createActionButton) {
   // PrepareInvoke tests use free devices if not specified
-  var s = ["test.amp-f.appmyproduct.com","test.amp-f.appmyproduct.com"];
+  var s = ["test.ampg3f.appmyproduct.com","test2.sfyfaf.appmyproduct.com"];
   
   createActionButton('PrepareInvoke with free and own-it device', function() {
-    var t = ["test.amp-o.appmyproduct.com","test.amp-f.appmyproduct.com"];
+    var t = ["test.amp-o.appmyproduct.com","test.ampstf.appmyproduct.com"];
     nabto.startup();
     nabto.prepareInvoke(t);
     nabto.shutdown();
@@ -590,14 +590,14 @@ exports.defineManualTests = function(contentEl, createActionButton) {
     }, (GRACEPERIOD+1)*1000);
   });
   createActionButton('PrepareInvoke with own-it devices only', function() {
-    var t = ["test.amp-o.appmyproduct.com","test.amp-o.appmyproduct.com"];
+    var t = ["test.ampfso.appmyproduct.com","test.amp2fo.appmyproduct.com"];
     nabto.startup();
     nabto.prepareInvoke(t);
     nabto.shutdown();
     console.log("expected result: ad should not be shown");
   });
   createActionButton('PrepareInvoke with non-amp device', function() {
-    var t = ["test.nabto.com","test.nabto.com"];
+    var t = ["test.nabto.com","test2.nabto4.net"];
     nabto.startup();
     nabto.prepareInvoke(t);
     nabto.shutdown();
