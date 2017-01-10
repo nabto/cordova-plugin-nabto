@@ -16,29 +16,6 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
 
-//TAKEN FROM SPLASHSCREEN SOME MAY BE REMOVED
-
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Handler;
-import android.view.Display;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
@@ -47,14 +24,6 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import android.R;
 import android.util.Log;
-
-//END
-
-
-
-// REMOVE WITH CORE IMPLEMENTATION
-import java.lang.System;
-// END
 
 public class Nabto extends CordovaPlugin {
     private static final int AMP_ERROR_NOT_PREPARED = 101; 
@@ -71,7 +40,6 @@ public class Nabto extends CordovaPlugin {
     public Nabto() {
         deviceCache = new ArrayList<String>();
         adService = new AdService();
-        //adService = new AdService(cordova.getActivity(), webView.getContext());
     }
 
     /**
@@ -152,76 +120,8 @@ public class Nabto extends CordovaPlugin {
     }
 
     /* Nabto API */
-    /*
-    private ImageView adImageView;
-    private static Dialog dialog;
-    private void showAd() {
-        final int adTimeout = 3000;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    int drawableId = 0;
-                    String adRef = "";
-                    if(cordova.getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
-                        adRef = "@drawable/ad_land";
-                    }else{
-                        adRef = "@drawable/ad";
-                    }
-                    //String adRef = "@drawable/ad";
-                    drawableId = cordova.getActivity().getResources().getIdentifier(adRef, "drawable", cordova.getActivity().getClass().getPackage().getName());
-                    if (drawableId == 0) {
-                        drawableId = cordova.getActivity().getResources().getIdentifier(adRef, "drawable", cordova.getActivity().getPackageName());
-                    }
-                    //final int drawableId = drawableIdtmp;
-
-                    // Get reference to display
-                    Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
-                    Context context = webView.getContext();
-
-                    // Use an ImageView to render the image because of its flexible scaling options.
-                    adImageView = new ImageView(context);
-                    adImageView.setImageResource(drawableId);
-                    LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-                    adImageView.setLayoutParams(layoutParams);
-                    adImageView.setMinimumHeight(display.getHeight());
-                    adImageView.setMinimumWidth(display.getWidth());
-                    adImageView.setBackgroundColor(Color.BLACK);
-                    adImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-                    // Show the dialog
-                    dialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
-
-                    //if ((cordova.getActivity().getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
-//                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
-                    dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                                                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                    //}
-                    dialog.setContentView(adImageView);
-                    dialog.setCancelable(false);
-                    dialog.show();
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                            public void run() {
-                                removeAd();
-                            }
-                        }, adTimeout);
-
-                }
-            });
-    }
-
-    private void removeAd() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    if (dialog != null && dialog.isShowing()) {
-                        dialog.dismiss();
-                        dialog = null;
-                        adImageView = null;
-                    }
-                }
-            });
-    }*/
-
     private void prepareInvoke(final JSONArray jsonDevices, final CallbackContext cc) {
-        cordova.getThreadPool().execute(new Runnable(){
+        cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
                     // call to the core asking if invoke is prepared
@@ -316,29 +216,25 @@ public class Nabto extends CordovaPlugin {
 
 
     private void startup(final CallbackContext cc) {
+        Log.d("startup", "Nabto startup begins");
         final Context context = cordova.getActivity().getApplicationContext();
-
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 if(nabto!=null){
+                    Log.d("startup", "Nabto was already started");
+                    cc.success();
                     return;
                 }
-                
                 nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
-
-/*                NabtoStatus status = nabto.setStaticResourceDir();
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                    }*/
-
                 nabto.startup();
+                Log.d("startup", "Nabto started");
                 cc.success();
             }
         });
     }
     private void startupAndOpenProfile(final String user, final String pass, final CallbackContext cc) {
+        Log.d("startupAndOpenProfile", "Nabto startupAndOpenProfile begins");
         final Context context = cordova.getActivity().getApplicationContext();
 
         cordova.getThreadPool().execute(new Runnable() {
@@ -363,8 +259,7 @@ public class Nabto extends CordovaPlugin {
                 if (session.getStatus() != NabtoStatus.OK) {
                     cc.error(session.getStatus().ordinal());
                     session = null;
-                }
-                else {
+                } else {
                     cc.success();
                 }
             }
@@ -393,7 +288,7 @@ public class Nabto extends CordovaPlugin {
                     String[] fingerprint = new String[1];
                     fingerprint[0] = "";
                     NabtoStatus status = nabto.getFingerprint(certId,fingerprint);
-                    if (status != NabtoStatus.OK){
+                    if (status != NabtoStatus.OK) {
                         cc.error(status.ordinal());
                         return;
                     }
@@ -475,6 +370,7 @@ public class Nabto extends CordovaPlugin {
                         root.put("error",error);
                     } catch (JSONException e){
                         Log.e("rpcInvoke","could not put JSON error message");
+                        cc.error(NabtoStatus.FAILED.ordinal());
                         return;
                     }
                     //Log.w("rpcInvoke","root: " + root.toString());

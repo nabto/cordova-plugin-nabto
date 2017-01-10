@@ -132,7 +132,7 @@ NabtoError.Message[NabtoError.Code.P2P_TIMEOUT]               = "Timeout when tr
 NabtoError.Message[NabtoError.Code.P2P_NO_SUCH_REQUEST]       = "The specified request does not exist in the interface definition";
 NabtoError.Message[NabtoError.Code.P2P_PARAM_PARSE_ERROR]     = "The parameter value could not be parsed according to the interface defintion";
 NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]         = "A parameter is missing for this request according to the interface definition";		    
-NabtoError.Message[NabtoError.Code.P2P_OTHER]                 = "An error occurred - please consult log files for more information";
+NabtoError.Message[NabtoError.Code.P2P_OTHER]                 = "An unspecified error occurred - please contact vendor";
                                                                     
 NabtoError.Message[NabtoError.Code.EXC_BASE]                  = "(n/a)";
 NabtoError.Message[NabtoError.Code.EXC_NOT_READY]             = "Not ready: The remote application is not ready yet (still initializing)";
@@ -160,7 +160,8 @@ NabtoError.Category.WRAPPER          = 4;
 // constructor
 
 function NabtoError(category, status, innerError) {
-  console.log(`created NabtoError with category [${category}], status [${status}] and innerError[${innerError}]`);
+  var err = new Error();
+  console.log(`created NabtoError with category [${category}], status [${status}] and innerError [${innerError}] ${err.stack ? " at ${err.stack}" : ""}`);
   if (typeof(category) === "undefined") {
     throw new Error("Missing or invalid category");
   }
