@@ -272,7 +272,7 @@ exports.defineAutoTests = function () {
       });
     });
 
-    it('returns an api rpc error when fetching an offline device through rpc invoke', function(done) {
+    it('returns an rpc error when invoking an offline device', function(done) {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
 	    expect(error).not.toBeDefined();
@@ -281,6 +281,25 @@ exports.defineAutoTests = function () {
           nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
             expect(error).toBeDefined();
             expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
+            expect(result).not.toBeDefined();
+            done();
+          });
+        } catch (e) {
+          console.error(`Runaway exception in RPC invoke: ${e.stack || e}`);
+          done();
+        }
+      });
+    });
+
+    it('returns a device exception when rpc invoking an unexisting function on device', function(done) {
+      var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='87'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
+      nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
+	    expect(error).not.toBeDefined();
+        try {
+          nabto.prepareInvoke(["demo.nabto.net"],function(error,result){});
+          nabto.rpcInvoke('nabto://demo.nabto.net/wind_speed.json', function(error, result) {
+            expect(error).toBeDefined();
+            expect(error.code).toBe(NabtoError.Code.EXC_INV_QUERY_ID);
             expect(result).not.toBeDefined();
             done();
           });
@@ -310,7 +329,7 @@ exports.defineAutoTests = function () {
           });
         }
         else {
-          console.error('There were no local nabto devices to test discover');
+          console.warn('There were no local nabto devices to test discover');
         }
         done();
       });

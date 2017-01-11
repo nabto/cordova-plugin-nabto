@@ -52,6 +52,7 @@ void nabtoLogCallback(const char* line, size_t size) {
 
 - (nabto_status_t)nabtoStartup {
     if (initialized) {
+        NSLog(@"Nabto already initialized");
         return NABTO_OK;
     }
     initialized = YES;

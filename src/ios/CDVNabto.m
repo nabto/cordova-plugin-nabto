@@ -36,6 +36,7 @@
             if (status == NABTO_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             } else {
+                NSLog(@"nabtoOpenSession failed with status [%d]", status);
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
         }

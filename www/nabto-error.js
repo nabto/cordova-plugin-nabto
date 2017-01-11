@@ -68,20 +68,22 @@ NabtoError.Code.API_CONNECT_TIMEOUT             = 2032;
 NabtoError.Code.API_ERROR                       = 2100;
 
 // relevant error codes mapped from nabto::Events
-NabtoError.Code.P2P_ACCESS_DENIED_CONNECT    = 3111; // access denied for connection attempt
-NabtoError.Code.P2P_DEVICE_OFFLINE           = 3115; // deprecated, for legacy clients only (rpc has specific offline error code above (2029))
-NabtoError.Code.P2P_CONNECTION_PROBLEM       = 3116; 
-NabtoError.Code.P2P_ENCRYPTION_MISMATCH      = 3120;
-NabtoError.Code.P2P_DEVICE_BUSY              = 3121;
-NabtoError.Code.P2P_DEVICE_REATTACHING       = 3124;
-NabtoError.Code.P2P_CERT_CREATION_ERROR      = 3205;
-NabtoError.Code.P2P_TIMEOUT                  = 3215; // TIME_OUT, CONNECT_TIMEOUT
-NabtoError.Code.P2P_INTERFACE_DEF_INVALID    = 3223;
-NabtoError.Code.P2P_NO_SUCH_REQUEST          = 3227; // NO_SUCH_REQ, FILE_NOT_FOUND
-NabtoError.Code.P2P_PARAM_PARSE_ERROR        = 3229; 
-NabtoError.Code.P2P_PARAM_MISSING            = 3230; 
-NabtoError.Code.P2P_NO_NETWORK               = 3249;
-NabtoError.Code.P2P_OTHER                    = 3999;
+NabtoError.Code.P2P_ACCESS_DENIED_CONNECT     = 3111; // access denied for connection attempt
+NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED  = 3112;
+NabtoError.Code.P2P_SERVER_CERT_NOT_VERIFIED  = 3113;
+NabtoError.Code.P2P_DEVICE_OFFLINE            = 3115; 
+NabtoError.Code.P2P_CONNECTION_PROBLEM        = 3116; 
+NabtoError.Code.P2P_ENCRYPTION_MISMATCH       = 3120;
+NabtoError.Code.P2P_DEVICE_BUSY               = 3121;
+NabtoError.Code.P2P_DEVICE_REATTACHING        = 3124;
+NabtoError.Code.P2P_CERT_CREATION_ERROR       = 3205;
+NabtoError.Code.P2P_TIMEOUT                   = 3215; // TIME_OUT, CONNECT_TIMEOUT
+NabtoError.Code.P2P_INTERFACE_DEF_INVALID     = 3223;
+NabtoError.Code.P2P_NO_SUCH_REQUEST           = 3227; // NO_SUCH_REQ, FILE_NOT_FOUND
+NabtoError.Code.P2P_PARAM_PARSE_ERROR         = 3229; 
+NabtoError.Code.P2P_PARAM_MISSING             = 3230; 
+NabtoError.Code.P2P_NO_NETWORK                = 3249;
+NabtoError.Code.P2P_OTHER                     = 3999;
 
 // device exceptions mapped from unabto/src/unabto/unabto_protocol_exceptions.h
 NabtoError.Code.EXC_BASE             = 4000;
@@ -112,38 +114,37 @@ NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified u
 NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
 NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "JSON object contains error message";
 NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
-NabtoError.Message[NabtoError.Code.API_RPC_NO_SUCH_REQUEST]   = "RPC interface does not define specified request";
-NabtoError.Message[NabtoError.Code.API_RPC_DEVICE_OFFLINE]    = "Device is offline";
-NabtoError.Message[NabtoError.Code.API_RPC_RESPONSE_DECODE_FAILURE] = "Could not decode response from device";
-NabtoError.Message[NabtoError.Code.API_RPC_COMMUNICATION_PROBLEM] = "Error communicating with device";
 NabtoError.Message[NabtoError.Code.API_CONNECT_TIMEOUT]       = "Timeout when connecting to device";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
-NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID] = "Error parsing the RPC interface definition file (see log for details)";		    
-NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT] = "The remote device does not allow the current user to connect";		    
-NabtoError.Message[NabtoError.Code.P2P_DEVICE_OFFLINE]        = "The remote device is not online";		    
-NabtoError.Message[NabtoError.Code.P2P_DEVICE_BUSY]           = "The remote device cannot handle more connections at this moment";		    
-NabtoError.Message[NabtoError.Code.P2P_NO_NETWORK]            = "This client does not have a network connection";		    
-NabtoError.Message[NabtoError.Code.P2P_CONNECTION_PROBLEM]    = "A problem occurred when connecting to the remote device (could be due to high packet loss)";		    
-NabtoError.Message[NabtoError.Code.P2P_ENCRYPTION_MISMATCH]   = "Security options of remote device does not match client's - likely because remote device is not using crypto";		    
-NabtoError.Message[NabtoError.Code.P2P_DEVICE_REATTACHING]    = "Device is currently unavailable as it tries to reconnect to server, try again in a moment";
-NabtoError.Message[NabtoError.Code.P2P_CERT_CREATION_ERROR]   = "Error creating certificate, if using guest certificate make sure it is pre-installed as a ressource (in share/nabto/users dir)";		    
-NabtoError.Message[NabtoError.Code.P2P_TIMEOUT]               = "Timeout when trying to perform operation - likely due to a network or server problem";
-NabtoError.Message[NabtoError.Code.P2P_NO_SUCH_REQUEST]       = "The specified request does not exist in the interface definition";
-NabtoError.Message[NabtoError.Code.P2P_PARAM_PARSE_ERROR]     = "The parameter value could not be parsed according to the interface defintion";
-NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]         = "A parameter is missing for this request according to the interface definition";		    
-NabtoError.Message[NabtoError.Code.P2P_OTHER]                 = "An unspecified error occurred - please contact vendor";
-                                                                    
-NabtoError.Message[NabtoError.Code.EXC_BASE]                  = "(n/a)";
-NabtoError.Message[NabtoError.Code.EXC_NOT_READY]             = "Not ready: The remote application is not ready yet (still initializing)";
-NabtoError.Message[NabtoError.Code.EXC_NO_ACCESS]             = "Access denied: The remote application does not allow this request to be answered";  // function level authorization failed 
-NabtoError.Message[NabtoError.Code.EXC_TOO_SMALL]             = "The request is too small, i.e. required fields are not present";
-NabtoError.Message[NabtoError.Code.EXC_TOO_LARGE]             = "The request is larger than expected";
-NabtoError.Message[NabtoError.Code.EXC_INV_QUERY_ID]          = "Invalid query id: The remote application could not recognize the query id (opcode)";
-NabtoError.Message[NabtoError.Code.EXC_RSP_TOO_LARGE]         = "Internal error in the remote application, response buffer too small";
-NabtoError.Message[NabtoError.Code.EXC_OUT_OF_RESOURCES]      = "The remote device is out of resources (most likely out of memory)";
-NabtoError.Message[NabtoError.Code.EXC_SYSTEM_ERROR]          = "Internal error in the remote application";
-NabtoError.Message[NabtoError.Code.EXC_NO_QUERY_ID]           = "Query id (opcode) missing in request";
+NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsing the RPC interface definition file (see log for details)";		    
+NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT]    = "The remote device does not allow the current user to connect";		    
+NabtoError.Message[NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED] = "The server could not validate this client's certificate";		    
+NabtoError.Message[NabtoError.Code.P2P_SERVER_CERT_NOT_VERIFIED] = "The server's certificate could not be validated";		    
+NabtoError.Message[NabtoError.Code.P2P_DEVICE_OFFLINE]           = "The remote device is not online";		    
+NabtoError.Message[NabtoError.Code.P2P_DEVICE_BUSY]              = "The remote device cannot handle more connections at this moment";		    
+NabtoError.Message[NabtoError.Code.P2P_NO_NETWORK]               = "This client does not have a network connection";		    
+NabtoError.Message[NabtoError.Code.P2P_CONNECTION_PROBLEM]       = "A problem occurred when communicating with the remote device, please try again later";		    
+NabtoError.Message[NabtoError.Code.P2P_ENCRYPTION_MISMATCH]      = "Security options of remote device does not match client's - likely because remote device is not using crypto";		    
+NabtoError.Message[NabtoError.Code.P2P_DEVICE_REATTACHING]       = "Device is currently unavailable as it tries to reconnect to server, try again in a moment";
+NabtoError.Message[NabtoError.Code.P2P_CERT_CREATION_ERROR]      = "Error creating certificate, if using guest certificate make sure it is pre-installed as a ressource (in share/nabto/users dir)";		    
+NabtoError.Message[NabtoError.Code.P2P_TIMEOUT]                  = "Timeout when trying to perform operation - likely due to a network or server problem";
+NabtoError.Message[NabtoError.Code.P2P_NO_SUCH_REQUEST]          = "The specified request does not exist in the interface definition";
+NabtoError.Message[NabtoError.Code.P2P_PARAM_PARSE_ERROR]        = "The parameter value could not be parsed according to the interface defintion";
+NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]            = "A parameter is missing for this request according to the interface definition";
+NabtoError.Message[NabtoError.Code.P2P_DATA_TRANSMISSION_PROBLEM] = "Problems exchanging data with device, please try again later";		    
+NabtoError.Message[NabtoError.Code.P2P_OTHER]                    = "An unspecified error occurred - please contact vendor";
+                                                                       
+NabtoError.Message[NabtoError.Code.EXC_BASE]                     = "(n/a)";
+NabtoError.Message[NabtoError.Code.EXC_NOT_READY]                = "Not ready: The remote application is not ready yet (still initializing)";
+NabtoError.Message[NabtoError.Code.EXC_NO_ACCESS]                = "Access denied: The remote application does not allow this request to be answered";  // function level authorization failed 
+NabtoError.Message[NabtoError.Code.EXC_TOO_SMALL]                = "The request is too small, i.e. required fields are not present";
+NabtoError.Message[NabtoError.Code.EXC_TOO_LARGE]                = "The request is larger than expected";
+NabtoError.Message[NabtoError.Code.EXC_INV_QUERY_ID]             = "Invalid query id: The remote application could not recognize the query id (opcode)";
+NabtoError.Message[NabtoError.Code.EXC_RSP_TOO_LARGE]            = "Internal error in the remote application, response buffer too small";
+NabtoError.Message[NabtoError.Code.EXC_OUT_OF_RESOURCES]         = "The remote device is out of resources (most likely out of memory)";
+NabtoError.Message[NabtoError.Code.EXC_SYSTEM_ERROR]             = "Internal error in the remote application";
+NabtoError.Message[NabtoError.Code.EXC_NO_QUERY_ID]              = "Query id (opcode) missing in request";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,17 +162,10 @@ NabtoError.Category.WRAPPER          = 4;
 
 function NabtoError(category, status, innerError) {
   var err = new Error();
-  console.log(`created NabtoError with category [${category}], status [${status}] and innerError [${innerError}] ${err.stack ? " at ${err.stack}" : ""}`);
+//  console.log(`created NabtoError with category [${category}], status [${status}] and innerError [${innerError}]`);
   if (typeof(category) === "undefined") {
     throw new Error("Missing or invalid category");
   }
-/*  if (status == NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE){
-    try{
-	  innerError = JSON.parse(innerError);
-    } catch (e){
-	  console.log("cannot parse innerError: " + innerError);
-    }
-  }*/
   this.initStatus(category, status, innerError);
   
   this.__defineGetter__('value', function() {
@@ -179,13 +173,10 @@ function NabtoError(category, status, innerError) {
   });
 
   this.__defineGetter__('message', function() {
-	var msg = this.lookupMessage(this.code);
+    var msg = this.lookupMessage(this.code);
     if (!msg) {
       msg = `Code ${this.toString()} (${this.code}), Category ${this.category}, inner: ${this.inner}`;
     }
-	if (this.code == NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE){
-	  msg = JSON.stringify(this.inner.body);
-	}
     return msg;
   });
 
@@ -351,11 +342,21 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
     this.code = NabtoError.Code.P2P_ACCESS_DENIED_CONNECT;
     break;
 
+  case NabtoConstants.ClientEvents.CANNOT_VERIFY_CLIENT_CERTIFICATE:
+    this.code = NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED;
+    break;
+
+  case NabtoConstants.ClientEvents.BAD_ID_IN_SERVER_CERTIFICATE:
+  case NabtoConstants.ClientEvents.CANNOT_VERIFY_SERVER_CERTIFICATE:
+    this.code = NabtoError.Code.P2P_SERVER_CERT_NOT_VERIFIED;
+    break;
+
   case NabtoConstants.ClientEvents.MICROSERVER_NOT_KNOWN:
     this.code = NabtoError.Code.P2P_DEVICE_OFFLINE;
     break;
 
   case NabtoConstants.ClientEvents.CONNECTION_PROBLEM:
+  case NabtoConstants.ClientEvents.DATA_TRANSMISSION_PROBLEM:
     this.code = NabtoError.Code.P2P_CONNECTION_PROBLEM;
     break;
         
@@ -374,7 +375,7 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
   case NabtoConstants.ClientEvents.CERT_CREATION_ERROR:
     this.code = NabtoError.Code.P2P_CERT_CREATION_ERROR;
     break;
-        
+
   case NabtoConstants.ClientEvents.QUERY_MODEL_PARSE_ERROR:
     this.code = NabtoError.Code.P2P_INTERFACE_DEF_INVALID;
     break;
@@ -403,8 +404,8 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
     break;
 
   case NabtoConstants.AmpError.NOT_PREPARED:
-	this.code = NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE;
-	break;
+    this.code = NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE;
+    break;
 	
   default:    
     this.code = NabtoError.Code.P2P_OTHER;
