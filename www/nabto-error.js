@@ -176,6 +176,9 @@ function NabtoError(category, status, innerError) {
     if (!msg) {
       msg = `Code ${this.toString()} (${this.code}), Category ${this.category}, inner: ${this.inner}`;
     }
+    if (this.code == NabtoError.Code.P2P_INTERFACE_DEF_INVALID && this.inner.body) {
+      msg = msg + ": " + this.inner.body;
+    }
     return msg;
   });
 
@@ -196,7 +199,7 @@ NabtoError.prototype.lookupMessage = function(code) {
 };
 
 NabtoError.prototype.handleApiError = function(status, innerError) {
-  this.inner = status;
+  this.inner = innerError ? innerError : status;
   this.category = NabtoError.Category.API;
   
   switch (status) {
