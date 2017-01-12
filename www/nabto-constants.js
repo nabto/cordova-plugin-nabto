@@ -30,7 +30,7 @@ NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION_ARGUMENT = 23;
 NabtoConstants.ClientApiErrors.ABORTED                        = 24;
 NabtoConstants.ClientApiErrors.STREAM_CLOSED                  = 25;
 NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE       = 26;
-NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT                = 32;
+NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT                = 27;
 
 ////////////////////////////////////////////////////////////////////////////////
 // from unabto/src/unabto/unabto_protocol_exceptions.h

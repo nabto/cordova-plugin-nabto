@@ -118,12 +118,8 @@ var rpcStyleInvoker = function(url, cb, apiFunction) {
       }
       return cb(err, obj);       
     },
-    function error(apiError) {
-	  if(apiError == NabtoConstants.ClientApiErrors.API_NOT_INITIALIZED){
-		cb(new NabtoError(NabtoError.Category.API,apiError));
-	  } else {
-		cb(new NabtoError(NabtoError.Category.API, NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE,apiError));
-	  }
+    function error(error) {
+      handlePotentialJsonError(cb, error);
     },
     'Nabto', apiFunction, [url]);
 };
@@ -138,14 +134,27 @@ Nabto.prototype.rpcInvoke = function(url, cb) {
   return rpcStyleInvoker(url, cb, 'rpcInvoke');
 };
 
+function handlePotentialJsonError(cb, error) {
+  var code; 
+  var json;
+  if (isNaN(parseInt(error))) {
+    // json string (yirks ... use CDV messageAsMultipart to return explicit status + json string instead)
+    code = NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE;
+    json = error;
+  } else {
+    code = error;
+  }
+  cb(new NabtoError(NabtoError.Category.API, code, json));
+}
+
 Nabto.prototype.rpcSetDefaultInterface = function(interfaceXml, cb) {
   cb = cb || function() {};
   exec(
     function success() {
       cb(undefined);
     },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    function error(err) {
+      handlePotentialJsonError(cb, err);
     }, 'Nabto', 'rpcSetDefaultInterface', [interfaceXml]);
 };
 
@@ -155,8 +164,8 @@ Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
     function success() {
       cb(undefined);
     },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    function error(err) {
+      handlePotentialJsonError(cb, err);
     }, 'Nabto', 'rpcSetInterface', [host, interfaceXml]);
 };
 

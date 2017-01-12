@@ -4,6 +4,11 @@
 
 /* globals cordova, nabto, NabtoError, NabtoTunnelState */
 
+// XXX: suite needs systematic setup/teardown instead of current
+// approach where order is significant (startup testcase must be
+// invoked first), asynchrony not handled correctly (but apparently
+// exposing race condition) - NABTO-1399
+
 var GRACEPERIOD = 15; // seconds
 
 var errors = {

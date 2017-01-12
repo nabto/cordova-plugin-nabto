@@ -54,6 +54,12 @@
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
+- (void)handleJsonError:(char*)jsonString withCommand:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                             messageAsString:[NSString stringWithUTF8String:jsonString]];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         nabto_status_t status = [[Manager sharedManager]
@@ -181,22 +187,32 @@
 - (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         nabto_status_t status;
+        char *jsonString;
         status = [[Manager sharedManager] nabtoRpcSetDefaultInterface:[command.arguments objectAtIndex:0]
-                                                     withErrorMessage:0];
+                                                     withErrorMessage:&jsonString];
 
-        // TODO (AMP-73: Client API error details in JSON not propagated through Cordova wrapper)
-        [self handleStatus:status withCommand:command];
+        if (status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+            [self handleJsonError:jsonString withCommand:command];
+            nabtoFree(jsonString);
+        } else {
+            [self handleStatus:status withCommand:command];
+        }
     }];
 }
 
 - (void)rpcSetInterface:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         nabto_status_t status;
+        char *jsonString = 0;
         status = [[Manager sharedManager] nabtoRpcSetInterface:[command.arguments objectAtIndex:0]
                                        withInterfaceDefinition:[command.arguments objectAtIndex:1]
-                                              withErrorMessage:0];
-        // TODO (AMP-73: Client API error details in JSON not propagated through Cordova wrapper)
-        [self handleStatus:status withCommand:command];
+                                              withErrorMessage:&jsonString];
+        if (status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+            [self handleJsonError:jsonString withCommand:command];
+            nabtoFree(jsonString);
+        } else {
+            [self handleStatus:status withCommand:command];
+        }
     }];
 }
 

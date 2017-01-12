@@ -117,7 +117,7 @@ NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface n
 NabtoError.Message[NabtoError.Code.API_CONNECT_TIMEOUT]       = "Timeout when connecting to device";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
-NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsing the RPC interface definition file (see log for details)";		    
+NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsing the RPC interface definition file";		    
 NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT]    = "The remote device does not allow the current user to connect";		    
 NabtoError.Message[NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED] = "The server could not validate this client's certificate";		    
 NabtoError.Message[NabtoError.Code.P2P_SERVER_CERT_NOT_VERIFIED] = "The server's certificate could not be validated";		    
@@ -132,7 +132,6 @@ NabtoError.Message[NabtoError.Code.P2P_TIMEOUT]                  = "Timeout when
 NabtoError.Message[NabtoError.Code.P2P_NO_SUCH_REQUEST]          = "The specified request does not exist in the interface definition";
 NabtoError.Message[NabtoError.Code.P2P_PARAM_PARSE_ERROR]        = "The parameter value could not be parsed according to the interface defintion";
 NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]            = "A parameter is missing for this request according to the interface definition";
-NabtoError.Message[NabtoError.Code.P2P_DATA_TRANSMISSION_PROBLEM] = "Problems exchanging data with device, please try again later";		    
 NabtoError.Message[NabtoError.Code.P2P_OTHER]                    = "An unspecified error occurred - please contact vendor";
                                                                        
 NabtoError.Message[NabtoError.Code.EXC_BASE]                     = "(n/a)";
