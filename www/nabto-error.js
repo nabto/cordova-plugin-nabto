@@ -122,7 +122,7 @@ NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsin
 NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT]    = "The remote device does not allow the current user to connect";		    
 NabtoError.Message[NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED] = "The server could not validate this client's certificate";		    
 NabtoError.Message[NabtoError.Code.P2P_SERVER_CERT_NOT_VERIFIED] = "The server's certificate could not be validated";		    
-NabtoError.Message[NabtoError.Code.P2P_DEVICE_OFFLINE]           = "The remote device is not online";		    
+NabtoError.Message[NabtoError.Code.P2P_DEVICE_OFFLINE]           = "The device was not found locally and is not online for remote access";		    
 NabtoError.Message[NabtoError.Code.P2P_DEVICE_BUSY]              = "The remote device cannot handle more connections at this moment";		    
 NabtoError.Message[NabtoError.Code.P2P_NO_NETWORK]               = "This client does not have a network connection";		    
 NabtoError.Message[NabtoError.Code.P2P_CONNECTION_PROBLEM]       = "A problem occurred when communicating with the remote device, please try again later";		    
@@ -375,7 +375,11 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
   case NabtoConstants.ClientEvents.MICROSERVER_REATTACHING:
     this.code = NabtoError.Code.P2P_DEVICE_REATTACHING;
     break;
-        
+
+  case NabtoConstants.ClientEvents.SELF_SIGNED_NOT_ALLOWED:
+    this.code = NabtoError.Code.P2P_SELF_SIGNED_NOT_ALLOWED;
+    break;
+
   case NabtoConstants.ClientEvents.CERT_CREATION_ERROR:
     this.code = NabtoError.Code.P2P_CERT_CREATION_ERROR;
     break;
