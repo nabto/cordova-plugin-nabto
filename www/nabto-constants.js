@@ -80,6 +80,7 @@ NabtoConstants.ClientEvents.NO_RSP_FROM_CONTROLLER              =    1000023;
 NabtoConstants.ClientEvents.MICROSERVER_REATTACHING             =    1000024;
 NabtoConstants.ClientEvents.NO_RSP_FROM_SERVERPEER              =    1000025;
 NabtoConstants.ClientEvents.CONNECT_TIMEOUT                     =    1000026;
+NabtoConstants.ClientEvents.SELF_SIGNED_NOT_ALLOWED             =    1000027;
 NabtoConstants.ClientEvents.CERT_ID_NOT_FOUND                   =    1000100;
 NabtoConstants.ClientEvents.CERT_FILE_NOT_FOUND                 =    1000101;
 NabtoConstants.ClientEvents.CERT_FILE_INVALID                   =    1000102;
