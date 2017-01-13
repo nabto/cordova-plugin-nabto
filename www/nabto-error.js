@@ -119,13 +119,13 @@ NabtoError.Message[NabtoError.Code.API_CONNECT_TIMEOUT]       = "Timeout when co
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
 NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsing the RPC interface definition file";		    
-NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT]    = "The remote device does not allow the current user to connect";		    
-NabtoError.Message[NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED] = "The server could not validate this client's certificate";		    
+NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT]    = "The device does not allow the current user to connect";		    
+NabtoError.Message[NabtoError.Code.P2P_CLIENT_CERT_NOT_VERIFIED] = "The server could not validate this client's certificate";
 NabtoError.Message[NabtoError.Code.P2P_SERVER_CERT_NOT_VERIFIED] = "The server's certificate could not be validated";		    
 NabtoError.Message[NabtoError.Code.P2P_DEVICE_OFFLINE]           = "The device was not found locally and is not online for remote access";		    
-NabtoError.Message[NabtoError.Code.P2P_DEVICE_BUSY]              = "The remote device cannot handle more connections at this moment";		    
+NabtoError.Message[NabtoError.Code.P2P_DEVICE_BUSY]              = "The device cannot handle more connections at this moment";		    
 NabtoError.Message[NabtoError.Code.P2P_NO_NETWORK]               = "This client does not have a network connection";		    
-NabtoError.Message[NabtoError.Code.P2P_CONNECTION_PROBLEM]       = "A problem occurred when communicating with the remote device, please try again later";		    
+NabtoError.Message[NabtoError.Code.P2P_CONNECTION_PROBLEM]       = "A problem occurred when communicating with the device, please try again later";		    
 NabtoError.Message[NabtoError.Code.P2P_ENCRYPTION_MISMATCH]      = "Security options of remote device does not match client's - likely because remote device is not using crypto";		    
 NabtoError.Message[NabtoError.Code.P2P_DEVICE_REATTACHING]       = "Device is currently unavailable as it tries to reconnect to server, try again in a moment";
 NabtoError.Message[NabtoError.Code.P2P_SELF_SIGNED_NOT_ALLOWED]  = "This server does not allow self-signed certificates - either install signed cert or change server configuration";
@@ -137,14 +137,14 @@ NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]            = "A parameter 
 NabtoError.Message[NabtoError.Code.P2P_OTHER]                    = "An unspecified error occurred - please contact vendor";
                                                                        
 NabtoError.Message[NabtoError.Code.EXC_BASE]                     = "(n/a)";
-NabtoError.Message[NabtoError.Code.EXC_NOT_READY]                = "Not ready: The remote application is not ready yet (still initializing)";
-NabtoError.Message[NabtoError.Code.EXC_NO_ACCESS]                = "Access denied: The remote application does not allow this request to be answered";  // function level authorization failed 
+NabtoError.Message[NabtoError.Code.EXC_NOT_READY]                = "Not ready: The device application is not ready yet (still initializing)";
+NabtoError.Message[NabtoError.Code.EXC_NO_ACCESS]                = "Access denied: The device application does not allow this request to be answered";  // function level authorization failed 
 NabtoError.Message[NabtoError.Code.EXC_TOO_SMALL]                = "The request is too small, i.e. required fields are not present";
 NabtoError.Message[NabtoError.Code.EXC_TOO_LARGE]                = "The request is larger than expected";
-NabtoError.Message[NabtoError.Code.EXC_INV_QUERY_ID]             = "Invalid query id: The remote application could not recognize the query id (opcode)";
-NabtoError.Message[NabtoError.Code.EXC_RSP_TOO_LARGE]            = "Internal error in the remote application, response buffer too small";
-NabtoError.Message[NabtoError.Code.EXC_OUT_OF_RESOURCES]         = "The remote device is out of resources (most likely out of memory)";
-NabtoError.Message[NabtoError.Code.EXC_SYSTEM_ERROR]             = "Internal error in the remote application";
+NabtoError.Message[NabtoError.Code.EXC_INV_QUERY_ID]             = "Invalid query id: The device application could not recognize the query id (opcode)";
+NabtoError.Message[NabtoError.Code.EXC_RSP_TOO_LARGE]            = "Internal error in the device application, response buffer too small";
+NabtoError.Message[NabtoError.Code.EXC_OUT_OF_RESOURCES]         = "The device is out of resources (most likely out of memory)";
+NabtoError.Message[NabtoError.Code.EXC_SYSTEM_ERROR]             = "Internal error in the device application";
 NabtoError.Message[NabtoError.Code.EXC_NO_QUERY_ID]              = "Query id (opcode) missing in request";
 
 
