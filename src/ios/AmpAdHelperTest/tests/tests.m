@@ -97,6 +97,8 @@ long time_;
     XCTAssertFalse([am shouldShowAd]);
     [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
     XCTAssertTrue([am shouldShowAd]);
+    [am addDevices:@"[\"free3.aaaaaf.appmyproduct.com\", \"free4.aaaaaf.appmyproduct.com\"]"]; 
+    XCTAssertTrue([am shouldShowAd]);
 }
 
 - (void)testInputAsArray {
