@@ -149,22 +149,6 @@ public class Nabto extends CordovaPlugin {
                         } else {
                             Log.d("prepareInvoke","found non-free device: " + dev);
                         }
-                        /*String[] bits = dev.split("\\.");
-                        if (bits.length > 1){
-                            bits = bits[1].split("-");
-                            if (bits[bits.length-1].equals("f")){
-                                Log.d("prepareInvoke","found free device: " + dev);
-                                showAdFlag = true;
-                            } else if (bits[bits.length-1].equals("o")){
-                                Log.d("prepareInvoke","found Own-it device: " + dev);
-                            }else {
-                                // device not on AMP, will never grant access
-                                Log.d("prepareInvoke","found non-AMP device: " + dev);
-                            }
-                        }else {
-                            Log.d("prepareInvoke","found invalid device: " + dev);
-                        }
-*/
                         if(!deviceCache.contains(dev)){
                             deviceCache.add(dev);
                         }
