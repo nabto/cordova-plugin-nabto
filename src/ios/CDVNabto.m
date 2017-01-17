@@ -140,7 +140,6 @@
         }
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
-        NSLog(@"addDevices failed");
         NSLog(@"Invalid json array: [%@]", jsonHosts);
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_FAILED];
     }

@@ -75,25 +75,19 @@
 
 -(bool) addDevicesFromString:(NSString*)jsonDeviceList {
     NSError *jsonError;
-    NSLog(@"jsonDeviceList is %@: ", NSStringFromClass([jsonDeviceList class]));
     NSData* data = [jsonDeviceList dataUsingEncoding:NSUTF8StringEncoding];
     id parsed = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
-    if (parsed == nil)
-    {
+    if (parsed == nil) {
         NSLog(@"Could not parse input");
         return false;
-    }
-    else if ([parsed isKindOfClass: [NSArray class]])
-    {
+    } else if ([parsed isKindOfClass: [NSArray class]]) {
         if (hasFreeDevice_) {
             [knownDevices_ addObjectsFromArray:parsed];
         } else {
             [self checkForFreeAndAdd:parsed];
         }
         return true;
-    }
-    else
-    {
+    } else {
         NSLog(@"Expected array");
         return false;
     }
