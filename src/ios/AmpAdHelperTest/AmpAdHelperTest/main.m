@@ -1,6 +1,6 @@
 //
 //  main.m
-//  AmpAdHelperTest
+//  AmpAdManagerTest
 //
 //  Created by Nabto on 1/17/17.
 //  Copyright © 2017 Nabto. All rights reserved.

@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		6013C5FA1E2E04D300C408E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C5F91E2E04D300C408E0 /* main.m */; };
 		6013C6071E2E056A00C408E0 /* tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C6061E2E056A00C408E0 /* tests.m */; };
-		6013C60D1E2E084D00C408E0 /* AdHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C60C1E2E084D00C408E0 /* AdHelper.m */; };
-		6013C60F1E2E0AD600C408E0 /* AdHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C60C1E2E084D00C408E0 /* AdHelper.m */; };
+		6013C60D1E2E084D00C408E0 /* AdManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C60C1E2E084D00C408E0 /* AdManager.m */; };
+		6013C60F1E2E0AD600C408E0 /* AdManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C60C1E2E084D00C408E0 /* AdManager.m */; };
 		6013C61B1E2E1CC300C408E0 /* AdTimeProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C61A1E2E1CC300C408E0 /* AdTimeProvider.m */; };
 		6013C61C1E2E1D8200C408E0 /* AdTimeProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 6013C61A1E2E1CC300C408E0 /* AdTimeProvider.m */; };
 /* End PBXBuildFile section */
@@ -33,8 +33,8 @@
 		6013C6041E2E056A00C408E0 /* tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6013C6061E2E056A00C408E0 /* tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = tests.m; sourceTree = "<group>"; };
 		6013C6081E2E056A00C408E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6013C60C1E2E084D00C408E0 /* AdHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AdHelper.m; path = ../../AdHelper.m; sourceTree = "<group>"; };
-		6013C60E1E2E088000C408E0 /* AdHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdHelper.h; path = ../../AdHelper.h; sourceTree = "<group>"; };
+		6013C60C1E2E084D00C408E0 /* AdManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AdManager.m; path = ../../AdManager.m; sourceTree = "<group>"; };
+		6013C60E1E2E088000C408E0 /* AdManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdManager.h; path = ../../AdManager.h; sourceTree = "<group>"; };
 		6013C6101E2E0BAC00C408E0 /* AdTimeProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdTimeProvider.h; path = ../../AdTimeProvider.h; sourceTree = "<group>"; };
 		6013C61A1E2E1CC300C408E0 /* AdTimeProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AdTimeProvider.m; path = ../../AdTimeProvider.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -80,8 +80,8 @@
 			children = (
 				6013C61A1E2E1CC300C408E0 /* AdTimeProvider.m */,
 				6013C6101E2E0BAC00C408E0 /* AdTimeProvider.h */,
-				6013C60E1E2E088000C408E0 /* AdHelper.h */,
-				6013C60C1E2E084D00C408E0 /* AdHelper.m */,
+				6013C60E1E2E088000C408E0 /* AdManager.h */,
+				6013C60C1E2E084D00C408E0 /* AdManager.m */,
 				6013C5F91E2E04D300C408E0 /* main.m */,
 			);
 			path = AmpAdHelperTest;
@@ -188,7 +188,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6013C61B1E2E1CC300C408E0 /* AdTimeProvider.m in Sources */,
-				6013C60D1E2E084D00C408E0 /* AdHelper.m in Sources */,
+				6013C60D1E2E084D00C408E0 /* AdManager.m in Sources */,
 				6013C5FA1E2E04D300C408E0 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -198,7 +198,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6013C61C1E2E1D8200C408E0 /* AdTimeProvider.m in Sources */,
-				6013C60F1E2E0AD600C408E0 /* AdHelper.m in Sources */,
+				6013C60F1E2E0AD600C408E0 /* AdManager.m in Sources */,
 				6013C6071E2E056A00C408E0 /* tests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

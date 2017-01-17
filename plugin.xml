@@ -92,6 +92,10 @@
         <source-file src="src/ios/Manager.m" />
         <header-file src="src/ios/AdViewController.h" />
         <source-file src="src/ios/AdViewController.m" />
+        <header-file src="src/ios/AdManager.h" />
+        <source-file src="src/ios/AdManager.m" />
+        <header-file src="src/ios/AdTimeProvider.h" />
+        <source-file src="src/ios/AdTimeProvider.m" />
         <header-file src="src/ios/IsShowingAd.h" />
         <header-file src="src/nabto/ios/include/nabto_client_api.h" />
 

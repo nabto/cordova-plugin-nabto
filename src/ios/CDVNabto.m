@@ -5,8 +5,9 @@
 #import "CDVNabto.h"
 #import "Manager.h"
 #import "AdViewController.h"
+#import "AdManager.h"
 
-@implementation CDVNabto
+@implementation CDVNabto 
 
 #pragma mark Nabto API
 
@@ -95,6 +96,7 @@
 
 
 - (void)shutdown:(CDVInvokedUrlCommand*)command {
+    [[AdManager instance] clear];
     [self.commandDelegate runInBackground:^{
             nabto_status_t status = [[Manager sharedManager] nabtoShutdown];
             [self handleStatus:status withCommand:command];
@@ -128,43 +130,31 @@
 }
 
 - (void)prepareInvoke:(CDVInvokedUrlCommand*)command {
-    NSLog(@"Cordova prepareInvoke begin");
-    
-    /*
-     if devices.length == 0
-     return;
-     for all devices:
-     if device free:
-     showAd = true
-     Save device to cache
-     if device own-it:
-     save device to cache
-     else device is not AMP
-     don't save "this device is not supported"
-     end
-     if ad has been show within grace period:
-     showAd = false
-     if showAd && previouslyShownAd = false
-     showAd()
-     previouslyShownAd = true
-     start Timer for grace period
-     callback.success();
-     */
-    
-     
-//    [self showAd];
-    
-    NSLog(@"Cordova prepareInvoke end");
+    CDVPluginResult *res = nil;
+    NSString* jsonHosts = [command.arguments objectAtIndex:0];
+    NSLog(@"Cordova prepareInvoke begins, jsonHosts=[%@], class=[%@]", jsonHosts, NSStringFromClass([jsonHosts class]));
+    if ([[AdManager instance] addDevices:jsonHosts]) {
+        if ([[AdManager instance] shouldShowAd]) {
+            [self showAd];
+            [[AdManager instance] confirmAdShown];
+        }
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        NSLog(@"addDevices failed");
+        NSLog(@"Invalid json array: [%@]", jsonHosts);
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_FAILED];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    NSLog(@"Cordova prepareInvoke ends");
 }
 
-- (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
-    NSLog(@"Cordova RPC invoke begin");
+- (void)doInvokeRpc:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         CDVPluginResult *res = nil;
         NSLog(@"Cordova RPC invoke runInBackground ");
         nabto_status_t status;
         char *jsonString = 0;
-
+        
         status = [[Manager sharedManager] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
                                         withResultBuffer:&jsonString];
         if (status == NABTO_OK || status == NABTO_FAILED_WITH_JSON_MESSAGE) {
@@ -175,13 +165,26 @@
                 cdvStatus = CDVCommandStatus_ERROR;
             }
             res = [CDVPluginResult resultWithStatus:cdvStatus
-                                    messageAsString:[NSString stringWithUTF8String:jsonString]];
+                                messageAsString:[NSString stringWithUTF8String:jsonString]];
             nabtoFree(jsonString);
         } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
         [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
     }];
+}
+
+- (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
+    NSString* url = [command.arguments objectAtIndex:0];
+    NSLog(@"Cordova rpcInvoke begins, url=[%@], class=[%@]", url, NSStringFromClass([url class]));
+    if ([[AdManager instance] isHostInUrlKnown:url]) {
+        [self doInvokeRpc:command];
+    } else {
+        NSLog(@"Prepare not invoked for url %@", url);
+        // TODO: JSON response
+        CDVPluginResult* res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_FAILED];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }
 }
 
 - (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command {

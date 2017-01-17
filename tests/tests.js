@@ -641,6 +641,14 @@ exports.defineManualTests = function(contentEl, createActionButton) {
     nabto.shutdown();
     console.log("expected result: ad should not be shown");
   });
+  createActionButton('RpcInvoke', function() {
+    nabto.startup();
+    nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+      console.log(`error=${error}, result=${result}`);
+    });
+    nabto.shutdown();
+    console.log("expected result: ad should not be shown");
+  });
   
 };
 

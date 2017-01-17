@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "../../AdHelper.h"
+#import "../../AdManager.h"
 
 @interface tests : XCTestCase
 @end
@@ -45,82 +45,148 @@ long time_;
 }
 
 - (void)testAcceptsValidJsonArray {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
-    XCTAssertTrue([ah addDevices:@"[\"foo\", \"bar\"]"]);
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
+    XCTAssertTrue([am addDevices:@"[\"foo\", \"bar\"]"]);
 }
 
 - (void)testRejectsValidJsonMap {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
-    XCTAssertFalse([ah addDevices:@"{\"foo\": \"bar\"]}"]);
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
+    XCTAssertFalse([am addDevices:@"{\"foo\": \"bar\"]}"]);
 }
 
 - (void)testRejectsInvalidValidJson {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
-    XCTAssertFalse([ah addDevices:@"foo"]);
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
+    XCTAssertFalse([am addDevices:@"foo"]);
 }
 
 - (void)testShouldNotShowAdInsideGracePeriod {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
-    [ah addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
-    XCTAssertFalse([ah shouldShowAd]);
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:17]];
+    [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
+    XCTAssertFalse([am shouldShowAd]);
 }
 
 - (void)testShouldShowAdOutsideGracePeriod {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:17]];
-    [ah addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
-    XCTAssertTrue([ah shouldShowAd]);
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [time setTime:37];
+    [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
+    XCTAssertTrue([am shouldShowAd]);
 }
 
 - (void)testShouldNotShowAdForOnlyNonFreeDevices {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:17]];
-    [ah addDevices:@"[\"paid1.aaaaa.appmyproduct.com\", \"paid2.aaaaa.appmyproduct.com\"]"];
-    XCTAssertFalse([ah shouldShowAd]);
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [time setTime:37];
+    [am addDevices:@"[\"paid1.aaaaa.appmyproduct.com\", \"paid2.aaaaa.appmyproduct.com\"]"];
+    XCTAssertFalse([am shouldShowAd]);
 }
 
 - (void)testShouldShowAdForMixedPaidAndFreeDevices {
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:17]];
-    [ah addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
-    XCTAssertTrue([ah shouldShowAd]);
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [time setTime:37];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertTrue([am shouldShowAd]);
+}
+
+- (void)testMixedAdd {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [time setTime:37];
+    [am addDevices:@"[\"paid1.aaaaa.appmyproduct.com\", \"paid2.aaaaa.appmyproduct.com\"]"];
+    XCTAssertFalse([am shouldShowAd]);
+    [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
+    XCTAssertTrue([am shouldShowAd]);
+}
+
+- (void)testInputAsArray {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [time setTime:37];
+    [am addDevices:@[@"paid1.aaaaa.appmyproduct.com", @"paid2.aaaaa.appmyproduct.com"]];
+    XCTAssertFalse([am shouldShowAd]);
+    [am addDevices:@[@"free1.aaaaaf.appmyproduct.com", @"free2.aaaaaf.appmyproduct.com"]];
+    XCTAssertTrue([am shouldShowAd]);
 }
 
 - (void)testConfirmAdShownRestartsGracePeriod {
-    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:7];
-    AdHelper* ah = [[AdHelper alloc] initWithTimeProvider:time];
-    [ah addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
 
     // during initial grace period
-    XCTAssertFalse([ah shouldShowAd]);
+    XCTAssertFalse([am shouldShowAd]);
     
     // after grace period
-    [time setTime:17];
-    XCTAssertTrue([ah shouldShowAd]);
-    [ah confirmAdShown];
+    [time setTime:37];
+    XCTAssertTrue([am shouldShowAd]);
+    [am confirmAdShown];
 
     // during next grace period
-    [time setTime:22];
-    XCTAssertFalse([ah shouldShowAd]);
+    [time setTime:42];
+    XCTAssertFalse([am shouldShowAd]);
 
     // after next grace period
-    [time setTime:40];
-    XCTAssertTrue([ah shouldShowAd]);
+    [time setTime:60];
+    XCTAssertTrue([am shouldShowAd]);
 }
 
 - (void)testAddedDevicesAreKnown {
-    AdHelper* ah = [[AdHelper alloc] init];
-    [ah addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
-    XCTAssertTrue([ah isHostInUrlKnown:@"nabto://free.aaaaaf.appmyproduct.com/wind_speed.json?foo=bar"]);
-    XCTAssertTrue([ah isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
-    XCTAssertTrue([ah isHostInUrlKnown:@"foo://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
-    XCTAssertFalse([ah isHostInUrlKnown:@"nabto://foo.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+    AdManager* am = [[AdManager alloc] init];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://free.aaaaaf.appmyproduct.com/wind_speed.json?foo=bar"]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+    XCTAssertTrue([am isHostInUrlKnown:@"foo://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+    XCTAssertFalse([am isHostInUrlKnown:@"nabto://foo.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
 }
 
 - (void)testInvalidUrls {
-    AdHelper* ah = [[AdHelper alloc] init];
-    [ah addDevices:@"[\"\", \"hello, world!\", \"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
-    XCTAssertFalse([ah isHostInUrlKnown:@"free.aaaaaf.appmyproduct.com/wind_speed.json?foo=bar"]);
-    XCTAssertFalse([ah isHostInUrlKnown:@"nabto://"]);
-    XCTAssertFalse([ah isHostInUrlKnown:@""]);
-    XCTAssertFalse([ah isHostInUrlKnown:@"hello, world!"]);
+    AdManager* am = [[AdManager alloc] init];
+    [am addDevices:@"[\"\", \"hello, world!\", \"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertFalse([am isHostInUrlKnown:@"free.aaaaaf.appmyproduct.com/wind_speed.json?foo=bar"]);
+    XCTAssertFalse([am isHostInUrlKnown:@"nabto://"]);
+    XCTAssertFalse([am isHostInUrlKnown:@""]);
+    XCTAssertFalse([am isHostInUrlKnown:@"hello, world!"]);
+}
+
+- (void)testClear {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:7];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertFalse([am shouldShowAd]);
+    [time setTime:37];
+    XCTAssertTrue([am shouldShowAd]);
+    XCTAssertTrue([am shouldShowAd]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+
+    [am clear];
+    XCTAssertFalse([am shouldShowAd]);
+    XCTAssertFalse([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+}
+
+- (void)testInputThatCrashesPlugin {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:7];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    NSString* jsonHosts = @"(\"test.amp-o.appmyproduct.com\", \"test.ampstf.appmyproduct.com\")";
+    XCTAssertFalse([am addDevices:jsonHosts]);
+}
+
+- (void)testInputThatCrashesPlugin_attempt2 {
+    NSString* jsonHosts = @"(\"test.amp-o.appmyproduct.com\", \"test.ampstf.appmyproduct.com\")";
+    if ([[AdManager instance] addDevices:jsonHosts]) {
+        if ([[AdManager instance] shouldShowAd]) {
+            [[AdManager instance] confirmAdShown];
+        }
+    }
+}
+
+- (void)testInputThatCrashesPlugin_attempt3 {
+    NSArray* jsonHosts = @[@"test.amp-o.appmyproduct.com", @"test.ampstf.appmyproduct.com"];
+    if ([[AdManager instance] addDevices:jsonHosts]) {
+        if ([[AdManager instance] shouldShowAd]) {
+            [[AdManager instance] confirmAdShown];
+        }
+    }
 }
 
 

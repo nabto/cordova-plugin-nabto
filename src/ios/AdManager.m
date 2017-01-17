@@ -1,14 +1,23 @@
-#import "AdHelper.h"
+#import "AdManager.h"
 #import "AdTimeProvider.h"
 
 #define AD_GRACE_PERIOD_SECONDS 15
 
-@implementation AdHelper {
+@implementation AdManager {
     id <AdTimeProvider> timeProvider_;
     long timeLastShown_;
     BOOL hasFreeDevice_;
     NSMutableSet* knownDevices_;
     NSRegularExpression* freeRe_;
+}
+
++ (id)instance {
+    static AdManager *instance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[self alloc] init];
+    });
+    return instance;
 }
 
 -(id) init {
@@ -28,16 +37,21 @@
             timeProvider = [[AdSystemTimeProvider alloc] init];
         }
         timeProvider_ = timeProvider;
-        hasFreeDevice_ = NO;
+        timeLastShown_ = [timeProvider_ now]; // start with a grace period
         NSError* error;
         freeRe_ = [NSRegularExpression regularExpressionWithPattern:@"^[\\w]+\\.[\\w]{5}f(\\.[\\w]+)*$"
-                                                            options:NSRegularExpressionCaseInsensitive
+                                                            options:0
                                                               error:&error];
         NSAssert(!error, @"Bad free regex");
         return self;
     } else {
         return nil;
     }
+}
+
+-(void) clear {
+    [knownDevices_ removeAllObjects];
+    hasFreeDevice_ = NO;
 }
 
 -(void) confirmAdShown {
@@ -59,8 +73,9 @@
     }];
 }
 
--(bool) addDevices:(NSString*)jsonDeviceList {
+-(bool) addDevicesFromString:(NSString*)jsonDeviceList {
     NSError *jsonError;
+    NSLog(@"jsonDeviceList is %@: ", NSStringFromClass([jsonDeviceList class]));
     NSData* data = [jsonDeviceList dataUsingEncoding:NSUTF8StringEncoding];
     id parsed = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
     if (parsed == nil)
@@ -80,6 +95,19 @@
     else
     {
         NSLog(@"Expected array");
+        return false;
+    }
+
+}
+
+-(bool) addDevices:(id)list {
+    if ([list isKindOfClass: [NSArray class]]) {
+        [self checkForFreeAndAdd:list];
+        return YES;
+    } else if ([list isKindOfClass: [NSString class]]) {
+        return [self addDevicesFromString:list];
+    } else {
+        NSLog(@"Unexpected type of list input: %@", NSStringFromClass([list class]));
         return false;
     }
 }
