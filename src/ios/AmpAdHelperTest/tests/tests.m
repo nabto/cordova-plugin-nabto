@@ -59,16 +59,14 @@ long time_;
     XCTAssertFalse([am addDevices:@"foo"]);
 }
 
-- (void)testShouldNotShowAdInsideGracePeriod {
-    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:17]];
+- (void)testNoInitialGracePeriod_1 {
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:7]];
     [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
-    XCTAssertFalse([am shouldShowAd]);
+    XCTAssertTrue([am shouldShowAd]);
 }
 
-- (void)testShouldShowAdOutsideGracePeriod {
-    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
-    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
-    [time setTime:37];
+- (void)testNoInitialGracePeriod_2 {
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:[[StubTimeProvider alloc] initWithTime:17]];
     [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
     XCTAssertTrue([am shouldShowAd]);
 }
@@ -111,27 +109,23 @@ long time_;
     XCTAssertTrue([am shouldShowAd]);
 }
 
-- (void)testConfirmAdShownRestartsGracePeriod {
+- (void)testShouldOnlyShowAdOnce {
     StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:17];
     AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
-    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    [am addDevices:@"[\"free1.aaaaaf.appmyproduct.com\", \"free2.aaaaaf.appmyproduct.com\"]"];
 
-    // during initial grace period
-    XCTAssertFalse([am shouldShowAd]);
-    
-    // after grace period
     [time setTime:37];
+
     XCTAssertTrue([am shouldShowAd]);
     [am confirmAdShown];
 
-    // during next grace period
-    [time setTime:42];
+    [time setTime:173];
     XCTAssertFalse([am shouldShowAd]);
 
-    // after next grace period
-    [time setTime:60];
-    XCTAssertTrue([am shouldShowAd]);
+    [time setTime:173000];
+    XCTAssertFalse([am shouldShowAd]);
 }
+
 
 - (void)testAddedDevicesAreKnown {
     AdManager* am = [[AdManager alloc] init];
@@ -151,20 +145,55 @@ long time_;
     XCTAssertFalse([am isHostInUrlKnown:@"hello, world!"]);
 }
 
-- (void)testClear {
-    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:7];
+// start app, vent 10 sekunder, prep (reklame), suspend+resume, vent 2 sekunder, prep (ingen reklame (2 sek inden for grace))
+- (void)testShouldNotShowAfterClearWithinGrace {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:10];
     AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
     [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
-    XCTAssertFalse([am shouldShowAd]);
-    [time setTime:37];
-    XCTAssertTrue([am shouldShowAd]);
     XCTAssertTrue([am shouldShowAd]);
     XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
-
+    [am confirmAdShown];
+    
     [am clear];
+    
+    [time setTime:12];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
     XCTAssertFalse([am shouldShowAd]);
-    XCTAssertFalse([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
 }
+
+- (void)testShouldNeverShowAfterPrepInGraceAfterClear {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:10];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertTrue([am shouldShowAd]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+    [am confirmAdShown];
+    
+    [am clear];
+    
+    [time setTime:12];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertFalse([am shouldShowAd]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+}
+
+- (void)testShouldShowAfterClearAfterGraceIfNoPrepInGrace {
+    StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:10];
+    AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertTrue([am shouldShowAd]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+    [am confirmAdShown];
+    
+    [am clear];
+    
+    [time setTime:12];
+    [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
+    XCTAssertFalse([am shouldShowAd]);
+    XCTAssertTrue([am isHostInUrlKnown:@"nabto://paid.aaaaa.appmyproduct.com/wind_speed.json?foo=bar"]);
+}
+
 
 - (void)testInputThatCrashesPlugin {
     StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:7];

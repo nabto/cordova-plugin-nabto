@@ -187,10 +187,11 @@ exports.defineAutoTests = function () {
     });
 
     it('cannot invokeRpc with non-open nabto', function(done) {
-      nabto.prepareInvoke([testDevice],function(error){});
-      nabto.rpcInvoke(testUrl, function(error, result) {
-        expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
-        done();
+      nabto.prepareInvoke([testDevice],function(error) {
+        nabto.rpcInvoke(testUrl, function(error, result) {
+          expect(error.code).toBe(NabtoError.Code.API_NOT_INITIALIZED);
+          done();
+        });
       });
     });
 
@@ -204,12 +205,11 @@ exports.defineAutoTests = function () {
     });
     
     it('gets error with invalid arguments to rpcInvoke', function(done) {
-      nabto.prepareInvoke(123,function(error){});
-      nabto.rpcInvoke(123, function(error, result) {
-        expect(result).not.toBeDefined();
-        expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-        done();
-      });
+          nabto.rpcInvoke(123, function(error, result) {
+            expect(result).not.toBeDefined();
+            expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
+            done();
+          });
     });
     
     it('api error with invalid username', function(done) {
@@ -258,13 +258,15 @@ exports.defineAutoTests = function () {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
 	    expect(error).not.toBeDefined();
-        nabto.prepareInvoke(["demo.nabto.net"],function(error,result){});
-        nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+        nabto.prepareInvoke(["demo.nabto.net"], function(error) {
           expect(error).not.toBeDefined();
-          expect(result.response).toBeDefined();
-          expect(result.response.speed_m_s).toBeDefined();
-          done();
-	    });
+          nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+            expect(error).not.toBeDefined();
+            expect(result.response).toBeDefined();
+            expect(result.response.speed_m_s).toBeDefined();
+            done();
+	  });
+        });
       });
     });
 
@@ -280,38 +282,29 @@ exports.defineAutoTests = function () {
     it('returns an rpc error when invoking an offline device', function(done) {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
-	    expect(error).not.toBeDefined();
-        try {
-          nabto.prepareInvoke(["offline-error-216b3ea2.nabto.net"],function(error,result){});
+	expect(error).not.toBeDefined();
+        nabto.prepareInvoke(["offline-error-216b3ea2.nabto.net"], function(error) {
           nabto.rpcInvoke('nabto://offline-error-216b3ea2.nabto.net/wind_speed.json', function(error, result) {
             expect(error).toBeDefined();
             expect(error.code).toBe(NabtoError.Code.P2P_DEVICE_OFFLINE);
             expect(result).not.toBeDefined();
             done();
           });
-        } catch (e) {
-          console.error(`Runaway exception in RPC invoke: ${e.stack || e}`);
-          done();
-        }
+        });
       });
     });
 
     it('returns a device exception when rpc invoking an unexisting function on device', function(done) {
       var interfaceXml = "<unabto_queries><query name='wind_speed.json' id='87'><request></request><response format='json'><parameter name='speed_m_s' type='uint32'/></response></query></unabto_queries>";
       nabto.rpcSetDefaultInterface(interfaceXml, function(error, result) {
-	    expect(error).not.toBeDefined();
-        try {
-          nabto.prepareInvoke(["demo.nabto.net"],function(error,result){});
-          nabto.rpcInvoke('nabto://demo.nabto.net/wind_speed.json', function(error, result) {
-            expect(error).toBeDefined();
-            expect(error.code).toBe(NabtoError.Code.EXC_INV_QUERY_ID);
-            expect(result).not.toBeDefined();
-            done();
-          });
-        } catch (e) {
-          console.error(`Runaway exception in RPC invoke: ${e.stack || e}`);
+	expect(error).not.toBeDefined();
+        nabto.prepareInvoke(["demo.nabto.net"], function(error) {});
+        nabto.rpcInvoke('nabto://demo.nabto.net/wind_speed.json', function(error, result) {
+          expect(error).toBeDefined();
+          expect(error.code).toBe(NabtoError.Code.EXC_INV_QUERY_ID);
+          expect(result).not.toBeDefined();
           done();
-        }
+          });
       });
     });
 
@@ -371,14 +364,17 @@ exports.defineAutoTests = function () {
     });
 
     it('rpcInvoke fails when prepareInvoke called with wrong device', function(done){
-      nabto.startupAndOpenProfile('guest', 'blank', function(error) {});
-      nabto.prepareInvoke(["wrong.device.id"], function(error){});
-      nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
-        expect(result).not.toBeDefined();
-        expect(error).toBeDefined();
-        done();
+      nabto.startupAndOpenProfile('guest', 'blank', function(error) {
+        nabto.prepareInvoke(["wrong.device.id"], function(error){
+          nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
+            expect(result).not.toBeDefined();
+            expect(error).toBeDefined();
+            nabto.shutdown(function(error) {
+              done();
+            });
 	  });
-      nabto.shutdown(function(error) {});
+        });
+      });
     });
 
   });
@@ -392,137 +388,120 @@ exports.defineAutoTests = function () {
       it('starts nabto', function(done) {
         nabto.startupAndOpenProfile(function(error) {
           expect(error).not.toBeDefined();
-          done();
+          nabto.shutdown(function() {
+            done();
+          });
         });
       });
       
 
       it('gets tunnel state on closed tunnel', function(done) {
-        nabto.tunnelState(function(error, state) {
-          expect(error).not.toBeDefined();
-          expect(state.value).toBe(-1);
-          done();
+        nabto.startupAndOpenProfile(function(error) {
+          nabto.tunnelState(function(error, state) {
+            expect(error).not.toBeDefined();
+            expect(state.value).toBe(-1);
+            nabto.shutdown(function() {
+              done();
+            });
+          });
         });
       });
       
       it('handles invalid arguments to tunnelOpenTcp', function(done) {
-        nabto.tunnelOpenTcp(function(error) {
-          expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-          nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
+        nabto.startupAndOpenProfile(function(error) {
+          nabto.tunnelOpenTcp(function(error) {
             expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-            nabto.tunnelOpenTcp(123, remotePort, function(error) {
+            nabto.tunnelOpenTcp(nabtoDevice, '5555', function(error) {
               expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
-              done();
+              nabto.tunnelOpenTcp(123, remotePort, function(error) {
+                expect(error.code).toBe(NabtoError.Code.CDV_INVALID_ARG);
+                nabto.shutdown(function() {
+                  done();
+                });
+              });
             });
           });
         });
       });
 
       it('opens a nabto tunnel and wait for it to connect', function(done) {
-	    nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
-          expect(error).not.toBeDefined();
-          var interval = setInterval(function() {
-            nabto.tunnelState(function(error, state) {
-              if (state.value <= NabtoTunnelState.NTCS_CONNECTING) { return; }
-              clearInterval(interval);
-              expect(state.value).toBeGreaterThan(NabtoTunnelState.NTCS_UNKNOWN);
-              done();
-            });
-          }, 500);
-	    });
+        nabto.startupAndOpenProfile(function(error) {
+	  nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
+            expect(error).not.toBeDefined();
+            var interval = setInterval(function() {
+              nabto.tunnelState(function(error, state) {
+                if (state.value <= NabtoTunnelState.NTCS_CONNECTING) { return; }
+                clearInterval(interval);
+                expect(state.value).toBeGreaterThan(NabtoTunnelState.NTCS_UNKNOWN);
+                nabto.tunnelClose(function() {
+                  nabto.shutdown(function() {
+                    done();
+                  });
+                });
+              });
+            }, 500);
+	  });
+	});
       });
       
       it('fails to open a second tunnel', function(done) {
-	    nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
-          expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
-          done();
-	    });
+        nabto.startupAndOpenProfile(function(error) {
+	  nabto.tunnelOpenTcp('2' + nabtoDevice, remotePort, function(error) {
+            expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
+            nabto.shutdown(function() {
+              done();
+            });
+	  });
+	});
       });
       
       it('gets tunnel port and has a connection', function(done) {
+        nabto.startupAndOpenProfile(function(error) {
+	  nabto.tunnelOpenTcp(nabtoDevice, remotePort, function(error) {
 	    nabto.tunnelPort(function(error, port) {
-          expect(error).not.toBeDefined();
-          expect(port).toBeGreaterThan(1000);
-	      
-          var xhttp = new XMLHttpRequest();
-          xhttp.onreadystatechange = function() {
-            if (xhttp.readyState !== 4) { return; }
-            expect(xhttp.status).toBe(200);
-            expect(xhttp.responseText).toContain('Serve a large file');
-            done();
-          };
-          xhttp.open('GET', 'http://localhost:' + port, true);
-          xhttp.send();
+              expect(error).not.toBeDefined();
+              expect(port).toBeGreaterThan(1000);
+              var xhttp = new XMLHttpRequest();
+              xhttp.onreadystatechange = function() {
+                if (xhttp.readyState == 4) { 
+                  expect(xhttp.status).toBe(200);
+                  expect(xhttp.responseText).toContain('Serve a large file');
+                }
+                nabto.tunnelClose(function() {
+                  nabto.shutdown(function() {
+                    done();
+                  });
+                });
+              };
+              xhttp.open('GET', 'http://localhost:' + port, true);
+              xhttp.send();
 	    });
-      });
-
-      it('closes tunnel', function(done) {
-	    nabto.tunnelClose(function(error) {
-          expect(error).not.toBeDefined();
-          // Wait for tunnel to close
-          setTimeout(function() {
-            done();
-          }, 500);
-	    });
-      });
-      
-      it('gets tunnel version', function(done) {
-        nabto.tunnelVersion(function(error, version) {
-          expect(error).not.toBeDefined();
-          expect(version).toBeDefined();
-          done();
+          });
         });
       });
-      
       
       it('does not connect to nonexisting device', function(done) {
-        nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
-          expect(error).not.toBeDefined();
-          var interval = setInterval(function() {
-            nabto.tunnelState(function(error, state) {
-              if (state.value === NabtoTunnelState.NTCS_CONNECTING) { return; }
-              clearInterval(interval);
-              expect(state.value).toBe(NabtoTunnelState.NTCS_CLOSED);
-              done();
-            });
-          }, 500);
-        });
-      });
-
-      it('gets last error', function(done) {
-        nabto.tunnelLastError(function(error) {
-          expect(error).toBeDefined();
-	      expect(error.category).toBe(NabtoError.Category.P2P);
-          done();
-        });
-      });
-
-      it('closes tunnel', function(done) {
-        nabto.tunnelClose(function(error) {
-          expect(error).not.toBeDefined();
-          done();
-        });
-      });
-
-      it('closes a non-open tunnel', function(done) {
-        nabto.tunnelClose(function(error) {
-          expect(error.value).toBe(NabtoError.INVALID_TUNNEL);
-          done();
-        });
-      });
-
-      it('shuts down nabto', function(done) {
-        // Wait for tunnel to close
-        setTimeout(function() {
-          nabto.shutdown(function(error) {
+        nabto.startupAndOpenProfile(function(error) {
+          nabto.tunnelOpenTcp('nonexist.nabto.net', remotePort, function(error) {
             expect(error).not.toBeDefined();
-            done();
+            var interval = setInterval(function() {
+              nabto.tunnelState(function(error, state) {
+                if (state.value === NabtoTunnelState.NTCS_CONNECTING) { return; }
+                clearInterval(interval);
+                expect(state.value).toBe(NabtoTunnelState.NTCS_CLOSED);
+                nabto.tunnelLastError(function(error) {
+                  expect(error).toBeDefined();
+	          expect(error.category).toBe(NabtoError.Category.P2P);
+                  nabto.shutdown({
+                    done();
+                  });
+                });
+              });
+            }, 500);
           });
-        }, 500);
+        });
       });
-
-    }
-
+    }   
   });
 
   describe('Nabto Tunnel State', function() {

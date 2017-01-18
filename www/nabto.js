@@ -45,18 +45,13 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
 Nabto.prototype.prepareInvoke = function(devices, cb) {
   cb = cb || function(){};
   exec(
-	function success(){
-	  // if (ad.showAd == true ){
-	  // 	//showAd(cb);
-	  // 	cb();
-	  // 	return;
-	  // }
-	  cb();
-	},
-	function error(apiStatus) {
+    function success(){
+      cb();
+    },
+    function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-	'Nabto', 'prepareInvoke',[devices]);
+    'Nabto', 'prepareInvoke',[devices]);
 };
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {

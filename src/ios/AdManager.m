@@ -7,6 +7,8 @@
     id <AdTimeProvider> timeProvider_;
     long timeLastShown_;
     BOOL hasFreeDevice_;
+    BOOL adShownSinceClear_;
+    BOOL adShownSinceBoot_;
     NSMutableSet* knownDevices_;
     NSRegularExpression* freeRe_;
 }
@@ -37,7 +39,6 @@
             timeProvider = [[AdSystemTimeProvider alloc] init];
         }
         timeProvider_ = timeProvider;
-        timeLastShown_ = [timeProvider_ now]; // start with a grace period
         NSError* error;
         freeRe_ = [NSRegularExpression regularExpressionWithPattern:@"^[\\w]+\\.[\\w]{5}f(\\.[\\w]+)*$"
                                                             options:0
@@ -52,10 +53,13 @@
 -(void) clear {
     [knownDevices_ removeAllObjects];
     hasFreeDevice_ = NO;
+    adShownSinceClear_ = NO;
 }
 
 -(void) confirmAdShown {
     timeLastShown_ = [timeProvider_ now];
+    adShownSinceClear_ = YES;
+    adShownSinceBoot_ = YES;
 }
 
 -(bool) isOutsideGracePeriod {
@@ -107,7 +111,7 @@
 }
 
 -(bool) shouldShowAd {
-    return hasFreeDevice_ && [self isOutsideGracePeriod];
+    return hasFreeDevice_ && !adShownSinceClear_ && (!adShownSinceBoot_ || [self isOutsideGracePeriod]);
 }
 
 -(bool) isHostInUrlKnown:(NSString*)urlString {

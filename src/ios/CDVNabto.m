@@ -173,6 +173,17 @@
     }];
 }
 
+- (NSString*)createUnpreparedError:(NSString*)url {
+    return [NSString stringWithFormat: 
+                         @"\"error\" : {"
+                          "\"event\" : 101,"
+                         "\"header\" : \"Unprepared device invoked\","
+                           "\"body\" : \"rpcInvoke was called with unprepared device. prepareInvoke must be called before device can be invoked\","
+                         "\"detail\" : \"%@\""
+                     "}", url];
+}
+        
+
 - (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
     NSString* url = [command.arguments objectAtIndex:0];
     NSLog(@"Cordova rpcInvoke begins, url=[%@], class=[%@]", url, NSStringFromClass([url class]));
@@ -180,8 +191,8 @@
         [self doInvokeRpc:command];
     } else {
         NSLog(@"Prepare not invoked for url %@", url);
-        // TODO: JSON response
-        CDVPluginResult* res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_FAILED];
+        CDVPluginResult* res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                messageAsString:[self createUnpreparedError:url]];
         [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
     }
 }
