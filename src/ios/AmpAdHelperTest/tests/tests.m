@@ -175,7 +175,7 @@ long time_;
     [am addDevices:@"[\"free.aaaaaf.appmyproduct.com\", \"paid.aaaaa.appmyproduct.com\"]"];
     XCTAssertFalse([am shouldShowAd]);
     XCTAssertTrue([am isHostInUrlKnown:@"nabto://free.aaaaaf.appmyproduct.com/wind_speed.json?foo=bar"]);
-    
+
     [time setTime:112];
     [am addDevices:@"[\"free2.aaaaaf.appmyproduct.com\", \"paid2.aaaaa.appmyproduct.com\"]"];
     XCTAssertFalse([am shouldShowAd]);
@@ -233,7 +233,5 @@ long time_;
     XCTAssertFalse([am isHostInUrlKnown:@"nabto://xsdhgdfg.xlahff.appmyproduct.com/pair_with_device.json?name=iPhone SE"]);
     XCTAssertTrue([am isHostInUrlKnown:@"nabto://xsdhgdfg.xlahff.appmyproduct.com/pair_with_device.json?name=iPhone%20SE"]);
 }
-
-
 
 @end
