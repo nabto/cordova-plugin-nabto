@@ -145,7 +145,6 @@ long time_;
     XCTAssertFalse([am isHostInUrlKnown:@"hello, world!"]);
 }
 
-// start app, vent 10 sekunder, prep (reklame), suspend+resume, vent 2 sekunder, prep (ingen reklame (2 sek inden for grace))
 - (void)testShouldNotShowAfterClearWithinGrace {
     StubTimeProvider* time = [[StubTimeProvider alloc] initWithTime:10];
     AdManager* am = [[AdManager alloc] initWithTimeProvider:time];
