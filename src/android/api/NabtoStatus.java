@@ -149,6 +149,11 @@ public enum NabtoStatus {
     FAILED_WITH_JSON_MESSAGE,
 
     /**
+     * Timeout when connecting to remote device.
+     */
+    NABTO_CONNECT_TIMEOUT,
+
+    /**
      * Number of possible error codes. This must always be last!
      */
     ERROR_CODE_COUNT;

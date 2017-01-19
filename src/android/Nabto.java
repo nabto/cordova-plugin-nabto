@@ -149,28 +149,13 @@ public class Nabto extends CordovaPlugin {
                         } else {
                             Log.d("prepareInvoke","found non-free device: " + dev);
                         }
-                        /*String[] bits = dev.split("\\.");
-                        if (bits.length > 1){
-                            bits = bits[1].split("-");
-                            if (bits[bits.length-1].equals("f")){
-                                Log.d("prepareInvoke","found free device: " + dev);
-                                showAdFlag = true;
-                            } else if (bits[bits.length-1].equals("o")){
-                                Log.d("prepareInvoke","found Own-it device: " + dev);
-                            }else {
-                                // device not on AMP, will never grant access
-                                Log.d("prepareInvoke","found non-AMP device: " + dev);
-                            }
-                        }else {
-                            Log.d("prepareInvoke","found invalid device: " + dev);
-                        }
-*/
                         if(!deviceCache.contains(dev)){
                             deviceCache.add(dev);
                         }
                     }
         
-                    if (timerStart != 0){
+                    if (timerStart != 0) {
+                        // an ad has been shown earlier - if within graceperiod, do not show again
                         if (System.currentTimeMillis()-timerStart < GRACEPERIOD*1000){
                             Log.d("prepareInvoke","Invoking grace period");
                             adShown = true;
@@ -372,7 +357,7 @@ public class Nabto extends CordovaPlugin {
                         error.put("event",AMP_ERROR_NOT_PREPARED);
                         error.put("header","Unprepared device invoked");
                         error.put("detail","AMP_ERROR_NOT_PREPARED");
-                        error.put("body","rpcInvoke was called with uprepared device: " + dev + ". prepareInvoke must becalled before device can be invoked");
+                        error.put("body","rpcInvoke was called with unprepared device: " + dev + ". prepareInvoke must be called before device can be invoked");
                         root.put("error",error);
                     } catch (JSONException e){
                         Log.e("rpcInvoke","could not put JSON error message");
