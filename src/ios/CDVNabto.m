@@ -175,12 +175,12 @@
 
 - (NSString*)createUnpreparedError:(NSString*)url {
     return [NSString stringWithFormat: 
-                         @"\"error\" : {"
+                         @"{\"error\" : {"
                           "\"event\" : 101,"
                          "\"header\" : \"Unprepared device invoked\","
                            "\"body\" : \"rpcInvoke was called with unprepared device. prepareInvoke must be called before device can be invoked\","
                          "\"detail\" : \"%@\""
-                     "}", url];
+                     "}}", url];
 }
         
 
