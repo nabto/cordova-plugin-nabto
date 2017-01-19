@@ -62,10 +62,6 @@
     adShownSinceBoot_ = YES;
 }
 
--(bool) isOutsideGracePeriod {
-    return ([timeProvider_ now] - timeLastShown_ > AD_GRACE_PERIOD_SECONDS);
-}
-
 -(void) checkForFreeAndAdd:(NSArray*) hosts {
     [hosts enumerateObjectsUsingBlock:^(id host, NSUInteger idx, BOOL *stop) {
         if (!hasFreeDevice_ && [freeRe_ numberOfMatchesInString:host
@@ -99,6 +95,10 @@
 }
 
 -(bool) addDevices:(id)list {
+    if ([self isInsideGracePeriod]) {
+        // according to rules in amp-78, if inside the grace period, we should consider prep as if the user has returned to the app after clicking on an ad
+        adShownSinceClear_ = YES;
+    }
     if ([list isKindOfClass: [NSArray class]]) {
         [self checkForFreeAndAdd:list];
         return YES;
@@ -110,8 +110,14 @@
     }
 }
 
+-(bool) isInsideGracePeriod {
+    return adShownSinceBoot_ && ([timeProvider_ now] - timeLastShown_ < AD_GRACE_PERIOD_SECONDS);
+}
+
 -(bool) shouldShowAd {
-    return hasFreeDevice_ && !adShownSinceClear_ && (!adShownSinceBoot_ || [self isOutsideGracePeriod]);
+    NSLog(@"shouldShowAd: hasFree=%d, adShownSinceClear=%d, adShownSinceBoot=%d, isInsideGracePeriod=%d",
+          hasFreeDevice_, adShownSinceClear_, adShownSinceBoot_, [self isInsideGracePeriod]);
+        return hasFreeDevice_ && !adShownSinceClear_ && ![self isInsideGracePeriod];
 }
 
 -(bool) isHostInUrlKnown:(NSString*)urlString {
