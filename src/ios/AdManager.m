@@ -111,13 +111,17 @@
 }
 
 -(bool) shouldShowAd {
+    NSLog(@"shouldShowAd: hasFree=%d, adShownSinceClear=%d, adShownSinceBoot=%d, isOutsideGracePeriod=%d",
+          hasFreeDevice_, adShownSinceClear_, adShownSinceBoot_, [self isOutsideGracePeriod]);
     return hasFreeDevice_ && !adShownSinceClear_ && (!adShownSinceBoot_ || [self isOutsideGracePeriod]);
 }
 
 -(bool) isHostInUrlKnown:(NSString*)urlString {
     NSURL* url = [NSURL URLWithString:urlString];
     NSString* host = [url host];
-    return [knownDevices_ containsObject:host];
+    bool res = [knownDevices_ containsObject:host];
+    NSLog(@"isHostInUrlKnown returns [%d] for [%@] in [%@]", res, host, urlString);
+    return res;
 }
 
 @end
