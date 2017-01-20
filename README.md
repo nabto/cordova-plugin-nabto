@@ -1,44 +1,44 @@
 # Cordova Plugin Nabto
 
-[Nabto ApS](http://nabto.com) client plugin for Cordova.
+[Nabto ApS](http://www.nabto.com) client plugin for Cordova.
 
 Nabto provides a full communication infrastructure to allow direct, encrypted communication between clients and IoT devices - the Nabto communication platform. The platform supports direct peer-to-peer connectivity through NAT traversal.
-
-## Limitations
-
-- Only Android and iOS support
-- No Nabto streaming API
-- Returned error can be both `NabtoStatus` and `NabtoError` objects.
-- An HTML device driver containing the uNabto interface (`unabto_queries.xml`) is still required to communicate with the device
 
 ## Installation
 
 1. Download Nabto libraries and assets to *cordova-plugin-nabto/src/nabto/* (See "Source File Structure" section). This step can be skipped if installing directly from [npm](https://www.npmjs.com/).
 2. Install cordova plugin: `cordova plugin add cordova-plugin-nabto`.
-3. For iOS projects replace linker flag "-ObjC" with "-force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++" (in platforms/ios/cordova/build.xcconfig)
+3. For iOS projects replace linker flag `-ObjC` with `-force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++` (in platforms/ios/cordova/build.xcconfig)
 4. Start using as described in the Example and API section.
 
 ## Example
 
-The simplest possible example of using the Cordova uNabto plugin:
+A simple example using the Cordova Nabto plugin:
 ```js
 // Wait for cordova to fully load
 document.addEventListener('deviceready', function() {
-
+  
   // Start Nabto and login as guest
   nabto.startup(function() {
 
-    // Make a Nabto request to a device
-    var url = 'nabto://demo.nabto.net/wind_speed.json?';
-    nabto.fetchUrl(url, function(error, result) {
+    // set the device interface definition to use
+    nabto.rpcSetDefaultInterface("<unabto_queries><query name='my_wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed' type='uint32'/></response></query></unabto_queries>", function() {
 
-      // Print out the response
-      if (!error && result.response) {
-        console.log(result.response);
-      }
+      // prepare invocation - note: may show a full screen ad if device is associated a free tier AMP product
+      nabto.prepareInvoke(['demo.nabto.net'], function() {
 
+        // invoke a function on the device
+        nabto.rpcInvoke('nabto://demo.nabto.net/my_wind_speed.json?', function(error, result) {
+          if (error) {
+            console.log(error.message);
+          } else {
+            if (result.response) {
+              console.log(result.response);
+            }
+          }
+        });
+      });
     });
-
   });
 
 }, false);
@@ -49,8 +49,6 @@ document.addEventListener('deviceready', function() {
 See *www/nabto.js* for API implementation details.
 
 All callbacks are invoked with an error object as the first argument if something went wrong, otherwise the first argument is set to undefined.
-
-`NabtoStatus`: Maps to nabto client nabto_status enum.
 
 `NabtoError`: Represents other wrapper layer errors.
 
