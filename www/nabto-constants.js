@@ -30,7 +30,6 @@ NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION_ARGUMENT = 23;
 NabtoConstants.ClientApiErrors.ABORTED                        = 24;
 NabtoConstants.ClientApiErrors.STREAM_CLOSED                  = 25;
 NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE       = 26;
-NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT                = 27;
 
 ////////////////////////////////////////////////////////////////////////////////
 // from unabto/src/unabto/unabto_protocol_exceptions.h
@@ -153,5 +152,7 @@ NabtoConstants.ClientEvents.QUERY_JSON_PARSE_ERROR              =    2000063;
 NabtoConstants.ClientEvents.EMPTY_PARAMETER                     =    2000064;
 NabtoConstants.ClientEvents.UNABTO_APPLICATION_EXCEPTION        =    2000065;
 NabtoConstants.ClientEvents.QUERY_MODEL_MISSING                 =    2000066;
+NabtoConstants.ClientEvents.RPC_INTERFACE_NOT_SET               =    2000067;
+NabtoConstants.ClientEvents.MISSING_PREPARE                     =    2000068;
 
 module.exports = NabtoConstants;

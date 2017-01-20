@@ -267,6 +267,21 @@ exports.defineAutoTests = function () {
         });
       });
     });
+    
+    it('returns json error when invoking rpc without interface being set', function(done) {
+      nabto.shutdown(function() {
+        nabto.startupAndOpenProfile(function() {
+          nabto.prepareInvoke(['demo.nabto.net'], function(error, result) {
+            nabto.rpcInvoke('nabto://demo.nabto.net/test.json', function(error, result) {
+              expect(error).toBeDefined();
+              expect(error.code).toBe(NabtoError.Code.P2P_RPC_INTERFACE_NOT_SET);
+              expect(result).not.toBeDefined();
+              done();
+            });
+          });
+        });
+      });
+    });
 
     it('returns json error when fetching an offline device through legacy fetchurl', function(done) {
       nabto.fetchUrl('nabto://offline-error-216b3ea2.nabto.net/test.json', function(error, result) {
@@ -353,6 +368,7 @@ exports.defineAutoTests = function () {
         expect(error).not.toBeDefined();
         nabto.rpcInvoke("nabto://demo.nabto.net/wind_speed.json?", function(error, result) {
           expect(error).toBeDefined();
+          expect(error.code).toBe(NabtoError.Code.P2P_MISSING_PREPARE);
           expect(result).not.toBeDefined();
           nabto.shutdown(function(error) {
             done();

@@ -63,8 +63,6 @@ NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD     = 2006;
 NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
 NabtoError.Code.API_CERT_SAVING_FAILURE         = 2009;
 NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE    = 2026;
-NabtoError.Code.API_RPC_INTERFACE_NOT_SET       = 2027;
-NabtoError.Code.API_CONNECT_TIMEOUT             = 2032;
 NabtoError.Code.API_ERROR                       = 2100;
 
 // relevant error codes mapped from nabto::Events
@@ -84,6 +82,8 @@ NabtoError.Code.P2P_NO_SUCH_REQUEST           = 3227; // NO_SUCH_REQ, FILE_NOT_F
 NabtoError.Code.P2P_PARAM_PARSE_ERROR         = 3229; 
 NabtoError.Code.P2P_PARAM_MISSING             = 3230; 
 NabtoError.Code.P2P_NO_NETWORK                = 3249;
+NabtoError.Code.P2P_RPC_INTERFACE_NOT_SET     = 3267;
+NabtoError.Code.P2P_MISSING_PREPARE           = 3268;
 NabtoError.Code.P2P_OTHER                     = 3999;
 
 // device exceptions mapped from unabto/src/unabto/unabto_protocol_exceptions.h
@@ -97,6 +97,8 @@ NabtoError.Code.EXC_RSP_TOO_LARGE    = 4008;
 NabtoError.Code.EXC_OUT_OF_RESOURCES = 4009;
 NabtoError.Code.EXC_SYSTEM_ERROR     = 4010;
 NabtoError.Code.EXC_NO_QUERY_ID      = 4011;
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -114,7 +116,6 @@ NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key c
 NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
 NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
 NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "JSON object contains error message";
-NabtoError.Message[NabtoError.Code.API_RPC_INTERFACE_NOT_SET] = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.API_CONNECT_TIMEOUT]       = "Timeout when connecting to device";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
@@ -134,6 +135,8 @@ NabtoError.Message[NabtoError.Code.P2P_TIMEOUT]                  = "Timeout when
 NabtoError.Message[NabtoError.Code.P2P_NO_SUCH_REQUEST]          = "The specified request does not exist in the interface definition";
 NabtoError.Message[NabtoError.Code.P2P_PARAM_PARSE_ERROR]        = "The parameter value could not be parsed according to the interface defintion";
 NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]            = "A parameter is missing for this request according to the interface definition";
+NabtoError.Message[NabtoError.Code.P2P_RPC_INTERFACE_NOT_SET]    = "RPC interface not set prior to invoking";
+NabtoError.Message[NabtoError.Code.P2P_MISSING_PREPARE]          = "rpcInvoke was called with unprepared device. prepareInvoke must be called before device can be invoked";
 NabtoError.Message[NabtoError.Code.P2P_OTHER]                    = "An unspecified error occurred - please contact vendor";
                                                                        
 NabtoError.Message[NabtoError.Code.EXC_BASE]                     = "(n/a)";
@@ -235,10 +238,6 @@ NabtoError.prototype.handleApiError = function(status, innerError) {
     this.code = NabtoError.Code.API_CERT_OPEN_FAIL;
     break;
 
-  case NabtoConstants.ClientApiErrors.CONNECT_TIMEOUT:
-    this.code = NabtoError.Code.API_CONNECT_TIMEOUT;
-    break;
-
   case NabtoConstants.ClientApiErrors.FAILED:
     this.code = NabtoError.Code.API_ERROR;
     break;
@@ -305,16 +304,6 @@ NabtoError.prototype.handleErrorWithDetail = function(status, innerError) {
   }
 };
 
-
-/*function(status,doc) {
-  // TODO workaround for AMP-73: Client API error details in JSON not
-  // propagated through Cordova wrapper) - currently the only error
-  // reported with extra details is interface xml parse errors, so we
-  // cheat a bit
-  this.category = NabtoError.Category.P2P;
-  this.code = NabtoError.Code.P2P_INTERFACE_DEF_INVALID;
-};*/
-  
 NabtoError.prototype.handleDeviceException = function(error) {
   // unabto/src/unabto/unabto_protocol_exceptions.h
   try {
@@ -411,10 +400,14 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
     this.code = NabtoError.Code.P2P_NO_NETWORK;
     break;
 
-  case NabtoConstants.AmpError.NOT_PREPARED:
-    this.code = NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE;
+  case NabtoConstants.ClientEvents.RPC_INTERFACE_NOT_SET:
+    this.code = NabtoError.Code.P2P_RPC_INTERFACE_NOT_SET;
     break;
-	
+    
+  case NabtoConstants.ClientEvents.MISSING_PREPARE:
+    this.code = NabtoError.Code.P2P_MISSING_PREPARE;
+    break;
+
   default:    
     this.code = NabtoError.Code.P2P_OTHER;
     break;

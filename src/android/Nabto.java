@@ -26,7 +26,7 @@ import android.R;
 import android.util.Log;
 
 public class Nabto extends CordovaPlugin {
-    private static final int AMP_ERROR_NOT_PREPARED = 101; 
+    private static final int NABTO_ERROR_MISSING_PREPARE = 2000068; 
     private static final int GRACEPERIOD = 15; // seconds
     private NabtoApi nabto = null;
     private Session session;
@@ -354,9 +354,9 @@ public class Nabto extends CordovaPlugin {
                     JSONObject error = new JSONObject();
                     JSONObject root = new JSONObject();
                     try{
-                        error.put("event",AMP_ERROR_NOT_PREPARED);
+                        error.put("event",NABTO_ERROR_MISSING_PREPARE);
                         error.put("header","Unprepared device invoked");
-                        error.put("detail","AMP_ERROR_NOT_PREPARED");
+                        error.put("detail", dev);
                         error.put("body","rpcInvoke was called with unprepared device: " + dev + ". prepareInvoke must be called before device can be invoked");
                         root.put("error",error);
                     } catch (JSONException e){
