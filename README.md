@@ -64,16 +64,43 @@ Shuts down Nabto.
 nabto.shutdown(callback)
 ```
 
-Makes a Nabto request to a uNabto device url.
-Callback is invoked with a response object.
+Makes a Nabto RPC request to a uNabto device (e.g., invokeRpc('nabto://demo.nabto.net/wind_speed.json?', function(err, res) { console.log(res); })).
+
+Prior to invoking, the following must have been done (after startup):
+
+* RPC interface must have been set with `nabto.rpcSetInterface(host, unabto_queries_xml)` or `nabto.rpcSetDefaultInterface(unabto_queries_xml)`. The interface file is the file formerly distributed centrally through HTML DD bundles in the nabto subdir.
+* The function nabto.prepareInvoke(hosts) where `hosts` is an array of hostnames. 
+
 ```js
-nabto.fetchUrl(url, callback)
+nabto.invokeRpc(url, callback)
 ```
 
-Get the active session token.
-Callback is invoked with a string.
+Set Nabto RPC interface for specific host. See section 6.2 in TEN024 for
+format (note that the key HTML DD concept in that document is deprecated, the
+mentioned section will soon be available in a new location).
+
 ```js
-nabto.getSessionToken(callback)
+nabto.rpcSetInterface(host, unabto_queries_xml, callback)
+```
+
+Set default Nabto RPC interface to use if not overriden with host
+specific version (`rpcSetInterface`). See section 6.2 in TEN024 for
+format (note that the key HTML DD concept in that document is deprecated, the
+mentioned section will soon be available in a new location).
+
+```js
+nabto.rpcSetDefaultInterface(host, unabto_queries_xml, callback)
+```
+
+
+Mandatory to invoke prior to `nabto.invokeRpc` after each
+`nabto.startup` invocation. This function may show a fullscreen ad if
+`hosts` contains a device associated with an AMP free tier product. An
+ad may also be shown if a previous invocation since last
+`nabto.startup` contained such free tier device.
+
+```js
+nabto.prepareInvoke(hosts, callback)
 ```
 
 Get local Nabto devices.
@@ -88,44 +115,9 @@ Callback is invoked with a string.
 nabto.version(callback)
 ```
 
-## Nabto Tunnel API
-
-Open a TCP tunnel over Nabto to the given host and port.
-Use `nabto.tunnelPort` to get the tunnel's local port.
-```js
-nabto.tunnelOpenTcp(host, port, callback)
-```
-
-Get the Nabto tunnel version.
-Callback is invoked with a version number.
-```js
-nabto.tunnelVersion(callback)
-```
-
-Get the open tunnel state.
-Callback is invoked with a `NabtoTunnelState` object.
-```js
-nabto.tunnelState(callback)
-```
-
-Get the last error of the open tunnel.
-Callback is invoked with a `NabtoStatus` object.
-```js
-nabto.tunnelLastError(callback)
-```
-
-Get the open tunnel local port.
-Callback is invoked with a port number.
-```js
-nabto.tunnelPort(callback)
-```
-
-Close the previously opened tunnel.
-```js
-nabto.tunnelClose(callback)
-```
-
 ## Source File Structure
+
+Install from npm to get all necessary libraries and resources installed in the right location.
 
 ```
 src
