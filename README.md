@@ -1,8 +1,12 @@
-# Cordova Plugin Nabto
+# Cordova Plugin Nabto - 2.0 BETA
 
-[Nabto ApS](http://www.nabto.com) client plugin for Cordova.
+[Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
-Nabto provides a full communication infrastructure to allow direct, encrypted communication between clients and IoT devices - the Nabto communication platform. The platform supports direct peer-to-peer connectivity through NAT traversal.
+Nabto provides a full communication infrastructure to allow direct, encrypted communication between clients and IoT devices - the Nabto communication platform. The platform supports direct peer-to-peer connectivity through NAT traversal with fallback through central relay.
+
+The Cordova plugin allows hybrid client apps to use Nabto RPC to invoke uNabto devices, i.e. to retrieve data or control the device.
+
+For an example of such a hybrid app, see [Ionic Starter for Nabto / AppMyProduct](https://github.com/nabto/ionic-starter-nabto).
 
 ## Installation
 
@@ -50,19 +54,25 @@ See *www/nabto.js* for API implementation details.
 
 All callbacks are invoked with an error object as the first argument if something went wrong, otherwise the first argument is set to undefined.
 
-`NabtoError`: Represents other wrapper layer errors.
+### `nabto.startup`
 
 Start Nabto and open a session with optional username and password.
+
 ```js
 nabto.startup([username, password, ]callback)
 ```
 
+### `nabto.shutdown`
+
 Shuts down Nabto.
+
 ```js
 nabto.shutdown(callback)
 ```
 
-Makes a Nabto RPC request to a uNabto device (e.g., invokeRpc('nabto://demo.nabto.net/wind_speed.json?', function(err, res) { console.log(res); })).
+### `nabto.invokeRpc`
+
+Makes a Nabto RPC request to a uNabto device (e.g., `invokeRpc('nabto://demo.nabto.net/wind_speed.json?', function(err, res) { console.log(res); })`).
 
 Prior to invoking, the following must have been done (after startup):
 
@@ -73,6 +83,8 @@ Prior to invoking, the following must have been done (after startup):
 nabto.invokeRpc(url, callback)
 ```
 
+### `nabto.rpcSetDefaultInterface`
+
 Set Nabto RPC interface for specific host. See section 6.2 in TEN024 for
 format (note that the key HTML DD concept in that document is deprecated, the
 mentioned section will soon be available in a new location).
@@ -80,6 +92,8 @@ mentioned section will soon be available in a new location).
 ```js
 nabto.rpcSetInterface(host, unabto_queries_xml, callback)
 ```
+
+### `nabto.rpcSetDefaultInterface`
 
 Set default Nabto RPC interface to use if not overriden with host
 specific version (`rpcSetInterface`). See section 6.2 in TEN024 for
@@ -90,6 +104,7 @@ mentioned section will soon be available in a new location).
 nabto.rpcSetDefaultInterface(host, unabto_queries_xml, callback)
 ```
 
+### `nabto.prepareInvoke`
 
 Mandatory to invoke prior to `nabto.invokeRpc` after each
 `nabto.startup` invocation. This function may show a fullscreen ad if
@@ -101,17 +116,38 @@ ad may also be shown if a previous invocation since last
 nabto.prepareInvoke(hosts, callback)
 ```
 
+### `nabto.getLocalDevices`
+
 Get local Nabto devices.
 Callback is invoked with an array of device strings.
 ```js
 nabto.getLocalDevices(callback)
 ```
 
+### `nabto.version`
+
 Get Nabto client version.
 Callback is invoked with a string.
 ```js
 nabto.version(callback)
 ```
+
+### `nabto.createKeyPair`
+
+Create selfsigned keypair to be used for RSA fingerprint based authentication in uNabto devices.
+
+```js
+nabto.createKeyPair(name, private_key_encryption_password, callback)
+```
+
+### `nabto.getFingerprint`
+
+Get RSA fingerprint for public key in specified keypair.
+
+```js
+nabto.getFingerprint(name, callback)
+```
+
 
 ## Source File Structure
 
