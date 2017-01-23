@@ -75,6 +75,12 @@ nabto.shutdown(callback)
 Makes a Nabto RPC request to a uNabto device:
 
 ```js
+nabto.invokeRpc(url, callback)
+```
+
+For example:
+
+```js
 nabto.invokeRpc('nabto://demo.nabto.net/wind_speed.json?', function(err, res) {
   console.log(res);
 })`
@@ -86,10 +92,6 @@ Prior to invoking, the following must have been done (after startup):
 * The function nabto.prepareInvoke(hosts) where `hosts` is an array of hostnames. 
 
 `nabto.invokeRpc()` is equivalent to `nabto.fetchUrl()` on JSON URLs in earlier versions of the SDK; devices invoked earlier with `nabto.fetchUrl()` can be invoked in exactly the same way and the resulting response objects are identical. It is only a matter of simpler management, cf. the description above.
-
-```js
-nabto.invokeRpc(url, callback)
-```
 
 ### `nabto.rpcSetDefaultInterface`
 
