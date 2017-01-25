@@ -116,7 +116,6 @@ NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key c
 NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
 NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
 NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "JSON object contains error message";
-NabtoError.Message[NabtoError.Code.API_CONNECT_TIMEOUT]       = "Timeout when connecting to device";
 NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
 
 NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsing the RPC interface definition file";		    

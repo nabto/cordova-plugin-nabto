@@ -14,10 +14,10 @@
     _image = [[UIImage alloc] initWithContentsOfFile:path];
     _imageView = [[UIImageView alloc]initWithFrame:self.view.bounds];
     [_imageView setImage:_image];
-    [_imageView setContentMode:UIViewContentModeScaleAspectFit];
+    [_imageView setContentMode:UIViewContentModeScaleAspectFill];
+    [_imageView setClipsToBounds:YES];
     [self.view addSubview:_imageView];
-    NSLog(@"HERHER");
-    [self performSelector:@selector(dissmissViewController) withObject:self afterDelay:2];
+    [self performSelector:@selector(dissmissViewController) withObject:self afterDelay:5];
 
 }
 

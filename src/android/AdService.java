@@ -60,7 +60,7 @@ public class AdService{
 //    }
     
     public void showAd(final Activity act, final Context context){
-        final int adTimeout = 3000;
+        final int adTimeout = 5000;
         act.runOnUiThread(new Runnable() {
                 public void run() {
                     int drawableId = 0;

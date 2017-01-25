@@ -1,7 +1,7 @@
 #import "AdManager.h"
 #import "AdTimeProvider.h"
 
-#define AD_GRACE_PERIOD_SECONDS 15
+#define AD_GRACE_PERIOD_SECONDS 300
 
 @implementation AdManager {
     id <AdTimeProvider> timeProvider_;

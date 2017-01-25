@@ -27,7 +27,7 @@ import android.util.Log;
 
 public class Nabto extends CordovaPlugin {
     private static final int NABTO_ERROR_MISSING_PREPARE = 2000068; 
-    private static final int GRACEPERIOD = 15; // seconds
+    private static final int GRACEPERIOD = 300; // seconds
     private NabtoApi nabto = null;
     private Session session;
     private Tunnel tunnel;
