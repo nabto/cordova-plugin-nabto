@@ -23,7 +23,7 @@ A simple example using the Cordova Nabto plugin:
 document.addEventListener('deviceready', function() {
   
   // Start Nabto and login as guest
-  nabto.startup(function() {
+  nabto.startupAndOpenProfile(function() {
 
     // set the device interface definition to use
     nabto.rpcSetDefaultInterface("<unabto_queries><query name='my_wind_speed.json' id='2'><request></request><response format='json'><parameter name='speed' type='uint32'/></response></query></unabto_queries>", function() {
