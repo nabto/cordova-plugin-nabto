@@ -17,9 +17,10 @@
 
 - (nabto_status_t)nabtoStartup;
 - (nabto_status_t)nabtoShutdown;
-
+- (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value;
 - (NSString *)nabtoVersion;
 
+- (nabto_status_t)nabtoCreateProfile:(NSString *)email withPassword:(NSString *)password;
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password;
 - (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result;
 

@@ -72,6 +72,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return status;
 }
 
+- (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value {
+    return nabtoSetOption([name UTF8String], [value UTF8String]);
+}
+
 - (nabto_status_t)nabtoShutdown {
     if (initialized) {
         initialized = false;
@@ -93,6 +97,10 @@ void nabtoLogCallback(const char* line, size_t size) {
 
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
     return nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]);
+}
+
+- (nabto_status_t)nabtoCreateProfile:(NSString *)email withPassword:(NSString *)password {
+    return nabtoCreateProfile([email UTF8String], [password UTF8String]);
 }
 
 - (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result {

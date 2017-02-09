@@ -30,6 +30,12 @@ function xdescribe(title, func) {}
 
 exports.defineAutoTests = function () {
 
+  document.addEventListener("pause", function() {
+    nabto.shutdown(function() {
+      console.log("shutdown");
+    });
+  }, false);
+  
   describe('NabtoError', function () {
     
     it('should have NabtoError available', function() {
@@ -353,6 +359,24 @@ exports.defineAutoTests = function () {
     });
 
   });
+
+//  describe('Debug', function () {
+  
+    it('create signed certificate', function(done){
+      nabto.startup(function(error) {
+        // exercise setOption (just re-construct defaults)
+        nabto.setOption("urlPortalDomain", "com", function(error) {
+          nabto.setOption("urlPortalHostName", "webservice.nabto", function(error) {
+            nabto.createSignedKeyPair("stresstest@nabto.com", "12345678", function(error) {
+              expect(error).not.toBeDefined();
+              done();
+            });
+          });
+        });
+      });
+    });
+    
+//  });
 
 };
 
