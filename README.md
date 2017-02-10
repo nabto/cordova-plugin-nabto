@@ -171,15 +171,6 @@ src
 │   └── *
 └── nabto
     ├── assets.md
-    ├── android-arm
-    │   └── lib
-    │       └── libnabto_client_api_jni.so
-    ├── android-armv7
-    │   └── lib
-    │       └── libnabto_client_api_jni.so
-    ├── android-x86
-    │   └── lib
-    │       └── libnabto_client_api_jni.so
     └── ios
         ├── include
         │   └── nabto_client_api.h
