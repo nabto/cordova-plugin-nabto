@@ -121,6 +121,7 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
             nabtoFree(resultBuffer);
+            nabtoFree(resultMimeType);
         } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
