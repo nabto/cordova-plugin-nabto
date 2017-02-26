@@ -68,10 +68,10 @@
             </feature>
         </config-file>
 
+        <framework src="NabtoClient" type="podspec" spec="3.0.15-rc.1" />
+        
         <header-file src="src/ios/CDVNabto.h" />
         <source-file src="src/ios/CDVNabto.m" />
-        <header-file src="src/ios/Manager.h" />
-        <source-file src="src/ios/Manager.m" />
         <header-file src="src/ios/AdViewController.h" />
         <source-file src="src/ios/AdViewController.m" />
         <header-file src="src/ios/AdManager.h" />
