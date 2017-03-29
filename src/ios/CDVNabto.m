@@ -24,6 +24,19 @@
         }];
 }
 
+- (void)setOption:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult* res = nil;
+    nabto_status_t status = [[Manager sharedManager] nabtoSetOption:[command.arguments objectAtIndex:0]
+                                                          withValue:[command.arguments objectAtIndex:1]];
+    if (status == NABTO_OK) {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+
 - (void)startupAndOpenProfile:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* res = nil;
@@ -59,6 +72,15 @@
     CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
                                              messageAsString:[NSString stringWithUTF8String:jsonString]];
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        nabto_status_t status = [[Manager sharedManager]
+                                    nabtoCreateProfile:[command.arguments objectAtIndex:0]
+                                                    withPassword:[command.arguments objectAtIndex:1]];
+        [self handleStatus:status withCommand:command];
+    }];
 }
 
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command {

@@ -15,7 +15,9 @@
 
 /* Nabto API */
 - (void)startup:(CDVInvokedUrlCommand*)command;
+- (void)setOption:(CDVInvokedUrlCommand*)command;
 - (void)shutdown:(CDVInvokedUrlCommand*)command;
+- (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command;
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command;
 - (void)getFingerprint:(CDVInvokedUrlCommand*)command;
 - (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command;

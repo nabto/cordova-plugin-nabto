@@ -61,6 +61,9 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("openSession")) {
             openSession(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("createSignedKeyPair")) {
+            createSignedKeyPair(args.getString(0), args.getString(1), callbackContext);
+        }
         else if (action.equals("createKeyPair")) {
             createKeyPair(args.getString(0), args.getString(1), callbackContext);
         }
@@ -253,6 +256,20 @@ public class Nabto extends CordovaPlugin {
                 } else {
                     cc.success();
                 }
+            }
+        });
+    }
+
+    private void createSignedKeyPair(final String user, final String pass, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+            @Override
+            public void run() {
+                NabtoStatus status = nabto.createProfile(user, pass);
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+                cc.success();
             }
         });
     }

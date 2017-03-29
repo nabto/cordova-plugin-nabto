@@ -25,6 +25,18 @@ Nabto.prototype.startup = function(cb) {
     'Nabto', 'startup', []);
 };
 
+Nabto.prototype.setOption = function(name, value, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb();
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'setOption', [name, value]);
+};
+
 Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
   if (typeof user === 'function') {
     cb = user;
@@ -36,7 +48,8 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
 
   exec(
     function success() { cb(); },
-    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
     'Nabto', 'startupAndOpenProfile', [user, pass]);
 };
@@ -53,15 +66,25 @@ Nabto.prototype.prepareInvoke = function(devices, cb) {
     'Nabto', 'prepareInvoke',[devices]);
 };
 
-Nabto.prototype.createKeyPair = function(user, pass, cb) {
+function generalCreateKeyPair(user, pass, cb, apiFunction) {
   cb = cb || function() {};
   exec(
-      function success() { cb(); },
-      function error(apiStatus) {
-          cb(new NabtoError(NabtoError.Category.API, apiStatus));
-      },
-      'Nabto', 'createKeyPair', [user, pass]
+    function success() {
+      cb();
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', apiFunction, [user, pass]
   );
+};
+
+Nabto.prototype.createKeyPair = function(user, pass, cb) {
+  return generalCreateKeyPair(user, pass, cb, 'createKeyPair');
+};
+
+Nabto.prototype.createSignedKeyPair = function(user, pass, cb) {
+  return generalCreateKeyPair(user, pass, cb, 'createSignedKeyPair');
 };
 
 Nabto.prototype.getFingerprint = function(email, cb) {
@@ -86,7 +109,7 @@ Nabto.prototype.shutdown = function(cb) {
     'Nabto', 'shutdown', []);
 };
 
-var rpcStyleInvoker = function(url, cb, apiFunction) {
+function rpcStyleInvoker(url, cb, apiFunction) {
   cb = cb || function() {};
   if (typeof url !== "string") {
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
