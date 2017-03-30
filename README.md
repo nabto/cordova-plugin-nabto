@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.0 BETA
+# Cordova Plugin Nabto - 2.0
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
