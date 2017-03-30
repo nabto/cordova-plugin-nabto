@@ -34,7 +34,7 @@
             </feature>
         </config-file>
 
-        <framework src="com.nabto.android:nabto-api:1.0.0" />
+        <framework src="com.nabto.android:nabto-api:1.0.1" />
 
 		<resource-file src="src/android/res/ad.png" target="res/drawable/ad.png" />
 		<resource-file src="src/android/res/ad_land.png" target="res/drawable/ad_land.png" />
