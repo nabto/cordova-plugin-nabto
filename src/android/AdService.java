@@ -85,7 +85,7 @@ public class AdService{
                     adImageView.setMinimumHeight(display.getHeight());
                     adImageView.setMinimumWidth(display.getWidth());
                     adImageView.setBackgroundColor(Color.BLACK);
-                    adImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                    adImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     // Show the dialog
                     dialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
 
