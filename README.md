@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.0
+# Cordova Plugin Nabto - 2.1
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
@@ -47,6 +47,10 @@ document.addEventListener('deviceready', function() {
 
 }, false);
 ```
+
+## Note about older Android devices
+
+On Android 4.4 and older, please pass the `--browserify` option to the cordova CLI (not necessary to worry about if invoking through Ionic), e.g. `cordova build android --browserify`, this fixes a problem with `require` not being available.
 
 ## Nabto API
 
