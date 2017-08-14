@@ -165,7 +165,6 @@ NabtoError.Category.WRAPPER          = 4;
 
 function NabtoError(category, status, innerError) {
   var err = new Error();
-//  console.log(`created NabtoError with category [${category}], status [${status}] and innerError [${innerError}]`);
   if (typeof(category) === "undefined") {
     throw new Error("Missing or invalid category");
   }
@@ -176,9 +175,10 @@ function NabtoError(category, status, innerError) {
   });
 
   this.__defineGetter__('message', function() {
+    var i=98;
     var msg = this.lookupMessage(this.code);
     if (!msg) {
-      msg = `Code ${this.toString()} (${this.code}), Category ${this.category}, inner: ${this.inner}`;
+      msg = 'Code ' + this.toString() + ' (' + this.code + ', Category ' + this.category + ', inner: ' + this.inner;
     }
     if (this.code == NabtoError.Code.P2P_INTERFACE_DEF_INVALID && this.inner.body) {
       msg = msg + ": " + this.inner.body;
@@ -246,7 +246,7 @@ NabtoError.prototype.handleApiError = function(status, innerError) {
     break;
 
   defau1t:
-    console.log(`Unexpected API status ${status}`);
+    console.log('Unexpected API status: ' + status);
     this.code = NabtoError.Code.API_ERROR;
     break;
   }
@@ -284,7 +284,7 @@ NabtoError.prototype.handleErrorWithDetail = function(status, innerError) {
   try {
     obj = JSON.parse(innerError);
   } catch (e) {
-    console.log(`Error parsing doc [${innerError}] from status [${status}]: ${e.stack || e}`);
+    console.log('Error parsing doc [' + innerError + ' from status [' + status + ']: ' + e.stack || e);
     this.inner = innerError;
     this.handleWrapperError(NabtoError.Code.CDV_MALFORMED_ERROR_MESSAGE);
     return;
@@ -425,7 +425,7 @@ NabtoError.prototype.handleUnexpectedObject = function(obj) {
   var inner;
   try {
     var json = JSON.stringify(obj);
-    inner = `Unexpected object: ${json}`; 
+    inner = 'Unexpected object: ' + json; 
   } catch (e) {
     inner = "Invalid JSON response"; 
   }
