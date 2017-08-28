@@ -181,6 +181,28 @@ Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
     }, 'Nabto', 'rpcSetInterface', [host, interfaceXml]);
 };
 
+Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
+  cb = cb || function() {};
+  exec(
+    function success(tunnelId) {
+      cb(undefined, tunnelId);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelOpenTcp', [host, port]);
+};
+
+Nabto.prototype.tunnelPort = function(tunnel, cb) {
+  cb = cb || function() {};
+  exec(
+    function success(portNumber) {
+      cb(undefined, portNumber);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelPort', [tunnel]);
+};
+
 Nabto.prototype.getSessionToken = function(cb) {
   cb = cb || function() {};
 
