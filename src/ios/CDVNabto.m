@@ -302,7 +302,14 @@
                     res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                             messageAsString:tunnelId];
                 } else {
-                    res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+                    if (status == NABTO_OK) {
+                        int err = [[NabtoClient instance] nabtoTunnelError:tunnel];
+                        // TODO: json error message instead (currently not possible for caller to
+                        // determine domain (api or p2p error))
+                        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:err];
+                    } else {
+                        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+                    }
                 }
             } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];

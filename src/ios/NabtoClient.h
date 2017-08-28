@@ -85,7 +85,7 @@
 - (nabto_status_t)nabtoTunnelOpenTcp:(nabto_tunnel_t *)handle toHost:(NSString *)host onPort:(int)port;
 - (int)nabtoTunnelVersion:(nabto_tunnel_t)handle;
 - (nabto_tunnel_state_t)nabtoTunnelInfo:(nabto_tunnel_t)handle;
-- (nabto_status_t)nabtoTunnelError:(nabto_tunnel_t)handle;
+- (int)nabtoTunnelError:(nabto_tunnel_t)handle; // return the internal nabto error on the tunnel
 - (int)nabtoTunnelPort:(nabto_tunnel_t)handle;
 - (nabto_status_t)nabtoTunnelClose:(nabto_tunnel_t)handle;
 

@@ -203,6 +203,18 @@ Nabto.prototype.tunnelPort = function(tunnel, cb) {
     }, 'Nabto', 'tunnelPort', [tunnel]);
 };
 
+Nabto.prototype.tunnelState = function(tunnel, cb) {
+  cb = cb || function() {};
+  exec(
+    function success(state) {
+      cb(undefined, state);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelState', [tunnel]);
+};
+
+
 Nabto.prototype.getSessionToken = function(cb) {
   cb = cb || function() {};
 

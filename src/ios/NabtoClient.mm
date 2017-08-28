@@ -227,10 +227,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return state;
 }
 
-- (nabto_status_t)nabtoTunnelError:(nabto_tunnel_t)handle {
-    nabto_status_t status = NABTO_OK;
-    nabtoTunnelInfo(handle, NTI_LAST_ERROR, sizeof(status), &status);
-    return status;
+- (int)nabtoTunnelError:(nabto_tunnel_t)handle {
+    int lastError = -1;
+    nabtoTunnelInfo(handle, NTI_LAST_ERROR, sizeof(lastError), &lastError);
+    return lastError;
 }
 
 - (int)nabtoTunnelPort:(nabto_tunnel_t)handle {
