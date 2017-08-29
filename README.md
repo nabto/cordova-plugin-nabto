@@ -202,7 +202,7 @@ cycle this by just using libraries for the exact platform you are working on.
 3. Install the Cordova test framework plugin: `cordova plugin add https://github.com/maverickmishra/cordova-plugin-test-framework.git`
 4. Install `cordova-plugin-nabto`: `cordova plugin add ~/git/cordova-plugin-nabto` (see note about optimization)
 5. Install `cordova-plugin-nabto-test`: `cordova plugin add ~/git/cordova-plugin-nabto-tests`
-6. Patch build.xcconfig as outlined above
+6. Patch build.xcconfig as outlined above if using iOS
 7. Build and run on the intended platform
 
 For every change, clean up and run from step 4 - e.g. put the following in a script:
