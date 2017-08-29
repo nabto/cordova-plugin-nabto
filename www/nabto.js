@@ -192,6 +192,17 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
     }, 'Nabto', 'tunnelOpenTcp', [host, port]);
 };
 
+Nabto.prototype.tunnelClose = function(tunnel, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb(undefined);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelClose', [tunnel]);
+};
+
 Nabto.prototype.tunnelPort = function(tunnel, cb) {
   cb = cb || function() {};
   exec(
