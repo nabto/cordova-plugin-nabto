@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.1
+# Cordova Plugin Nabto - 2.2
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
@@ -138,12 +138,12 @@ Callback is invoked with an array of device strings.
 nabto.getLocalDevices(callback)
 ```
 
-### `nabto.version`
+### `nabto.versionString`
 
 Get Nabto client version.
 Callback is invoked with a string.
 ```js
-nabto.version(callback)
+nabto.versionString(callback)
 ```
 
 ### `nabto.createKeyPair`
@@ -162,6 +162,42 @@ Get RSA fingerprint for public key in specified keypair.
 nabto.getFingerprint(name, callback)
 ```
 
+### `nabto.tunnelOpenTcp`
+
+Open a tunnel to specified nabto host, connecting to specified TCP port on the remote host. When a
+connection is established, a callback is invoked with a tunnel handle used for later
+operations. If success, TCP clients can now connect to the local port that can be queried with
+`tunnelPort`.
+
+```js
+nabto.tunnelOpenTcp("streamdemo.nabto.net", 80, callback)
+```
+
+### `nabto.tunnelPort`
+
+Retrieve the local TCP port number of the specified tunnel handle (tunnel opened with
+tunnelOpenTcp).
+
+### `nabto.tunnelClose`
+
+Close tunnel associated with the specified tunnel handle to free up resources on the target device.
+
+### `nabto.tunnelState`
+
+Get the tunnel state, an integer from the following enum - see `nabto_client_api.h` for details:
+
+```
+enum nabto_tunnel_state {
+    NTCS_CLOSED = -1,
+    NTCS_CONNECTING = 0,
+    NTCS_READY_FOR_RECONNECT = 1,
+    NTCS_UNKNOWN = 2,
+    NTCS_LOCAL = 3,
+    NTCS_REMOTE_P2P = 4,
+    NTCS_REMOTE_RELAY = 5,
+    NTCS_REMOTE_RELAY_MICRO = 6
+};
+```
 
 ## Source File Structure
 
