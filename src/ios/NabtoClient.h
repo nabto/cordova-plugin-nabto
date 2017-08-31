@@ -60,6 +60,7 @@
 - (nabto_status_t)nabtoInstallDefaultStaticResources:(NSString *)resourceDir;
 
 - (NSString *)nabtoVersion;
+- (NSString *)nabtoVersionString;
 
 - (nabto_status_t)nabtoCreateProfile:(NSString *)id withPassword:(NSString *)password;
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)id withPassword:(NSString *)password;

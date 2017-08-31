@@ -104,6 +104,18 @@ void nabtoLogCallback(const char* line, size_t size) {
     return [NSString stringWithFormat:@"%i.%i", major, minor];
 }
 
+- (NSString *)nabtoVersionString {
+    char* version;
+    NSString* result;
+    if (nabtoVersionString(&version) == NABTO_OK) {
+        result = [NSString stringWithCString:version];
+        nabtoFree(version);
+    } else {
+        result = @"(undefined)";
+    }
+    return result;
+}
+
 - (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password {
     @synchronized (self) {
         return nabtoOpenSession(&session_, [email UTF8String], [password UTF8String]);

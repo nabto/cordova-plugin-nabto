@@ -262,4 +262,16 @@ Nabto.prototype.version = function(cb) {
     }, 'Nabto', 'version', []);
 };
 
+Nabto.prototype.versionString = function(cb) {
+  cb = cb || function() {};
+
+  exec(
+    function(version) {
+      cb(undefined, version);
+    },
+    function(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'versionString', []);
+};
+
 module.exports = new Nabto();

@@ -279,6 +279,13 @@
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
+- (void)versionString:(CDVInvokedUrlCommand*)command {
+    NSString *version = [[NabtoClient instance] nabtoVersionString];
+    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:version];
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+
 #pragma mark Nabto Tunnel API
 
 - (void)tunnelOpenTcp:(CDVInvokedUrlCommand*)command {
