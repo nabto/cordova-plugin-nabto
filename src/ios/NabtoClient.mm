@@ -108,7 +108,7 @@ void nabtoLogCallback(const char* line, size_t size) {
     char* version;
     NSString* result;
     if (nabtoVersionString(&version) == NABTO_OK) {
-        result = [NSString stringWithCString:version];
+        result = [NSString stringWithCString:version encoding:NSASCIIStringEncoding];
         nabtoFree(version);
     } else {
         result = @"(undefined)";

@@ -313,7 +313,7 @@
                         int err = [[NabtoClient instance] nabtoTunnelError:tunnel];
                         // TODO: json error message instead (currently not possible for caller to
                         // determine domain (api or p2p error))
-                        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:err];
+                        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
                     } else {
                         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
                     }
@@ -327,37 +327,68 @@
 }
 
 - (void)tunnelVersion:(CDVInvokedUrlCommand*)command {
-    nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[[command.arguments objectAtIndex:0]] pointerValue]);
-    int version = [[NabtoClient instance] nabtoTunnelVersion:tunnel];
-    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:version];
+    NSString* handle = [command.arguments objectAtIndex:0];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        int version = [[NabtoClient instance] nabtoTunnelVersion:tunnel];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:version];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+    }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
 - (void)tunnelState:(CDVInvokedUrlCommand*)command {
-    nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[[command.arguments objectAtIndex:0]] pointerValue]);
-    nabto_tunnel_state_t state = [[NabtoClient instance] nabtoTunnelInfo:tunnel];
-    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:state];
+    NSString* handle = [command.arguments objectAtIndex:0];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        nabto_tunnel_state_t state = [[NabtoClient instance] nabtoTunnelInfo:tunnel];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:state];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+    }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
 - (void)tunnelLastError:(CDVInvokedUrlCommand*)command {
-    nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[[command.arguments objectAtIndex:0]] pointerValue]);
-    nabto_status_t status = [[NabtoClient instance] nabtoTunnelError:tunnel];
-    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:status];
+    NSString* handle = [command.arguments objectAtIndex:0];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        nabto_status_t internalStatus = [[NabtoClient instance] nabtoTunnelError:tunnel];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:internalStatus];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+    }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
 - (void)tunnelPort:(CDVInvokedUrlCommand*)command {
-    nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[[command.arguments objectAtIndex:0]] pointerValue]);
-    int port = [[NabtoClient instance] nabtoTunnelPort:tunnel];
-    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:port];
+    NSString* handle = [command.arguments objectAtIndex:0];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        int port = [[NabtoClient instance] nabtoTunnelPort:tunnel];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:port];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+    }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
 - (void)tunnelClose:(CDVInvokedUrlCommand*)command {
-    nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[[command.arguments objectAtIndex:0]] pointerValue]);
-    nabto_status_t status = [[NabtoClient instance] nabtoTunnelClose:tunnel];
-    [self handleStatus:status withCommand:command];
+    NSString* handle = [command.arguments objectAtIndex:0];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        nabto_status_t status = [[NabtoClient instance] nabtoTunnelClose:tunnel];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:status];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
 - (void)showAd {
