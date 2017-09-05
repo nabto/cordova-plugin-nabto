@@ -296,8 +296,6 @@
                                                                         toHost:[command.arguments objectAtIndex:0]
                                                                         onPort:[[command.arguments objectAtIndex:1] intValue]];
             if (status == NABTO_OK) {
-                NSString* tunnelId = [NSString stringWithFormat:@"%p", tunnel];
-                tunnels_[tunnelId] = [NSValue valueWithPointer:tunnel];
                 // we are running in background thread so poll and sleep on synchronous API should be ok
                 nabto_tunnel_state_t state = NTCS_CONNECTING;
                 status = nabtoTunnelInfo(tunnel, NTI_STATUS, sizeof(state), &state);
@@ -306,11 +304,13 @@
                     status = nabtoTunnelInfo(tunnel, NTI_STATUS, sizeof(state), &state);
                 }
                 if (status == NABTO_OK && state != NTCS_CLOSED) {
+                    NSString* tunnelId = [NSString stringWithFormat:@"%p", tunnel];
+                    tunnels_[tunnelId] = [NSValue valueWithPointer:tunnel];
                     res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                             messageAsString:tunnelId];
                 } else {
                     if (status == NABTO_OK) {
-                        int err = [[NabtoClient instance] nabtoTunnelError:tunnel];
+                        // int err = [[NabtoClient instance] nabtoTunnelError:tunnel];
                         // TODO: json error message instead (currently not possible for caller to
                         // determine domain (api or p2p error))
                         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];

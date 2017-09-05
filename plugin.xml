@@ -33,16 +33,35 @@
                 <param name="android-package" value="com.nabto.api.Nabto"/>
             </feature>
         </config-file>
+        
+        <framework src="com.nabto.android:nabto-api:1.2.0" />
+	<resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
+	<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
+	<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
+	<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
+        
+        <!-- when working on android client along with cordova plugin, copy            -->
+        <!-- git/cordova-plugin-nabto/src/main/java/com/nabto/api to ./src/android/api -->
+        <!-- (for production, these files are all retrieved from the jcenter bundle    -->
 
-        <framework src="com.nabto.android:nabto-api:1.1.3" />
-
-		<resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
-		<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
-		
-		<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
-		<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
-
-        <source-file src="src/nabto/ios/share" target-dir="assets" />
+        <!--        <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoAssetManager.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoAndroidAssetManager.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoClient.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoConnectionType.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoDefaultAssetManager.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoStatus.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoStreamOption.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/NabtoTunnelState.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/RpcResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/StreamReadResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/TunnelInfoResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/android/api/UrlResult.java" target-dir="src/com/nabto/api" />
+        <source-file src="src/nabto/android-x86/lib/libnabto_client_api_jni.so" target-dir="libs/x86"/> -->
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -82,9 +101,6 @@
         <header-file src="src/nabto/ios/include/nabto_client_api.h" />
 
 	<resource-file src="src/ios/res/ad.png" target="res/ad.png" />
-        <resource-file src="src/nabto/ios/share/nabto/roots" />
-        <resource-file src="src/nabto/ios/share/nabto/schemas" />
-        <resource-file src="src/nabto/ios/share/nabto/users" />
 
         <source-file src="src/nabto/ios/lib/libnabto_client_api_static.a" framework="true" />
         <source-file src="src/nabto/ios/lib/libnabto_static_external.a" framework="true" />

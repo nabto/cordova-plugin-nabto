@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -30,7 +32,7 @@ public class Nabto extends CordovaPlugin {
     private static final int GRACEPERIOD = 300; // seconds
     private NabtoApi nabto = null;
     private Session session;
-    private Tunnel tunnel;
+    private Map<String, Tunnel> tunnels;
 
     private boolean adShown = false;
     private long timerStart = 0;
@@ -40,6 +42,7 @@ public class Nabto extends CordovaPlugin {
     public Nabto() {
         deviceCache = new ArrayList<String>();
         adService = new AdService();
+        tunnels = new HashMap<String, Tunnel>();
     }
 
     /**
@@ -97,24 +100,27 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("version")) {
             version(callbackContext);
         }
+        else if (action.equals("versionString")) {
+            versionString(callbackContext);
+        }
         // Nabto Tunnel API
         else if (action.equals("tunnelOpenTcp")) {
             tunnelOpenTcp(args.getString(0), args.getInt(1), callbackContext);
         }
         else if (action.equals("tunnelVersion")) {
-            tunnelVersion(callbackContext);
+            tunnelVersion(args.getString(0), callbackContext);
         }
         else if (action.equals("tunnelState")) {
-            tunnelState(callbackContext);
+            tunnelState(args.getString(0), callbackContext);
         }
         else if (action.equals("tunnelLastError")) {
-            tunnelLastError(callbackContext);
+            tunnelLastError(args.getString(0), callbackContext);
         }
         else if (action.equals("tunnelPort")) {
-            tunnelPort(callbackContext);
+            tunnelPort(args.getString(0), callbackContext);
         }
         else if (action.equals("tunnelClose")) {
-            tunnelClose(callbackContext);
+            tunnelClose(args.getString(0), callbackContext);
         }
         else {
             return false;
@@ -290,7 +296,7 @@ public class Nabto extends CordovaPlugin {
     }
 
     private void getFingerprint(final String certId, final CallbackContext cc){
-        cordova.getThreadPool().execute(new Runnable(){
+        cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run(){
                     String[] fingerprint = new String[1];
@@ -468,72 +474,151 @@ public class Nabto extends CordovaPlugin {
         });
     }
 
+    private void versionString(final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                String version = nabto.versionString();
+                cc.success(version);
+            }
+        });
+    }
+
+
     /* Nabto Tunnel API */
 
-    private void tunnelOpenTcp(String host, int port, CallbackContext cc) {
-        if (tunnel != null) {
-            cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
-            return;
-        }
-        tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session);
-        NabtoStatus status = tunnel.getStatus();
-        if (status != NabtoStatus.OK) {
-            tunnel = null;
-            cc.error(status.ordinal());
-        }
-        else {
-            cc.success();
-        }
+    private void tunnelOpenTcp(final String host, final int port, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Tunnel tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session);
+                    NabtoStatus status = tunnel.getStatus();
+                    if (status == NabtoStatus.OK) {
+                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        while (info.getStatus() == NabtoStatus.OK &&
+                               info.getTunnelState() == NabtoTunnelState.CONNECTING) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                // ignore
+                            }
+                            info = nabto.tunnelInfo(tunnel);
+                        }
+                        if (info.getStatus() == NabtoStatus.OK &&
+                            info.getTunnelState() != NabtoTunnelState.CLOSED) {
+                            String handle = tunnel.getHandle().toString();
+                            tunnels.put(handle, tunnel);
+                            cc.success(handle);
+                        } else {
+                            if (info.getStatus() == NabtoStatus.OK) {
+                                // TODO: json error message instead (currently not possible for caller to
+                                // determine domain (api or p2p error))
+                                cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                            } else {
+                                cc.error(info.getStatus().ordinal());
+                            }
+                        }
+                    } else {
+                        cc.error(status.ordinal());
+                    }
+                }
+            });
     }
 
-    private void tunnelVersion(CallbackContext cc) {
-        if (tunnel == null) {
-            cc.success(-1);
-            return;
-        }
-        // Not returned by Android library wrapper
-        cc.success(1);
+    private void tunnelVersion(final String tunnelHandle, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        if (info.getStatus() == NabtoStatus.OK) {
+                            cc.success(info.getVersion());
+                        } else {
+                            cc.error(NabtoStatus.FAILED.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                    }
+                }
+            });
     }
 
-    private void tunnelState(CallbackContext cc) {
-        if (tunnel == null) {
-            cc.success(-1);
-            return;
-        }
-        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
-        cc.success(info.getTunnelState().ordinal() - 1);
+    private void tunnelState(final String tunnelHandle, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        if (info.getStatus() == NabtoStatus.OK) {
+                            cc.success(info.getTunnelState().ordinal());
+                        } else {
+                            cc.error(NabtoStatus.FAILED.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                    }
+                }
+            });
+    }
+    
+    private void tunnelLastError(final String tunnelHandle, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        if (info.getStatus() == NabtoStatus.OK) {
+                            cc.success(info.getLastError());
+                        } else {
+                            cc.error(NabtoStatus.FAILED.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                    }
+                }
+            });
     }
 
-    private void tunnelLastError(CallbackContext cc) {
-        if (tunnel == null) {
-            cc.success(-1);
-            return;
-        }
-        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
-        cc.success(info.getStatus().ordinal() - 1);
+    private void tunnelPort(final String tunnelHandle, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        if (info.getStatus() == NabtoStatus.OK) {
+                            cc.success(info.getPort());
+                        } else {
+                            cc.error(NabtoStatus.FAILED.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                    }
+                }
+            });
     }
 
-    private void tunnelPort(CallbackContext cc) {
-        if (tunnel == null) {
-            cc.success(-1);
-            return;
-        }
-        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
-        cc.success(info.getPort());
-    }
-
-    private void tunnelClose(CallbackContext cc) {
-        if (tunnel == null) {
-            cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
-            return;
-        }
-        NabtoStatus status = nabto.tunnelClose(tunnel);
-        tunnel = null;
-        if (status != NabtoStatus.OK) {
-            cc.error(status.ordinal());
-        }
-        else {
-            cc.success();
-        }
+    private void tunnelClose(final String tunnelHandle, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        NabtoStatus status = nabto.tunnelClose(tunnel);
+                        if (status == NabtoStatus.OK) {
+                            tunnels.remove(tunnel);
+                            cc.success();
+                        } else {
+                            cc.error(status.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                        return;
+                    }
+                }
+            });
     }
 }
