@@ -1,8 +1,8 @@
 # Change Log
 
-All notable changes to this project will be documented in this
-file. This projects changelog started with version [1.2.0] 2017-09-05
-for change logs prior to this date contact nabto.
+All notable changes to this project will be documented in this file. This projects changelog started
+with version [2.2.0] 2017-09-05 for change logs prior to this date contact Nabto and/or look in git
+history.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
@@ -10,9 +10,9 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 1.3.0 Unreleased
+## 2.3.0 Unreleased
 
-## 1.2.0 2017-09-05
+## 2.2.0 2017-09-05
 
 ### Added
 - NABTO-1592: Add tunnel API functions in Cordova plugin
