@@ -81,6 +81,9 @@
 
     <!-- ios -->
     <platform name="ios">
+      <!--
+          nabto-core-sdk-version: 4.1.4
+      -->
         <config-file target="config.xml" parent="/*">
             <feature name="Nabto">
                 <param name="ios-package" value="CDVNabto"/>
