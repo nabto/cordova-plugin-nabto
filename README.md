@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.1
+# Cordova Plugin Nabto - 2.2
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
@@ -138,12 +138,12 @@ Callback is invoked with an array of device strings.
 nabto.getLocalDevices(callback)
 ```
 
-### `nabto.version`
+### `nabto.versionString`
 
 Get Nabto client version.
 Callback is invoked with a string.
 ```js
-nabto.version(callback)
+nabto.versionString(callback)
 ```
 
 ### `nabto.createKeyPair`
@@ -162,6 +162,42 @@ Get RSA fingerprint for public key in specified keypair.
 nabto.getFingerprint(name, callback)
 ```
 
+### `nabto.tunnelOpenTcp`
+
+Open a tunnel to specified nabto host, connecting to specified TCP port on the remote host. When a
+connection is established, a callback is invoked with a tunnel handle used for later
+operations. If success, TCP clients can now connect to the local port that can be queried with
+`tunnelPort`.
+
+```js
+nabto.tunnelOpenTcp("streamdemo.nabto.net", 80, callback)
+```
+
+### `nabto.tunnelPort`
+
+Retrieve the local TCP port number of the specified tunnel handle (tunnel opened with
+tunnelOpenTcp).
+
+### `nabto.tunnelClose`
+
+Close tunnel associated with the specified tunnel handle to free up resources on the target device.
+
+### `nabto.tunnelState`
+
+Get the tunnel state, an integer from the following enum - see `nabto_client_api.h` for details:
+
+```
+enum nabto_tunnel_state {
+    NTCS_CLOSED = -1,
+    NTCS_CONNECTING = 0,
+    NTCS_READY_FOR_RECONNECT = 1,
+    NTCS_UNKNOWN = 2,
+    NTCS_LOCAL = 3,
+    NTCS_REMOTE_P2P = 4,
+    NTCS_REMOTE_RELAY = 5,
+    NTCS_REMOTE_RELAY_MICRO = 6
+};
+```
 
 ## Source File Structure
 
@@ -192,9 +228,33 @@ src
 
 ## Run Tests
 
-1. Create a new Cordova project and install `cordova-plugin-nabto` as described above
-2. Also install the `/tests` subproject (cordova plugin add https://github.com/nabto/cordova-plugin-nabto.git#:/tests)
-3. Install the Cordova test framework plugin: `cordova plugin add http://git-wip-us.apache.org/repos/asf/cordova-plugin-test-framework.git`
-4. Install the Cordova device plugin: `cordova plugin add cordova-plugin-device`
-5. Add `<content src="cdvtests/index.html" />` to the projects `config.xml` 
-6. Run on the platform you wish to test
+The development lifecycle for Cordova plugins is not very smooth; in our experience it is simplest
+to completely remove all traces of the plugin and install again for every change/test cycle. As the
+Nabto libs are quite big, a lot of time goes copying these files around, you might optimize the
+cycle this by just using libraries for the exact platform you are working on.
+
+1. Create a new Cordova project
+2. Add `<content src="cdvtests/index.html" />` to the project's `config.xml` 
+3. Install the Cordova test framework plugin: `cordova plugin add https://github.com/maverickmishra/cordova-plugin-test-framework.git`
+4. Install `cordova-plugin-nabto`: `cordova plugin add ~/git/cordova-plugin-nabto` (see note about optimization)
+5. Install `cordova-plugin-nabto-test`: `cordova plugin add ~/git/cordova-plugin-nabto-tests`
+6. Patch build.xcconfig as outlined above if using iOS
+7. Build and run on the intended platform
+
+For every change, clean up and run from step 4 - e.g. put the following in a script:
+
+```
+rm -rf  ~/.npm/cordova-plugin-nabto*
+npm uninstall cordova-plugin-nabto
+cordova plugin rm cordova-plugin-nabto-tests
+cordova plugin rm cordova-plugin-nabto
+
+cordova plugin add ~/git/cordova-plugin-nabto
+cordova plugin add ~/git/cordova-plugin-nabto-tests
+
+echo 'OTHER_LDFLAGS = -force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++' >> platforms/ios/cordova/build.xcconfig
+
+cordova build ios
+cordova emulate ios
+```
+

@@ -181,6 +181,55 @@ Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
     }, 'Nabto', 'rpcSetInterface', [host, interfaceXml]);
 };
 
+Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
+  cb = cb || function() {};
+  var portNum = parseInt(port, 10);
+  if (!host || host.length == 0 || isNaN(portNum) || port < 0 || port > 65535) {
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+  }
+  exec(
+    function success(tunnelId) {
+      cb(undefined, tunnelId);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelOpenTcp', [host, port]);
+};
+
+Nabto.prototype.tunnelClose = function(tunnel, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb(undefined);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelClose', [tunnel]);
+};
+
+Nabto.prototype.tunnelPort = function(tunnel, cb) {
+  cb = cb || function() {};
+  exec(
+    function success(portNumber) {
+      cb(undefined, portNumber);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelPort', [tunnel]);
+};
+
+Nabto.prototype.tunnelState = function(tunnel, cb) {
+  cb = cb || function() {};
+  exec(
+    function success(state) {
+      cb(undefined, state);
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'tunnelState', [tunnel]);
+};
+
+
 Nabto.prototype.getSessionToken = function(cb) {
   cb = cb || function() {};
 
@@ -215,6 +264,18 @@ Nabto.prototype.version = function(cb) {
     function(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     }, 'Nabto', 'version', []);
+};
+
+Nabto.prototype.versionString = function(cb) {
+  cb = cb || function() {};
+
+  exec(
+    function(version) {
+      cb(undefined, version);
+    },
+    function(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    }, 'Nabto', 'versionString', []);
 };
 
 module.exports = new Nabto();
