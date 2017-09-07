@@ -203,27 +203,32 @@ enum nabto_tunnel_state {
 
 Install from npm to get all necessary libraries and resources installed in the right location.
 
+For development of the plugin itself, install with a reference to this git repo. The Nabto Android
+wrapper and dependencies is installed automatically from bintray. For iOS, Cordova does not support
+dynamic frameworks in Cocoapods.
+
+So for iOS, do the following:
+
+1. Download the iOS <a href="https://www.nabto.com/downloads.html">wrapper source</a> (Libraries > Source > [iOS link in table]) - unpack and put the source files in `./src/ios`.
+2. Download the <a href="https://www.nabto.com/downloads.html">static Nabto Client SDK core libraries</a> - unpack and put .a files in `./src/nabto/ios/lib` and header files in `./src/nabto/ios/include`.
+
+That is, make sure you have the following directory structure:
+
+
 ```
 src
-├── android
-│   └── *
 ├── ios
-│   └── *
+│   ├── CDVNabto.m
+│   ├── ...
+│   ├── NabtoClient.mm
+│   ├── NabtoClient.h
 └── nabto
-    ├── assets.md
     └── ios
         ├── include
-        │   └── nabto_client_api.h
+        │   └── nabto_client_api.h
         ├── lib
-        │   ├── libnabto_client_api_static.a
-        │   └── libnabto_static_external.a
-        └── share
-            └── nabto
-                ├── configuration
-                ├── roots
-                ├── schemas
-                ├── skins
-                └── users
+        │   ├── libnabto_client_api_static.a
+        │   └── libnabto_static_external.a
 ```
 
 ## Run Tests
