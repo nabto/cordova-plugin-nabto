@@ -100,7 +100,7 @@ function build() {
 }
 
 function deploy() {
-    if [ -z "$DEPLOY_TO_NPM" ||  ]; then
+    if [ -z "$DEPLOY_TO_NPM" ]; then
         return
     fi
     cd $BUILD_DIR
