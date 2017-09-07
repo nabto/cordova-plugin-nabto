@@ -7,7 +7,7 @@
 #
 # $0 <artifact download url prefix> <target dir> [<deploy {true|false}>]"
 #
-# If $4 is set and not set to false, NPM_USER, NPM_PASS and NPM_EMAIL env variables must have been
+# If $3 is set and not set to false, NPM_USER, NPM_PASS and NPM_EMAIL env variables must have been
 # set with relevant npmjs info.
 #
  
@@ -17,7 +17,9 @@ DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 DOWNLOAD_URL_PREFIX=$1
 TARGET_DIR=$2
-DEPLOY_TO_NPM=$3
+if [ ! -z "$3" ] && [ "$3" != "false" ]; then
+    DEPLOY_TO_NPM=1
+fi
 
 BUILD_DIR=$DIR/..
 CDV_ASSET_SUBDIR=src/nabto/ios
@@ -48,7 +50,7 @@ function prep_dirs() {
 }
 
 function check_deploy_ready() {
-    if [ -z "$DEPLOY_TO_NPM" ] || [ "$DEPLOY_TO_NPM" == "false" ]; then
+    if [ -z "$DEPLOY_TO_NPM" ]; then
         return
     fi
     if [ -z "$NPM_PASS" ]; then
@@ -78,7 +80,6 @@ function download() {
 }
 
 function build() {
-
     local tmp_dir=`mktemp -d`
     local src_bundle=NabtoClient-src.zip
     download ios/ios-client-src/$src_bundle $tmp_dir/src.zip
@@ -99,7 +100,7 @@ function build() {
 }
 
 function deploy() {
-    if [ -z "$DEPLOY_TO_NPM" ]; then
+    if [ -z "$DEPLOY_TO_NPM" ||  ]; then
         return
     fi
     cd $BUILD_DIR
