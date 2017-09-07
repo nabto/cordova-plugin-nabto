@@ -117,7 +117,6 @@ function deploy() {
     set +e
     NODE_OUTPUT=`mktemp`
     node --max_old_space_size=8192 `which npm` publish --verbose 2>&1 | tee $NODE_OUTPUT 2>&1
-    echo "first byte timeout" | tee $NODE_OUTPUT 2>&1
     if [ ${PIPESTATUS[0]} != 1 ]; then
         local msg="check download page https://www.npmjs.com/package/cordova-plugin-nabto to see if package is actually updated. If not, try again."
         grep -q "first byte timeout" $NODE_OUTPUT
