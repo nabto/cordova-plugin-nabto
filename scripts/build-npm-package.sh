@@ -111,8 +111,24 @@ function deploy() {
         return
     fi
     cd $BUILD_DIR
+
     $NPM_CLI_LOGIN
-    node --max_old_space_size=8192 `which npm` publish --verbose
+    
+    set +e
+    NODE_OUTPUT=`mktemp`
+    node --max_old_space_size=8192 `which npm` publish --verbose 2>&1 | tee $NODE_OUTPUT 2>&1
+    echo "first byte timeout" | tee $NODE_OUTPUT 2>&1
+    if [ ${PIPESTATUS[0]} != 1 ]; then
+        local msg="check download page https://www.npmjs.com/package/cordova-plugin-nabto to see if package is actually updated. If not, try again."
+        grep -q "first byte timeout" $NODE_OUTPUT
+        if [ $? == "0" ]; then
+            echo "npm says upload failed, but it is likely just a wrong error message - $msg"
+            return 0
+        else
+            echo "Upload to npm failed with an unexpected error - $msg"
+            return 1
+        fi
+    fi
 }
 
 if [ $# -lt 2 ]; then
@@ -123,4 +139,8 @@ prep_dirs
 check_deploy_ready
 build
 deploy
+
+exit $?
+
+
 
