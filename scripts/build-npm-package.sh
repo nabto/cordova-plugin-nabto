@@ -5,7 +5,7 @@
 # Note: Pollutes local repo with artifacts downloaded into plugin dirs, so clone repo just for
 # building and throw away afterwards.
 #
-# $0 <artifact download url prefix> <target dir> [<deploy {true|false}>]"
+# $0 <artifact download url prefix> <target dir> [<deploy {yes|no|deploy-only}>]"
 #
 # If $3 is set and not set to false, NPM_USER, NPM_PASS and NPM_EMAIL env variables must have been
 # set with relevant npmjs info.
@@ -17,8 +17,11 @@ DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 DOWNLOAD_URL_PREFIX=$1
 TARGET_DIR=$2
-if [ ! -z "$3" ] && [ "$3" != "false" ]; then
+if [ ! -z "$3" ] && [ "$3" != "no" ]; then
     DEPLOY_TO_NPM=1
+    if [ "$3" == "deploy-only" ]; then
+        DEPLOY_ONLY=1
+    fi
 fi
 
 BUILD_DIR=$DIR/..
@@ -80,6 +83,10 @@ function download() {
 }
 
 function build() {
+    if [ ! -z "$DEPLOY_ONLY" ]; then
+        return
+    fi
+        
     local tmp_dir=`mktemp -d`
     local src_bundle=NabtoClient-src.zip
     download ios/ios-client-src/$src_bundle $tmp_dir/src.zip
@@ -105,7 +112,7 @@ function deploy() {
     fi
     cd $BUILD_DIR
     $NPM_CLI_LOGIN
-    echo node --max_old_space_size=8192 `which npm` publish --verbose
+    node --max_old_space_size=8192 `which npm` publish --verbose
 }
 
 if [ $# -lt 2 ]; then
