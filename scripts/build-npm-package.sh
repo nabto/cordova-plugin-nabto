@@ -69,21 +69,28 @@ function check_deploy_ready() {
     set -e
 }
 
+function download() {
+    local path=$1
+    local output=$2
+    local desc=`basename $path`
+    echo "Downloading release artifact '$desc'"
+    curl -fs $DOWNLOAD_URL_PREFIX/$path > $output || die "Download $desc failed"
+}
+
 function build() {
-    echo "Download release artifacts"
 
     local tmp_dir=`mktemp -d`
     local src_bundle=NabtoClient-src.zip
-    curl -fs $DOWNLOAD_URL_PREFIX/ios/ios-client-src/$src_bundle > $tmp_dir/src.zip || die "Download $src_bundle failed"
+    download ios/ios-client-src/$src_bundle $tmp_dir/src.zip
     (cd $tmp_dir ; unzip src.zip ; mv NabtoClient/NabtoClient.* $BUILD_DIR/$CDV_SRC_SUBDIR)
     rm -rf $tmp_dir
 
     local lib_api=lib/libnabto_client_api_static.a
     local lib_ext=lib/libnabto_static_external.a
     local header=include/nabto_client_api.h
-    curl -fs $DOWNLOAD_URL_PREFIX/nabto/ios/${lib_api} > $BUILD_DIR/$CDV_ASSET_SUBDIR/${lib_api} || die "Download ${lib_api} failed"
-    curl -fs $DOWNLOAD_URL_PREFIX/nabto/ios/${lib_ext} > $BUILD_DIR/$CDV_ASSET_SUBDIR/${lib_ext} || die "Download ${lib_ext} failed"
-    curl -fs $DOWNLOAD_URL_PREFIX/nabto/ios/${header}  > $BUILD_DIR/$CDV_ASSET_SUBDIR/${header}  || die "Download ${header} failed"
+    download nabto/ios/${lib_api} $BUILD_DIR/$CDV_ASSET_SUBDIR/${lib_api}
+    download nabto/ios/${lib_ext} $BUILD_DIR/$CDV_ASSET_SUBDIR/${lib_ext}
+    download nabto/ios/${header}  $BUILD_DIR/$CDV_ASSET_SUBDIR/${header}
 
     echo "Pack npm module"
     cd $BUILD_DIR
