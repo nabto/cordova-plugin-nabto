@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-nabto"
-    version="2.2.0">
+    version="2.2.1">
 
     <name>Nabto</name>
     <description>Cordova Plugin Nabto</description>
@@ -34,7 +34,7 @@
             </feature>
         </config-file>
         
-        <framework src="com.nabto.android:nabto-api:1.2.0" />
+        <framework src="com.nabto.android:nabto-api:1.2.2" />
 	<resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
 	<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
 	<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />

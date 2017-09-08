@@ -39,11 +39,6 @@ function usage() {
     die "$0 <artifact download url prefix> <target dir> [<deploy {true|false}>]"
 }
 
-function check_args() {
-    echo $#
-    exit 1
-}
-
 function prep_dirs() {
     rm -rf $TARGET_DIR
     mkdir -p $TARGET_DIR
@@ -57,13 +52,13 @@ function check_deploy_ready() {
         return
     fi
     if [ -z "$NPM_PASS" ]; then
-        die "ERROR: NPM_PASS env variable must be set to npmjs password"
+        die "ERROR: NPM_PASS env variable must be set for npmjs deployment"
     fi
     if [ -z "$NPM_USER" ]; then
-        die "ERROR: NPM_USER env variable must be set to npmjs password"
+        die "ERROR: NPM_USER env variable must be set for npmjs deployment"
     fi
     if [ -z "$NPM_EMAIL" ]; then
-        die "ERROR: NPM_EMAIL env variable must be set to npmjs password"
+        die "ERROR: NPM_EMAIL env variable must be set for npmjs deployment"
     fi
 
     set +e
