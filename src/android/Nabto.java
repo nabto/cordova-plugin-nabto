@@ -61,6 +61,9 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("startupAndOpenProfile")) {
             startupAndOpenProfile(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("setOption")) {
+            setOption(args.getString(0), args.getString(1), callbackContext);
+        }
         else if (action.equals("openSession")) {
             openSession(args.getString(0), args.getString(1), callbackContext);
         }
@@ -480,6 +483,21 @@ public class Nabto extends CordovaPlugin {
             public void run() {
                 String version = nabto.versionString();
                 cc.success(version);
+            }
+        });
+    }
+
+    private void setOption(final String key, final String value, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                NabtoStatus status = nabto.setOption(key, value);
+                if (status == NabtoStatus.OK) {
+                    cc.success();
+                } else {
+                    cc.error(status.ordinal());
+                    return;
+                }
             }
         });
     }
