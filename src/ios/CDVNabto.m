@@ -49,6 +49,9 @@
         CDVPluginResult* res = nil;
 
         nabto_status_t status = [[NabtoClient instance] nabtoStartup];
+        if (status == NABTO_OK) {
+            status = [[NabtoClient instance] nabtoInstallDefaultStaticResources:0];
+        }
         if (status != NABTO_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         } else {
