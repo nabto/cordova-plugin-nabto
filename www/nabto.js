@@ -56,7 +56,8 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
 
 Nabto.prototype.setBaseStationAuthJson = function(authJson, cb) {
   cb = cb || function() {};
-  if (!authJson || authJson.length == 0) {
+  if (typeof authJson === 'undefined') {
+    // authJson can be empty to reset config
     return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
   }
   exec(

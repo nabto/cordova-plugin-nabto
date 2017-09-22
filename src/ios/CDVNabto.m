@@ -84,6 +84,24 @@
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
+- (void)setBasestationAuthJson:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            NSString* json = [command.arguments objectAtIndex:0];
+            NSString* arg;
+            if ([json length] == 0) {
+                // we interpret javascript empty string as user's intention of resetting auth data
+                arg = NULL;
+            } else {
+                arg = json;
+            }
+            nabto_status_t status = [[NabtoClient instance]
+                                            nabtoSetBasestationAuthJson:arg];
+            NSLog(@"nabtoSetBasestationAuthJson returns %d", status);
+            [self handleStatus:status withCommand:command];
+        }];
+}
+
+
 - (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         nabto_status_t status = [[NabtoClient instance]
