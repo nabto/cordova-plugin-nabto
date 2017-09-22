@@ -54,6 +54,20 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
     'Nabto', 'startupAndOpenProfile', [user, pass]);
 };
 
+Nabto.prototype.setBaseStationAuthJson = function(authJson, cb) {
+  cb = cb || function() {};
+  if (!authJson || authJson.length == 0) {
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+  }
+  exec(
+    function success() { cb(); },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'setBasestationAuthJson', [authJson]);
+};
+
+
 Nabto.prototype.prepareInvoke = function(devices, cb) {
   cb = cb || function(){};
   exec(
@@ -85,6 +99,19 @@ Nabto.prototype.createKeyPair = function(user, pass, cb) {
 
 Nabto.prototype.createSignedKeyPair = function(user, pass, cb) {
   return generalCreateKeyPair(user, pass, cb, 'createSignedKeyPair');
+};
+
+Nabto.prototype.removeKeyPair = function(user, cb) {
+  cb = cb || function() {};
+  exec(
+    function success() {
+      cb();
+    },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'removeKeyPair', [user]
+  );
 };
 
 Nabto.prototype.getFingerprint = function(email, cb) {

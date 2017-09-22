@@ -67,11 +67,17 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("openSession")) {
             openSession(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("setBasestationAuthJson")) {
+            setBasestationAuthJson(args.getString(0), callbackContext);
+        }
         else if (action.equals("createSignedKeyPair")) {
             createSignedKeyPair(args.getString(0), args.getString(1), callbackContext);
         }
         else if (action.equals("createKeyPair")) {
             createKeyPair(args.getString(0), args.getString(1), callbackContext);
+        }
+        else if (action.equals("removeKeyPair")) {
+            removeKeyPair(args.getString(0), callbackContext);
         }
         else if (action.equals("getFingerprint")) {
             getFingerprint(args.getString(0), callbackContext);
@@ -217,7 +223,6 @@ public class Nabto extends CordovaPlugin {
         });
     }
 
-
     private void startup(final CallbackContext cc) {
         Log.d("startup", "Nabto startup begins");
         final Context context = cordova.getActivity().getApplicationContext();
@@ -298,6 +303,21 @@ public class Nabto extends CordovaPlugin {
             
     }
 
+    private void removeKeyPair(final String user, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+            @Override
+            public void run() {
+                NabtoStatus status = nabto.removeProfile(user);
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
+            
+    }
+
     private void getFingerprint(final String certId, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
@@ -328,6 +348,27 @@ public class Nabto extends CordovaPlugin {
                 cc.success();
             }
         });
+    }
+    
+    private void setBasestationAuthJson(final String authJson, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (session == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                        
+                    }
+                    NabtoStatus status = nabto.setBasestationAuthJson(authJson, session);
+                    if (status != NabtoStatus.NABTO_OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
+                }
+            });
+            
     }
 
     private void fetchUrl(final String url, final CallbackContext cc) {

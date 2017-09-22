@@ -90,6 +90,14 @@
     }];
 }
 
+- (void)removeKeyPair:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            nabto_status_t status = [[NabtoClient instance]
+                                        nabtoRemoveProfile:[command.arguments objectAtIndex:0]];
+            [self handleStatus:status withCommand:command];
+        }];
+}
+
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         nabto_status_t status = [[NabtoClient instance]

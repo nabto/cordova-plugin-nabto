@@ -78,6 +78,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return status;
 }
 
+- (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value {
+    return nabtoSetOption([name UTF8String], [value UTF8String]);
+}
+
 - (nabto_status_t)nabtoShutdown {
     @synchronized(self) {
         initialized_ = false;
@@ -88,6 +92,9 @@ void nabtoLogCallback(const char* line, size_t size) {
 }
 
 - (nabto_status_t)nabtoInstallDefaultStaticResources:(NSString *)resourceDir {
+    if (!resourceDir) {
+        resourceDir = [self getHomeDir];
+    }
     return nabtoInstallDefaultStaticResources([resourceDir UTF8String]);
 }
 
@@ -97,10 +104,26 @@ void nabtoLogCallback(const char* line, size_t size) {
     return [NSString stringWithFormat:@"%i.%i", major, minor];
 }
 
+- (NSString *)nabtoVersionString {
+    char* version;
+    NSString* result;
+    if (nabtoVersionString(&version) == NABTO_OK) {
+        result = [NSString stringWithCString:version encoding:NSASCIIStringEncoding];
+        nabtoFree(version);
+    } else {
+        result = @"(undefined)";
+    }
+    return result;
+}
+
 - (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password {
     @synchronized (self) {
         return nabtoOpenSession(&session_, [email UTF8String], [password UTF8String]);
     }
+}
+
+- (nabto_status_t)nabtoCreateProfile:(NSString *)email withPassword:(NSString *)password {
+    return nabtoCreateProfile([email UTF8String], [password UTF8String]);
 }
 
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
@@ -216,10 +239,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return state;
 }
 
-- (nabto_status_t)nabtoTunnelError:(nabto_tunnel_t)handle {
-    nabto_status_t status = NABTO_OK;
-    nabtoTunnelInfo(handle, NTI_LAST_ERROR, sizeof(status), &status);
-    return status;
+- (int)nabtoTunnelError:(nabto_tunnel_t)handle {
+    int lastError = -1;
+    nabtoTunnelInfo(handle, NTI_LAST_ERROR, sizeof(lastError), &lastError);
+    return lastError;
 }
 
 - (int)nabtoTunnelPort:(nabto_tunnel_t)handle {

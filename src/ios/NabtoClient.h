@@ -56,10 +56,13 @@
 
 - (nabto_status_t)nabtoStartup;
 - (nabto_status_t)nabtoShutdown;
+- (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value;
 - (nabto_status_t)nabtoInstallDefaultStaticResources:(NSString *)resourceDir;
 
 - (NSString *)nabtoVersion;
+- (NSString *)nabtoVersionString;
 
+- (nabto_status_t)nabtoCreateProfile:(NSString *)id withPassword:(NSString *)password;
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)id withPassword:(NSString *)password;
 - (nabto_status_t)nabtoRemoveProfile:(NSString *)id;
 - (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result;
@@ -83,7 +86,7 @@
 - (nabto_status_t)nabtoTunnelOpenTcp:(nabto_tunnel_t *)handle toHost:(NSString *)host onPort:(int)port;
 - (int)nabtoTunnelVersion:(nabto_tunnel_t)handle;
 - (nabto_tunnel_state_t)nabtoTunnelInfo:(nabto_tunnel_t)handle;
-- (nabto_status_t)nabtoTunnelError:(nabto_tunnel_t)handle;
+- (int)nabtoTunnelError:(nabto_tunnel_t)handle; // return the internal nabto error on the tunnel
 - (int)nabtoTunnelPort:(nabto_tunnel_t)handle;
 - (nabto_status_t)nabtoTunnelClose:(nabto_tunnel_t)handle;
 

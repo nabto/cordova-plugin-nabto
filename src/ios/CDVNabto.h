@@ -19,6 +19,7 @@
 - (void)shutdown:(CDVInvokedUrlCommand*)command;
 - (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command;
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command;
+- (void)removeKeyPair:(CDVInvokedUrlCommand*)command;
 - (void)getFingerprint:(CDVInvokedUrlCommand*)command;
 - (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command;
 - (void)rpcSetInterface:(CDVInvokedUrlCommand*)command;
