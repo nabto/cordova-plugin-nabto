@@ -166,10 +166,6 @@ Create selfsigned keypair to be used for RSA fingerprint based authentication in
 nabto.createKeyPair(name, private_key_encryption_password, callback)
 ```
 
-```js
-nabto.createKeyPair(name, private_key_encryption_password, callback)
-```
-
 ### `nabto.getFingerprint`
 
 Get RSA fingerprint for public key in specified keypair.
