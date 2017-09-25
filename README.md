@@ -182,6 +182,9 @@ nabto.getFingerprint(name, callback)
 
 Remove keypair from local store.
 
+```js
+nabto.removeKeyPair(id, callback)
+```
 
 ### `nabto.tunnelOpenTcp`
 
