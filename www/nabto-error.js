@@ -177,7 +177,6 @@ function NabtoError(category, status, innerError) {
   });
 
   this.__defineGetter__('message', function() {
-    var i=98;
     var msg = this.lookupMessage(this.code);
     if (!msg) {
       msg = 'Code ' + this.toString() + ' (' + this.code + ', Category ' + this.category + ', inner: ' + this.inner;

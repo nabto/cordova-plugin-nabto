@@ -54,6 +54,26 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
     'Nabto', 'startupAndOpenProfile', [user, pass]);
 };
 
+Nabto.prototype.setStaticResourceDir = function(dir, cb) {
+  if (!dir || dir.length == 0) {
+    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+  }
+  cb = cb || function() {};
+
+  var prefix = 'file://';
+  if (dir.substring(0, prefix.length) == prefix) {
+    dir = dir.substring(prefix.length);
+  }
+
+  exec(
+    function success() { cb(); },
+    function error(apiStatus) {
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
+    },
+    'Nabto', 'setStaticResourceDir', [dir]);
+};
+
+
 Nabto.prototype.setBaseStationAuthJson = function(authJson, cb) {
   cb = cb || function() {};
   if (typeof authJson === 'undefined') {

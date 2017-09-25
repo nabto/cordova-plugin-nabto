@@ -58,6 +58,7 @@
 - (nabto_status_t)nabtoShutdown;
 - (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value;
 - (nabto_status_t)nabtoInstallDefaultStaticResources:(NSString *)resourceDir;
+- (nabto_status_t)nabtoSetStaticResourceDir:(NSString *)resourceDir;
 
 - (NSString *)nabtoVersion;
 - (NSString *)nabtoVersionString;

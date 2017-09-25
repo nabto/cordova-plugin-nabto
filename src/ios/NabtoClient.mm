@@ -98,6 +98,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return nabtoInstallDefaultStaticResources([resourceDir UTF8String]);
 }
 
+- (nabto_status_t)nabtoSetStaticResourceDir:(NSString *)resourceDir {
+    return nabtoSetStaticResourceDir([resourceDir UTF8String]);
+}
+
 - (NSString *)nabtoVersion {
     int major, minor;
     nabtoVersion(&major, &minor);

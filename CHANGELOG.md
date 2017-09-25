@@ -11,6 +11,19 @@ changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
 ## 2.3.0 Unreleased
+ 
+### Added
+- Added `setStaticResourceDir` to set a custom directory to hold resources (useful for custom config file).
+- Added `setBasestationAuthJson` to set basestation auth JSON info for certificate-less authentication (see full docs in nabto_client_api.h).
+- Added `removeKeyPair` to remove a keypair.
+- Added missing `setOption` on iOS to set custom options.
+- Added `tunnelError` to set custom options.
+- Added unit tests of all API functions.
+
+### Changed
+- Removed `openSession` from iOS and Android platform adapter interfaces as it was not exposed through the JS wrapper anyway, only the `startupAndOpenProfile` singleton approach is supported on Cordova.
+
+### Breaking
 
 ## 2.2.0 2017-09-05
 

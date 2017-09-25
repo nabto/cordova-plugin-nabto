@@ -14,7 +14,6 @@
 @property (atomic, assign, getter=isShowingAd) BOOL showingAd;
 
 /* Nabto API */
-- (void)startup:(CDVInvokedUrlCommand*)command;
 - (void)setOption:(CDVInvokedUrlCommand*)command;
 - (void)setBasestationAuthJson:(CDVInvokedUrlCommand*)command;
 - (void)shutdown:(CDVInvokedUrlCommand*)command;

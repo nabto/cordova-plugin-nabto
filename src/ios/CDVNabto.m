@@ -10,6 +10,7 @@
 @implementation CDVNabto
 {
     NSMutableDictionary* tunnels_;
+    BOOL initialized_;
 }
 
 #pragma mark Nabto API
@@ -43,6 +44,16 @@
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
+- (void)setStaticResourceDir:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult* res = nil;
+    nabto_status_t status = [[NabtoClient instance] nabtoSetStaticResourceDir:[command.arguments objectAtIndex:0]];
+    if (status == NABTO_OK) {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
 
 - (void)startupAndOpenProfile:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
@@ -56,7 +67,7 @@
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         } else {
             status = [[NabtoClient instance] nabtoOpenSession:[command.arguments objectAtIndex:0]
-                                                  withPassword:[command.arguments objectAtIndex:1]];
+                                                 withPassword:[command.arguments objectAtIndex:1]];
             if (status == NABTO_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             } else {
@@ -88,11 +99,11 @@
     [self.commandDelegate runInBackground:^{
             NSString* json = [command.arguments objectAtIndex:0];
             NSString* arg;
-            if ([json length] == 0) {
+            if ([json length] > 0) {
+                arg = json;
+            } else {
                 // we interpret javascript empty string as user's intention of resetting auth data
                 arg = NULL;
-            } else {
-                arg = json;
             }
             nabto_status_t status = [[NabtoClient instance]
                                             nabtoSetBasestationAuthJson:arg];

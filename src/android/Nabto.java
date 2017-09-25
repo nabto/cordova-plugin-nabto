@@ -64,11 +64,11 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("setOption")) {
             setOption(args.getString(0), args.getString(1), callbackContext);
         }
-        else if (action.equals("openSession")) {
-            openSession(args.getString(0), args.getString(1), callbackContext);
-        }
         else if (action.equals("setBasestationAuthJson")) {
             setBasestationAuthJson(args.getString(0), callbackContext);
+        }
+        else if (action.equals("setStaticResourceDir")) {
+            setStaticResourceDir(args.getString(0), callbackContext);
         }
         else if (action.equals("createSignedKeyPair")) {
             createSignedKeyPair(args.getString(0), args.getString(1), callbackContext);
@@ -191,45 +191,13 @@ public class Nabto extends CordovaPlugin {
             });
     }
 
-    private void openSession(final String user, final String pass, final CallbackContext cc) {
-        final Context context = cordova.getActivity().getApplicationContext();
-        cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null){
-                    nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
-                }
-                NabtoStatus status = nabto.startup();
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
-
-                if (session != null) {
-                    cc.success();
-                    return;
-                }
-
-                session = nabto.openSession(user, pass);
-
-                if (session.getStatus() != NabtoStatus.OK) {
-                    cc.error(session.getStatus().ordinal());
-                    session = null;
-                }
-                else {
-                    cc.success();
-                }
-            }
-        });
-    }
-
     private void startup(final CallbackContext cc) {
         Log.d("startup", "Nabto startup begins");
         final Context context = cordova.getActivity().getApplicationContext();
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                if(nabto!=null){
+                if (nabto != null) {
                     Log.d("startup", "Nabto was already started");
                     cc.success();
                     return;
@@ -278,6 +246,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable(){
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 NabtoStatus status = nabto.createProfile(user, pass);
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
@@ -292,6 +264,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable(){
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 NabtoStatus status = nabto.createSelfSignedProfile(user, pass);
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
@@ -307,6 +283,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable(){
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 NabtoStatus status = nabto.removeProfile(user);
                 if (status != NabtoStatus.OK) {
                     cc.error(status.ordinal());
@@ -322,6 +302,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run(){
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     String[] fingerprint = new String[1];
                     fingerprint[0] = "";
                     NabtoStatus status = nabto.getFingerprint(certId,fingerprint);
@@ -358,10 +342,36 @@ public class Nabto extends CordovaPlugin {
                     if (session == null) {
                         cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
                         return;
-                        
                     }
-                    NabtoStatus status = nabto.setBasestationAuthJson(authJson, session);
-                    if (status != NabtoStatus.NABTO_OK) {
+                    String json;
+                    if (authJson.length() > 0) {
+                        json = authJson;
+                    } else {
+                        // we interpret javascript empty string as user's intention of resetting auth data
+                        json = null;
+                    }
+                    NabtoStatus status = nabto.setBasestationAuthJson(json, session);
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
+                }
+            });
+            
+    }
+
+    private void setStaticResourceDir(final String dir, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    NabtoStatus status = nabto.setStaticResourceDir(dir);
+                    if (status != NabtoStatus.OK) {
                         cc.error(status.ordinal());
                         return;
                     }
@@ -379,7 +389,6 @@ public class Nabto extends CordovaPlugin {
                     cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
                     return;
                 }
-
                 UrlResult result = nabto.fetchUrl(url, session);
                 if (result.getStatus() != NabtoStatus.OK) {
                     cc.error(result.getStatus().ordinal());
@@ -472,7 +481,7 @@ public class Nabto extends CordovaPlugin {
     private void rpcSetInterface(final String host, final String interfaceXml, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable(){
             public void run() {
-                if (session == null){
+                if (session == null) {
                     cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
                     return;
                 }
@@ -491,6 +500,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 String token = nabto.getSessionToken(session);
                 cc.success(token);
             }
@@ -501,6 +514,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 Collection<String> devices = nabto.getLocalDevices();
                 JSONArray jsonArray = new JSONArray(devices); //Arrays.asList(devices));
                 cc.success(jsonArray);
@@ -512,6 +529,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 String version = nabto.version();
                 cc.success(version);
             }
@@ -522,6 +543,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 String version = nabto.versionString();
                 cc.success(version);
             }
@@ -532,6 +557,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
                 NabtoStatus status = nabto.setOption(key, value);
                 if (status == NabtoStatus.OK) {
                     cc.success();
@@ -550,6 +579,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     Tunnel tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session);
                     NabtoStatus status = tunnel.getStatus();
                     if (status == NabtoStatus.OK) {
@@ -588,6 +621,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
                         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
@@ -607,6 +644,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
                         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
@@ -626,6 +667,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
                         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
@@ -645,6 +690,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
                         TunnelInfoResult info = nabto.tunnelInfo(tunnel);
@@ -664,6 +713,10 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
                         NabtoStatus status = nabto.tunnelClose(tunnel);
