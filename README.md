@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.2
+# Cordova Plugin Nabto - 2.3
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
@@ -62,12 +62,20 @@ See *www/nabto.js* for API implementation details.
 
 All callbacks are invoked with an error object as the first argument if something went wrong, otherwise the first argument is set to undefined.
 
-### `nabto.startup`
+### `nabto.startupAndOpenProfile`
 
-Start Nabto and open a session with optional username and password.
+Starts Nabto and establish a client session using specified username and password (locates an installed keypair associated with `username` and decrypts the private key with `password`).
 
 ```js
-nabto.startup([username, password, ]callback)
+nabto.startupAndOpenProfile(username, password, callback)
+```
+
+### `nabto.startup`
+
+Starts Nabto without an associated client session (so cannot invoke remote devices).
+
+```js
+nabto.startup(callback)
 ```
 
 ### `nabto.shutdown`
@@ -158,6 +166,10 @@ Create selfsigned keypair to be used for RSA fingerprint based authentication in
 nabto.createKeyPair(name, private_key_encryption_password, callback)
 ```
 
+```js
+nabto.createKeyPair(name, private_key_encryption_password, callback)
+```
+
 ### `nabto.getFingerprint`
 
 Get RSA fingerprint for public key in specified keypair.
@@ -165,6 +177,11 @@ Get RSA fingerprint for public key in specified keypair.
 ```js
 nabto.getFingerprint(name, callback)
 ```
+
+### `nabto.removeKeyPair`
+
+Remove keypair from local store.
+
 
 ### `nabto.tunnelOpenTcp`
 
@@ -201,6 +218,31 @@ enum nabto_tunnel_state {
     NTCS_REMOTE_RELAY = 5,
     NTCS_REMOTE_RELAY_MICRO = 6
 };
+```
+
+### `nabto.setOption`
+
+Set a configuration option supported by `nabtoSetOption` in the native SDK.
+
+```js
+nabto.setOption("urlPortalHostName", "webservice.nabto", callback)
+```
+
+
+### `nabto.setStaticResourceDir`
+
+Set the directory where static resources are read from. Use with `cordova-plugin-file` to get absolute path (ok to include `file://` prefix).
+
+```js
+nabto.setStaticResourceDir(cordova.file.dataDirectory, callback)
+```
+
+### `nabto.setBaseStationAuthJson`
+
+Set JSON document with basestation authentication info to use on the active session for next connect attempt. Requires configuration of authentication webhook in basestation. Use empty string to reset. See `nabto_client_api.h` for more details.
+
+```js
+nabto.setBaseStationAuthJson(jsonString, callback)
 ```
 
 ## Source File Structure

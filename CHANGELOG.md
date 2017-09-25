@@ -13,13 +13,12 @@ the release and a new unreleased section is added.
 ## 2.4.0 Unreleased
 
 ## 2.3.0 2017-09-25
- 
+
 ### Added
 - Added `setStaticResourceDir` to set a custom directory to hold resources (useful for custom config file).
 - Added `setBasestationAuthJson` to set basestation auth JSON info for certificate-less authentication (see full docs in nabto_client_api.h).
 - Added `removeKeyPair` to remove a keypair.
 - Added missing `setOption` on iOS to set custom options.
-- Added `tunnelError` to detailed info on tunnel errors.
 - Added unit tests of all API functions.
 
 ### Changed
