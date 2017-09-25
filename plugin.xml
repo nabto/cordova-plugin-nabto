@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-nabto"
-    version="2.2.1">
+    version="2.3.0">
 
     <name>Nabto</name>
     <description>Cordova Plugin Nabto</description>
@@ -34,7 +34,7 @@
             </feature>
         </config-file>
         
-        <!--<framework src="com.nabto.android:nabto-api:1.2.2" />-->
+        <framework src="com.nabto.android:nabto-api:1.3.1" />
 	<resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
 	<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
 	<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
@@ -43,7 +43,7 @@
         <!-- when working on android client along with cordova plugin, copy            -->
         <!-- git/cordova-plugin-nabto/src/main/java/com/nabto/api to ./src/android/api -->
         <!-- (for production, these files are all retrieved from the jcenter bundle    -->
-
+        <!--
         <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoAssetManager.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/NabtoAndroidAssetManager.java" target-dir="src/com/nabto/api" />
@@ -61,7 +61,8 @@
         <source-file src="src/android/api/TunnelInfoResult.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
         <source-file src="src/android/api/UrlResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/nabto/android-x86/lib/libnabto_client_api_jni.so" target-dir="libs/x86"/> 
+        <source-file src="src/nabto/android-x86/lib/libnabto_client_api_jni.so" target-dir="libs/x86"/>
+        -->
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

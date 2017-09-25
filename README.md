@@ -48,6 +48,10 @@ document.addEventListener('deviceready', function() {
 }, false);
 ```
 
+## Note about version identifiers
+
+The version information returned by `nabto.versionString` is the core Nabto Client SDK version - _not_ the version of the Cordova wrapper (the component described in this document). See the release notes for the individual Cordova wrapper version to see the Nabto Client SDK core version wrapped.
+
 ## Note about older Android devices
 
 On Android 4.4 and older, please pass the `--browserify` option to the cordova CLI (not necessary to worry about if invoking through Ionic), e.g. `cordova build android --browserify`, this fixes a problem with `require` not being available.

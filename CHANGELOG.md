@@ -10,7 +10,9 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 2.3.0 Unreleased
+## 2.4.0 Unreleased
+
+## 2.3.0 2017-09-25
  
 ### Added
 - Added `setStaticResourceDir` to set a custom directory to hold resources (useful for custom config file).
@@ -24,6 +26,7 @@ the release and a new unreleased section is added.
 - Removed `openSession` from iOS and Android platform adapter interfaces as it was not exposed through the JS wrapper anyway, only the `startupAndOpenProfile` singleton approach is supported on Cordova.
 
 ### Breaking
+
 
 ## 2.2.0 2017-09-05
 
