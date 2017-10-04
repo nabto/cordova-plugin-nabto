@@ -10,31 +10,12 @@ var exec = require('cordova/exec'),
 
 function Nabto() {}
 
-function nextTick(cb, arg) {
-  // ensure all callbacks are invoked asynchronously (do not release zalgo (http://goo.gl/dP5Bbz))
-  setTimeout(function() { cb(arg); }, 0);
-//  cb(arg); /* good for debugging */
-}
-
 Nabto.prototype.startup = function(cb) {
-  cb = cb || function() {};
-  exec(
-    function success() { cb(); },
-    function error(apiStatus) {cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'startup', []);
+  invokeNabto('startup', [], cb);
 };
 
 Nabto.prototype.setOption = function(name, value, cb) {
-  cb = cb || function() {};
-  exec(
-    function success() {
-      cb();
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'setOption', [name, value]);
+  invokeNabto('setOption', [name, value], cb);
 };
 
 Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
@@ -45,122 +26,61 @@ Nabto.prototype.startupAndOpenProfile = function(user, pass, cb) {
   cb = cb || function() {};
   user = user || 'guest';
   pass = pass || '123456';
-
-  exec(
-    function success() { cb(); },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'startupAndOpenProfile', [user, pass]);
+  invokeNabto('startupAndOpenProfile', [user, pass], cb);
 };
 
 Nabto.prototype.setStaticResourceDir = function(dir, cb) {
-  if (!dir || dir.length == 0) {
-    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+  if (typeof dir === 'string') {
+    var prefix = 'file://';
+    if (dir.substring(0, prefix.length) == prefix) {
+      dir = dir.substring(prefix.length);
+    }
   }
-  cb = cb || function() {};
-
-  var prefix = 'file://';
-  if (dir.substring(0, prefix.length) == prefix) {
-    dir = dir.substring(prefix.length);
-  }
-
-  exec(
-    function success() { cb(); },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'setStaticResourceDir', [dir]);
+  invokeNabto('setStaticResourceDir', [dir], cb);
 };
 
-
-Nabto.prototype.setBaseStationAuthJson = function(authJson, cb) {
-  cb = cb || function() {};
-  if (typeof authJson === 'undefined') {
-    // authJson can be empty to reset config
-    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
-  }
-  exec(
-    function success() { cb(); },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'setBasestationAuthJson', [authJson]);
+Nabto.prototype.setBasestationAuthJson = function(authJson, cb) {
+  invokeNabto('setBasestationAuthJson', [authJson], cb);
 };
-
 
 Nabto.prototype.prepareInvoke = function(devices, cb) {
-  cb = cb || function(){};
-  exec(
-    function success(){
-      cb();
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'prepareInvoke',[devices]);
-};
-
-function generalCreateKeyPair(user, pass, cb, apiFunction) {
-  cb = cb || function() {};
-  exec(
-    function success() {
-      cb();
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', apiFunction, [user, pass]
-  );
+  invokeNabto('prepareInvoke', [devices], cb);
 };
 
 Nabto.prototype.createKeyPair = function(user, pass, cb) {
-  return generalCreateKeyPair(user, pass, cb, 'createKeyPair');
+  invokeNabto('createKeyPair', [user, pass], cb);
 };
 
 Nabto.prototype.createSignedKeyPair = function(user, pass, cb) {
-  return generalCreateKeyPair(user, pass, cb, 'createSignedKeyPair');
+  invokeNabto('createSignedKeyPair', [user, pass], cb);
+};
+
+Nabto.prototype.signup = function(email, password, cb) {
+  invokeNabto('signup', [email, password], cb);
+};
+
+Nabto.prototype.resetAccountPassword = function(email, cb) {
+  invokeNabto('resetAccountPassword', [email], cb);
 };
 
 Nabto.prototype.removeKeyPair = function(user, cb) {
-  cb = cb || function() {};
-  exec(
-    function success() {
-      cb();
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'removeKeyPair', [user]
-  );
+  invokeNabto('removeKeyPair', [user], cb);
 };
 
-Nabto.prototype.getFingerprint = function(email, cb) {
-  cb = cb || function() {};
-  exec(
-    function success(fingerprint) { cb(undefined, fingerprint); },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'getFingerprint', [email]
-  );
+Nabto.prototype.getFingerprint = function(user, cb) {
+  invokeNabto('getFingerprint', [user], cb);
 };
 
 Nabto.prototype.shutdown = function(cb) {
-  cb = cb || function() {};
-
-  exec(
-    function success() { cb(); },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 
-    'Nabto', 'shutdown', []);
+  invokeNabto('shutdown', [], cb);
 };
 
-function rpcStyleInvoker(url, cb, apiFunction) {
+// requires prior invocation of setRpcInterface
+Nabto.prototype.rpcInvoke = function(url, cb) {
   cb = cb || function() {};
   if (typeof url !== "string") {
-    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
   }
   exec(
     function success(result) {
@@ -169,7 +89,8 @@ function rpcStyleInvoker(url, cb, apiFunction) {
         obj = JSON.parse(result);
       } catch (e) {
         err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_MALFORMED_JSON, result);
-        return cb(err, obj);
+        cb(err, obj);
+        return;
       }
       if (obj.response) {
         // ok
@@ -181,18 +102,67 @@ function rpcStyleInvoker(url, cb, apiFunction) {
         err = new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_UNEXPECTED_DATA);
 	obj = undefined;
       }
-      return cb(err, obj);       
+      cb(err, obj);
+      return;
     },
     function error(error) {
       handlePotentialJsonError(cb, error);
     },
-    'Nabto', apiFunction, [url]);
+    'Nabto', 'rpcInvoke', [url]);
 };
 
-// requires prior invocation of setRpcInterface
-Nabto.prototype.rpcInvoke = function(url, cb) {
-  return rpcStyleInvoker(url, cb, 'rpcInvoke');
+Nabto.prototype.rpcSetDefaultInterface = function(interfaceXml, cb) {
+  invokeNabto('rpcSetDefaultInterface', [interfaceXml], cb);
 };
+
+Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
+  invokeNabto('rpcSetInterface', [host, interfaceXml], cb);
+};
+
+Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
+  cb = cb || function() {};
+  var portNum = parseInt(port, 10);
+  if (!host || host.length == 0 || isNaN(portNum) || port < 0 || port > 65535) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
+  invokeNabto('tunnelOpenTcp', [host, port], cb);
+};
+
+Nabto.prototype.tunnelClose = function(tunnel, cb) {
+  invokeNabto('tunnelClose', [tunnel], cb);
+};
+
+Nabto.prototype.tunnelPort = function(tunnel, cb) {
+  invokeNabto('tunnelPort', [tunnel], cb);
+};
+
+Nabto.prototype.tunnelState = function(tunnel, cb) {
+  invokeNabto('tunnelState', [tunnel], cb);
+};
+
+
+Nabto.prototype.getSessionToken = function(cb) {
+  invokeNabto('getSessionToken', [], cb);
+};
+
+Nabto.prototype.getLocalDevices = function(cb) {
+  invokeNabto('getLocalDevices', [], cb);
+};
+
+Nabto.prototype.version = function(cb) {
+  invokeNabto('version', [], cb);
+};
+
+Nabto.prototype.versionString = function(cb) {
+  invokeNabto('versionString', [], cb);
+};
+
+module.exports = new Nabto();
+
+function rpcStyleInvoker(url, cb, apiFunction) {
+};
+
 
 function handlePotentialJsonError(cb, error) {
   var code; 
@@ -207,123 +177,30 @@ function handlePotentialJsonError(cb, error) {
   cb(new NabtoError(NabtoError.Category.API, code, json));
 }
 
-Nabto.prototype.rpcSetDefaultInterface = function(interfaceXml, cb) {
-  cb = cb || function() {};
-  exec(
-    function success() {
-      cb(undefined);
-    },
-    function error(err) {
-      handlePotentialJsonError(cb, err);
-    }, 'Nabto', 'rpcSetDefaultInterface', [interfaceXml]);
-};
+function nextTick(cb, arg) {
+  // ensure all callbacks are invoked asynchronously (do not release zalgo (http://goo.gl/dP5Bbz))
+  setTimeout(function() { cb(arg); }, 0);
+//  cb(arg); /* good for debugging */
+}
 
-Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
-  cb = cb || function() {};
-  exec(
-    function success() {
-      cb(undefined);
-    },
-    function error(err) {
-      handlePotentialJsonError(cb, err);
-    }, 'Nabto', 'rpcSetInterface', [host, interfaceXml]);
-};
-
-Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
-  cb = cb || function() {};
-  var portNum = parseInt(port, 10);
-  if (!host || host.length == 0 || isNaN(portNum) || port < 0 || port > 65535) {
-    return nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+function invokeNabto(apiFunction, args, cb) {
+  for (var i=0; i<args.length; i++) {
+    if (typeof args[i] === 'function') {
+      // missing argument
+      nextTick(args[i], new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+      return;
+    }    
   }
+  cb = cb || function() {};
   exec(
-    function success(tunnelId) {
-      cb(undefined, tunnelId);
+    function success(result) {
+      cb(undefined, result);
     },
     function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'tunnelOpenTcp', [host, port]);
-};
-
-Nabto.prototype.tunnelClose = function(tunnel, cb) {
-  cb = cb || function() {};
-  exec(
-    function success() {
-      cb(undefined);
     },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'tunnelClose', [tunnel]);
-};
-
-Nabto.prototype.tunnelPort = function(tunnel, cb) {
-  cb = cb || function() {};
-  exec(
-    function success(portNumber) {
-      cb(undefined, portNumber);
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'tunnelPort', [tunnel]);
-};
-
-Nabto.prototype.tunnelState = function(tunnel, cb) {
-  cb = cb || function() {};
-  exec(
-    function success(state) {
-      cb(undefined, state);
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'tunnelState', [tunnel]);
-};
+    'Nabto', apiFunction, args
+  );
+}
 
 
-Nabto.prototype.getSessionToken = function(cb) {
-  cb = cb || function() {};
-
-  exec(
-    function success(token) {
-      cb(undefined, token);
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'getSessionToken', []);
-};
-
-Nabto.prototype.getLocalDevices = function(cb) {
-  cb = cb || function() {};
-
-  exec(
-    function(devices) {
-      cb(undefined, devices);
-    },
-    function(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'getLocalDevices', []);
-};
-
-Nabto.prototype.version = function(cb) {
-  cb = cb || function() {};
-
-  exec(
-    function(version) {
-      cb(undefined, version);
-    },
-    function(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'version', []);
-};
-
-Nabto.prototype.versionString = function(cb) {
-  cb = cb || function() {};
-
-  exec(
-    function(version) {
-      cb(undefined, version);
-    },
-    function(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    }, 'Nabto', 'versionString', []);
-};
-
-module.exports = new Nabto();

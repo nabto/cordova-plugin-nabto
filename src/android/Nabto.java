@@ -76,6 +76,12 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("createKeyPair")) {
             createKeyPair(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("signup")) {
+            signup(args.getString(0), args.getString(1), callbackContext);
+        }
+        else if (action.equals("resetAccountPassword")) {
+            resetAccountPassword(args.getString(0), callbackContext);
+        }
         else if (action.equals("removeKeyPair")) {
             removeKeyPair(args.getString(0), callbackContext);
         }
@@ -238,6 +244,42 @@ public class Nabto extends CordovaPlugin {
                 } else {
                     cc.success();
                 }
+            }
+        });
+    }
+
+    private void signup(final String user, final String pass, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+            @Override
+            public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                NabtoStatus status = nabto.signup(user, pass);
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+                cc.success();
+            }
+        });
+    }
+
+    private void resetAccountPassword(final String user, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable(){
+            @Override
+            public void run() {
+                if (nabto == null) {
+                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    return;
+                }
+                NabtoStatus status = nabto.resetAccountPassword(user);
+                if (status != NabtoStatus.OK) {
+                    cc.error(status.ordinal());
+                    return;
+                }
+                cc.success();
             }
         });
     }

@@ -122,6 +122,23 @@
     }];
 }
 
+- (void)signup:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+        nabto_status_t status = [[NabtoClient instance]
+                                    nabtoSignup:[command.arguments objectAtIndex:0]
+                                   withPassword:[command.arguments objectAtIndex:1]];
+        [self handleStatus:status withCommand:command];
+    }];
+}
+
+- (void)resetAccountPassword:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            nabto_status_t status = [[NabtoClient instance]
+                                        nabtoResetAccountPassword:[command.arguments objectAtIndex:0]];
+            [self handleStatus:status withCommand:command];
+        }];
+}
+
 - (void)removeKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
             nabto_status_t status = [[NabtoClient instance]

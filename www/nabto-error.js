@@ -62,6 +62,8 @@ NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED      = 2005;
 NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD     = 2006;
 NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
 NabtoError.Code.API_CERT_SAVING_FAILURE         = 2009;
+NabtoError.Code.API_ADDRESS_IN_USE              = 2010;
+NabtoError.Code.API_INVALID_ADDRESS             = 2011;
 NabtoError.Code.API_INVALID_TUNNEL              = 2019;
 NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE    = 2026;
 NabtoError.Code.API_ERROR                       = 2100;
@@ -109,16 +111,18 @@ NabtoError.Message[NabtoError.Code.CDV_UNEXPECTED_DATA]         = "Unexpected st
 NabtoError.Message[NabtoError.Code.CDV_MALFORMED_JSON]          = "SDK did not return valid JSON";
 NabtoError.Message[NabtoError.Code.CDV_MALFORMED_ERROR_MESSAGE] = "SDK did not return a valid JSON formatted error where expected";
 
-NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]        = "Could not open certificate";		    
-NabtoError.Message[NabtoError.Code.API_NOT_INITIALIZED]       = "API not initialized";
-NabtoError.Message[NabtoError.Code.API_INVALID_SESSION]       = "Invalid Nabto session";
-NabtoError.Message[NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED] = "Error opening keypair";
-NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD] = "Private key could not be opened (decrypted) using specified password";
-NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]  = "The specified username/password was not recognized by the certificate issuing server";
-NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]  = "The keypair could not be saved";
+NabtoError.Message[NabtoError.Code.API_CERT_OPEN_FAIL]           = "Could not open certificate";		    
+NabtoError.Message[NabtoError.Code.API_NOT_INITIALIZED]          = "API not initialized";
+NabtoError.Message[NabtoError.Code.API_INVALID_SESSION]          = "Invalid Nabto session";
+NabtoError.Message[NabtoError.Code.API_OPEN_CERT_OR_PK_FAILED]   = "Error opening keypair";
+NabtoError.Message[NabtoError.Code.API_UNLOCK_KEY_BAD_PASSWORD]  = "Private key could not be opened (decrypted) using specified password";
+NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]     = "The specified username/password was not recognized by the certificate issuing server";
+NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]      = "The keypair could not be saved";
+NabtoError.Message[NabtoError.Code.API_ADDRESS_IN_USE]           = "The email address is already registered with the user management server";
+NabtoError.Message[NabtoError.Code.API_INVALID_ADDRESS]          = "The email address is invalid";
 NabtoError.Message[NabtoError.Code.API_INVALID_TUNNEL]           = "Tunnel could not be opened - or invalid tunnel handle specified";
 NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "JSON object contains error message";
-NabtoError.Message[NabtoError.Code.API_ERROR]                 = "An API error occurred";		    
+NabtoError.Message[NabtoError.Code.API_ERROR]                    = "An API error occurred";		    
 
 NabtoError.Message[NabtoError.Code.P2P_INTERFACE_DEF_INVALID]    = "Error parsing the RPC interface definition file";		    
 NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_CONNECT]    = "The device does not allow the current user to connect";		    
@@ -227,6 +231,18 @@ NabtoError.prototype.handleApiError = function(status, innerError) {
 
   case NabtoConstants.ClientApiErrors.CERT_SAVING_FAILURE:
     this.code = NabtoError.Code.API_CERT_SAVING_FAILURE;
+    break;
+
+  case NabtoConstants.ClientApiErrors.ADDRESS_IN_USE:
+    this.code = NabtoError.Code.API_ADDRESS_IN_USE;
+    break;
+
+  case NabtoConstants.ClientApiErrors.INVALID_ADDRESS:
+    this.code = NabtoError.Code.API_INVALID_ADDRESS;
+    break;
+
+  case NabtoConstants.ClientApiErrors.PORTAL_LOGIN_FAILURE:
+    this.code = NabtoError.Code.API_SERVER_LOGIN_FAILURE;
     break;
 
   case NabtoConstants.ClientApiErrors.INVALID_TUNNEL:

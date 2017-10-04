@@ -10,7 +10,17 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 2.4.0 Unreleased
+## 2.5.0 Unreleased
+
+## 2.4.0 2017-10-05
+
+### Added
+- Added support for legacy functions for signup and password reset to allow for migration of existing apps.
+
+### Changed
+- Major cleanup of JS wrapper.  
+
+### Breaking
 
 ## 2.3.0 2017-09-25
 

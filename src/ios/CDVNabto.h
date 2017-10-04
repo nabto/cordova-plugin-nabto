@@ -18,6 +18,8 @@
 - (void)setBasestationAuthJson:(CDVInvokedUrlCommand*)command;
 - (void)shutdown:(CDVInvokedUrlCommand*)command;
 - (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command;
+- (void)signup:(CDVInvokedUrlCommand*)command;
+- (void)resetAccountPassword:(CDVInvokedUrlCommand*)command;
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command;
 - (void)removeKeyPair:(CDVInvokedUrlCommand*)command;
 - (void)getFingerprint:(CDVInvokedUrlCommand*)command;

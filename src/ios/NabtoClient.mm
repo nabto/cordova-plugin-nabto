@@ -134,6 +134,14 @@ void nabtoLogCallback(const char* line, size_t size) {
     return nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]);
 }
 
+- (nabto_status_t)nabtoSignup:(NSString *)email withPassword:(NSString *)password {
+    return nabtoSignup([email UTF8String], [password UTF8String]);
+}
+
+- (nabto_status_t)nabtoResetAccountPassword:(NSString *)email {
+    return nabtoResetAccountPassword([email UTF8String]);
+}
+
 - (nabto_status_t)nabtoRemoveProfile:(NSString *)id {
     return nabtoRemoveProfile([id UTF8String]);
 }

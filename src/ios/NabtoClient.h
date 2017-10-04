@@ -65,6 +65,8 @@
 
 - (nabto_status_t)nabtoCreateProfile:(NSString *)id withPassword:(NSString *)password;
 - (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)id withPassword:(NSString *)password;
+- (nabto_status_t)nabtoSignup:(NSString *)id withPassword:(NSString *)password;
+- (nabto_status_t)nabtoResetAccountPassword:(NSString *)id;
 - (nabto_status_t)nabtoRemoveProfile:(NSString *)id;
 - (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result;
 
