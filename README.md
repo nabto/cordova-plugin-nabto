@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.3
+# Cordova Plugin Nabto - 2.4
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
@@ -181,6 +181,64 @@ Remove keypair from local store.
 ```js
 nabto.removeKeyPair(id, callback)
 ```
+
+### `nabto.createSignedKeyPair` (deprecated)
+
+Create CA signed keypair to be used for uNabto device and basestation based
+authentication. Specified email address and password are used for authenticating towards the central
+user management services used by the CA to verify the user's identity. The password is also used for
+encrypting the local private key.
+
+```js
+nabto.createSignedKeyPair(email, password, callback)
+```
+
+Note: In the current (deprecated) implementation the encryption of the local key using the same
+password as for the CA services causes a poor user experience if user has a profile on multiple
+devices and resets password on a single device: When the user starts the app and enters a password,
+the private key is decrypted meaning that in all other app instances than the one through which the
+password was reset, the old password must be used.
+
+The app developer must implement a mechanism to detect such reset and re-create keypairs on all
+devices to set the same password for all key pairs. If this feature was not deprecated in the first
+place (see below), a new behavior would indeed have been considered (e.g., when possible, skip
+private key encryption and use platform specific certificate store).
+
+Deprecation notice: The Nabto CA services are no longer part of the standard platform and requires a
+customer specific setup. New solutions must base their security design on PPKA approach (see section
+8.2 in [TEN036 Security in Nabto
+Solutions](https://www.nabto.com/downloads/docs/TEN036%20Security%20in%20Nabto%20Solutions.pdf)) or
+the authentication token approach using `setBaseStationAuthJson`.
+
+### `nabto.signup` (deprecated)
+
+Signup for a user profile through the central user management services. 
+
+```js
+nabto.signup(email, password, callback)
+```
+
+Deprecation notice: The Nabto CA services are no longer part of the standard platform and requires a
+customer specific setup. New solutions must base their security design on PPKA approach (see section
+8.2 in [TEN036 Security in Nabto
+Solutions](https://www.nabto.com/downloads/docs/TEN036%20Security%20in%20Nabto%20Solutions.pdf)) or
+the authentication token approach using `setBaseStationAuthJson`.
+
+### `nabto.resetAccountPassword` (deprecated)
+
+Reset user's account password in the central user management services. See note on
+`createSignedKeyPair` preventing a poor user experience.
+
+```js
+nabto.resetAccountPassword(email, callback)
+```
+
+Deprecation notice: The Nabto CA services are no longer part of the standard platform and requires a
+customer specific setup. New solutions must base their security design on PPKA approach (see section
+8.2 in [TEN036 Security in Nabto
+Solutions](https://www.nabto.com/downloads/docs/TEN036%20Security%20in%20Nabto%20Solutions.pdf)) or
+the authentication token approach using `setBaseStationAuthJson`.
+
 
 ### `nabto.tunnelOpenTcp`
 
