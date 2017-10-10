@@ -12,13 +12,18 @@ the release and a new unreleased section is added.
 
 ## 2.5.0 Unreleased
 
+## 2.4.1 2017-10-10
+
+### Changed
+- Nabto Client SDK 4.1.12 with fix for wrong handling of unicode characters in certificate names (AMP-135)
+
 ## 2.4.0 2017-10-05
 
 ### Added
 - Added support for legacy functions for signup and password reset to allow for migration of existing apps.
 
 ### Changed
-- Major cleanup of JS wrapper.  
+- Major cleanup of JS wrapper.
 
 ### Breaking
 
