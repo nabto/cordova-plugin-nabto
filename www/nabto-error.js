@@ -83,7 +83,8 @@ NabtoError.Code.P2P_TIMEOUT                   = 3215; // TIME_OUT, CONNECT_TIMEO
 NabtoError.Code.P2P_INTERFACE_DEF_INVALID     = 3223;
 NabtoError.Code.P2P_NO_SUCH_REQUEST           = 3227; // NO_SUCH_REQ, FILE_NOT_FOUND
 NabtoError.Code.P2P_PARAM_PARSE_ERROR         = 3229; 
-NabtoError.Code.P2P_PARAM_MISSING             = 3230; 
+NabtoError.Code.P2P_PARAM_MISSING             = 3230;
+NabtoError.Code.P2P_RESPONSE_DECODE_ERROR     = 3234;
 NabtoError.Code.P2P_NO_NETWORK                = 3249;
 NabtoError.Code.P2P_RPC_INTERFACE_NOT_SET     = 3267;
 NabtoError.Code.P2P_MISSING_PREPARE           = 3268;
@@ -142,6 +143,7 @@ NabtoError.Message[NabtoError.Code.P2P_PARAM_PARSE_ERROR]        = "The paramete
 NabtoError.Message[NabtoError.Code.P2P_PARAM_MISSING]            = "A parameter is missing for this request according to the interface definition";
 NabtoError.Message[NabtoError.Code.P2P_RPC_INTERFACE_NOT_SET]    = "RPC interface not set prior to invoking";
 NabtoError.Message[NabtoError.Code.P2P_MISSING_PREPARE]          = "rpcInvoke was called with unprepared device. prepareInvoke must be called before device can be invoked";
+NabtoError.Message[NabtoError.Code.P2P_RESPONSE_DECODE_ERROR]    = "Invalid response from device";
 NabtoError.Message[NabtoError.Code.P2P_OTHER]                    = "An unspecified error occurred - please contact vendor";
                                                                        
 NabtoError.Message[NabtoError.Code.EXC_BASE]                     = "(n/a)";
@@ -427,6 +429,12 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
   case NabtoConstants.ClientEvents.MISSING_PREPARE:
     this.code = NabtoError.Code.P2P_MISSING_PREPARE;
     break;
+
+  case NabtoConstants.ClientEvents.QUERY_RESPONSE_DECODE_FAILURE:
+    this.code = NabtoError.Code.P2P_RESPONSE_DECODE_ERROR;
+    break;
+
+
 
   default:    
     this.code = NabtoError.Code.P2P_OTHER;
