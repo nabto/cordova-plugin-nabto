@@ -4,9 +4,9 @@
 
 Nabto provides a full communication infrastructure to allow direct, encrypted communication between clients and IoT devices - the Nabto communication platform. The platform supports direct peer-to-peer connectivity through NAT traversal with fallback through central relay.
 
-The Cordova plugin allows hybrid client apps to use Nabto RPC to invoke uNabto devices, i.e. to retrieve data or control the device.
+The Cordova plugin allows hybrid client apps to use Nabto RPC to invoke uNabto devices, i.e. to retrieve data or control the device. And use Nabto Tunnelling to establish TCP tunnels to devices for reliable two-way communication.
 
-For an example of such a hybrid app, see [Ionic Starter for Nabto / AppMyProduct](https://github.com/nabto/ionic-starter-nabto).
+See the [AppMyProduct Heat Control](https://github.com/nabto/ionic-starter-nabto) starter app for a full example of using Nabto RPC and [AppMyProduct Video](https://github.com/nabto/ionic-starter-nabto-video) for a full example of using Nabto Tunnelling. For further details about the tunnel example, also see [our blog](https://blog.nabto.com/2017/09/11/raspberry-pi-webcam-with-secure-remote-access).
 
 ## Installation
 
@@ -50,7 +50,7 @@ document.addEventListener('deviceready', function() {
 
 ## Note about version identifiers
 
-The version information returned by `nabto.versionString` is the core Nabto Client SDK version - _not_ the version of the Cordova wrapper (the component described in this document). See the release notes for the individual Cordova wrapper version to see the Nabto Client SDK core version wrapped.
+The version information returned by `nabto.versionString` is the core Nabto Client SDK version - _not_ the version of the Cordova wrapper (the component described in this document). 
 
 ## Note about older Android devices
 
@@ -132,11 +132,10 @@ nabto.rpcSetDefaultInterface(host, unabto_queries_xml, callback)
 
 ### `nabto.prepareInvoke`
 
-Mandatory to invoke prior to `nabto.invokeRpc` after each
-`nabto.startup` invocation. This function may show a fullscreen ad if
-`hosts` contains a device associated with an AMP free tier product. An
-ad may also be shown if a previous invocation since last
-`nabto.startup` contained such free tier device.
+Mandatory to invoke prior to `nabto.invokeRpc` or `nabto.tunnelOpenTcp` after each `nabto.startup`
+invocation to enable later connection one of the listed hosts. This function may show a fullscreen
+ad if `hosts` contains a device associated with an AMP free tier product. An ad may also be shown if
+a previous invocation since last `nabto.startup` contained such free tier device.
 
 ```js
 nabto.prepareInvoke(hosts, callback)
@@ -341,28 +340,11 @@ to completely remove all traces of the plugin and install again for every change
 Nabto libs are quite big, a lot of time goes copying these files around, you might optimize the
 cycle this by just using libraries for the exact platform you are working on.
 
-1. Create a new Cordova project
-2. Add `<content src="cdvtests/index.html" />` to the project's `config.xml` 
-3. Install the Cordova test framework plugin: `cordova plugin add https://github.com/maverickmishra/cordova-plugin-test-framework.git`
-4. Install `cordova-plugin-nabto`: `cordova plugin add ~/git/cordova-plugin-nabto` (see note about optimization)
-5. Install `cordova-plugin-nabto-test`: `cordova plugin add ~/git/cordova-plugin-nabto-tests`
-6. Patch build.xcconfig as outlined above if using iOS
-7. Build and run on the intended platform
+Earlier Cordova supported tests in a sub-plugin but apparently this is no longer possible, so we
+have moved tests to a separate repository: https://github.com/nabto/cordova-plugin-nabto-test.
 
-For every change, clean up and run from step 4 - e.g. put the following in a script:
+Tests can be executed using
+https://github.com/nabto/cordova-plugin-nabto-test/blob/master/scripts/cdv-plugin-build.sh, it will
+cleanly create a new project and completely uninstall and re-install the plugin as described above.
 
-```
-rm -rf  ~/.npm/cordova-plugin-nabto*
-npm uninstall cordova-plugin-nabto
-cordova plugin rm cordova-plugin-nabto-tests
-cordova plugin rm cordova-plugin-nabto
-
-cordova plugin add ~/git/cordova-plugin-nabto
-cordova plugin add ~/git/cordova-plugin-nabto-tests
-
-echo 'OTHER_LDFLAGS = -force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++' >> platforms/ios/cordova/build.xcconfig
-
-cordova build ios
-cordova emulate ios
-```
 
