@@ -21,11 +21,13 @@ import java.util.HashMap;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 import android.R;
 import android.util.Log;
+import android.util.Base64;
 
 public class Nabto extends CordovaPlugin {
     private static final int NABTO_ERROR_MISSING_PREPARE = 2000068; 
@@ -122,13 +124,19 @@ public class Nabto extends CordovaPlugin {
         }
         // Nabto Stream API
         else if (action.equals("streamOpen")) {
-            stream(args.getString(0), callbackContext);
+            streamOpen(args.getString(0), callbackContext);
         }
         else if (action.equals("streamClose")) {
-            stream(args.getString(0), callbackContext);
+            streamClose(args.getString(0), callbackContext);
+        }
+        else if (action.equals("streamConnectionType")) {
+            streamConnectionType(args.getString(0), callbackContext);
         }
         else if (action.equals("streamWrite")) {
-            stream(args.getString(0), callbackContext);
+            streamWrite(args.getString(0), args.getString(1), callbackContext);
+        }
+        else if (action.equals("streamStartReading")) {
+            streamStartReading(args.getString(0), callbackContext);
         }
         // Nabto Tunnel API
         else if (action.equals("tunnelOpenTcp")) {
@@ -641,14 +649,13 @@ public class Nabto extends CordovaPlugin {
                     //TODO: MAY NEED TO CALL streamSetOption()
                     if (stream.getStatus() == NabtoStatus.OK) {
                         String handle = stream.getHandle().toString();
-                        stream.open();
                         synchronized(this) {
                             streams.put(handle, stream);
                         }
                         cc.success(handle);
+                    } else {
+                        cc.error(stream.getStatus().ordinal());
                     }
-                } else {
-                    cc.error(status.ordinal());
                 }
             });
     }
@@ -692,26 +699,27 @@ public class Nabto extends CordovaPlugin {
                             stream = streams.get(streamHandle);
                         }
                         if (stream == null) {
-                            PluginResult res = new PluginResult(PluginResult.Status.OK);
-                            callbacks.sendPluginResult(res);
+                            PluginResult res = new PluginResult(PluginResult.Status.ERROR, NabtoStatus.STREAM_CLOSED.ordinal());
+                            cc.sendPluginResult(res);
                             return;
                         } else {
                             StreamReadResult result = nabto.streamRead(stream);
                             if (result.getStatus() != NabtoStatus.OK) {
-                                PluginResult res = new PluginResult(PluginResult.Status.FAIL, result);
-                                callbacks.sendPluginResult(res);
+                                PluginResult res = new PluginResult(PluginResult.Status.ERROR, result.getStatus().ordinal());
+                                cc.sendPluginResult(res);
                                 return;
                             } else {
-                                PluginResult res = new PluginResult(PluginResult.Status.OK, result);
+                                String base64Encoded = Base64.encodeToString(result.getData(), Base64.DEFAULT);
+                                PluginResult res = new PluginResult(PluginResult.Status.OK, base64Encoded);
                                 res.setKeepCallback(true);
-                                callbacks.sendPluginResult(res);
+                                cc.sendPluginResult(res);
                             }
                         }
                     }
                 }
             });
     }
-    private void streamWrite(final String streamHandle, final byte[] data, final CallbackContext cc) {
+    private void streamWrite(final String streamHandle, final String data, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
@@ -721,11 +729,11 @@ public class Nabto extends CordovaPlugin {
                     }
                     Stream stream = streams.get(streamHandle);
                     if (stream != null) {
-                        NabtoStatus status = nabto.streamWrite(stream, data);
+                        NabtoStatus status = nabto.streamWrite(stream, Base64.decode(data, Base64.DEFAULT));
                         if (status == NabtoStatus.OK) {
                             cc.success();
                         } else {
-                            cc.error(status.ordina());
+                            cc.error(status.ordinal());
                         }
                     } else {
                         cc.error(NabtoStatus.INVALID_STREAM.ordinal());
@@ -736,7 +744,7 @@ public class Nabto extends CordovaPlugin {
     }
 
     // should also take a reference for the stream for which to get connection type
-    private void streamConnectionType(final CallbackContext cc) {
+    private void streamConnectionType(final String streamHandle, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
@@ -747,7 +755,7 @@ public class Nabto extends CordovaPlugin {
                     Stream stream = streams.get(streamHandle);
                     if (stream != null) {
                         NabtoConnectionType type = nabto.streamConnectionType(stream);
-                        cc.success(type);
+                        cc.success(type.ordinal());
                     } else {
                         cc.error(NabtoStatus.INVALID_STREAM.ordinal());
                         return;

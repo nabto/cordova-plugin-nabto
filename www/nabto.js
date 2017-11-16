@@ -119,6 +119,32 @@ Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
   invokeNabto('rpcSetInterface', [host, interfaceXml], cb);
 };
 
+// STREAM API //
+Nabto.prototype.streamOpen = function(host, cb) {
+  invokeNabto('streamOpen', [host], cb);
+};
+
+Nabto.prototype.streamClose = function(stream, cb) {
+  invokeNabto('streamClose', [stream], cb);
+};
+
+Nabto.prototype.streamConnectionType = function(stream, cb) {
+  invokeNabto('streamConnectionType', [stream], cb);
+};
+
+Nabto.prototype.streamWrite = function(stream, data, cb) {
+  var string = Base64Binary.encode(data);
+  invokeNabto('streamWrite', [stream, string], cb);
+};
+
+Nabto.prototype.streamStartReading = function(stream, data, cb) {
+  var string = Base64Binary.encode(data);
+  invokeNabto('streamWrite', [stream, string], function(error, result){
+
+  });
+  cb(undefined, NabtoConstants.ClientApiErrors.OK);
+};
+
 Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
   cb = cb || function() {};
   var portNum = parseInt(port, 10);
