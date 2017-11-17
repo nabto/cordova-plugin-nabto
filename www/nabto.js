@@ -133,16 +133,24 @@ Nabto.prototype.streamConnectionType = function(stream, cb) {
 };
 
 Nabto.prototype.streamWrite = function(stream, data, cb) {
-  var string = Base64Binary.encode(data);
+  var string = btoa(data);
   invokeNabto('streamWrite', [stream, string], cb);
 };
 
-Nabto.prototype.streamStartReading = function(stream, data, cb) {
-  var string = Base64Binary.encode(data);
-  invokeNabto('streamWrite', [stream, string], function(error, result){
-
-  });
-  cb(undefined, NabtoConstants.ClientApiErrors.OK);
+Nabto.prototype.streamStartReading = function(stream, cb) {
+  exec(
+    function success(result) {
+      var string = atob(result);
+      console.log("Received: " + string);
+      var evt = new CustomEvent("NabtoStreamEvent", {detail: {data: string}, bubbles: true, cancelable: true});
+      document.dispatchEvent(evt);
+    },
+    function error(apiStatus) {
+      console.log("ERROR: " + apiStatus);
+    },
+    'Nabto', 'streamStartReading', [stream]
+  );
+  nextTick(cb, undefined);
 };
 
 Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
