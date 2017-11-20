@@ -635,19 +635,13 @@ public class Nabto extends CordovaPlugin {
     }
 
     /* Nabto Stream API */
-
-    /* streamOpen opens a stream and returns a handle.
-       Data can then be written using streamWrite().
-       Data reading can be started by calling streamStartReading(),
-       and then listening for the nabtoStreamEvent.
-    */
     private void streamOpen(final String host, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
                     Stream stream = nabto.streamOpen(host, session);
-                    //TODO: MAY NEED TO CALL streamSetOption()
                     if (stream.getStatus() == NabtoStatus.OK) {
+                        NabtoStatus status = nabto.streamSetOption(stream, NabtoStreamOption.SEND_TIMEOUT, -1);
                         String handle = stream.getHandle().toString();
                         synchronized(this) {
                             streams.put(handle, stream);

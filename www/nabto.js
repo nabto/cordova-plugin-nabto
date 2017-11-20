@@ -141,12 +141,18 @@ Nabto.prototype.streamStartReading = function(stream, cb) {
   exec(
     function success(result) {
       var string = atob(result);
-      console.log("Received: " + string);
-      var evt = new CustomEvent("NabtoStreamEvent", {detail: {data: string}, bubbles: true, cancelable: true});
+      var len  = string.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++){
+        bytes[i] = string.charCodeAt(i);
+      }
+      var evt = new CustomEvent("NabtoStreamEvent", {detail: {data: bytes}, bubbles: true, cancelable: true});
       document.dispatchEvent(evt);
     },
     function error(apiStatus) {
-      console.log("ERROR: " + apiStatus);
+      var err = new NabtoError(NabtoError.Category.API, apiStatus);
+      var evt = new CustomEvent("NabtoStreamEvent", {detail: {error: err}, bubbles: true, cancelable: true});
+      document.dispatchEvent(evt);
     },
     'Nabto', 'streamStartReading', [stream]
   );

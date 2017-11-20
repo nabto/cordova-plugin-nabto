@@ -64,7 +64,15 @@ NabtoError.Code.API_SERVER_LOGIN_FAILURE        = 2007;
 NabtoError.Code.API_CERT_SAVING_FAILURE         = 2009;
 NabtoError.Code.API_ADDRESS_IN_USE              = 2010;
 NabtoError.Code.API_INVALID_ADDRESS             = 2011;
+NabtoError.Code.API_CONNECT_TO_HOST_FAILED      = 2013;
+NabtoError.Code.API_STREAMING_UNSUPPORTED       = 2014;
+NabtoError.Code.API_INVALID_STREAM              = 2015;
+NabtoError.Code.API_DATA_PENDING                = 2016;
+NabtoError.Code.API_BUFFER_FULL                 = 2017;
 NabtoError.Code.API_INVALID_TUNNEL              = 2019;
+NabtoError.Code.API_INVALID_STREAM_OPTION       = 2022;
+NabtoError.Code.API_INVALID_STREAM_OPTION_ARGUMENT = 2023;
+NabtoError.Code.API_STREAM_CLOSED               = 2025;
 NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE    = 2026;
 NabtoError.Code.API_ERROR                       = 2100;
 
@@ -121,7 +129,15 @@ NabtoError.Message[NabtoError.Code.API_SERVER_LOGIN_FAILURE]     = "The specifie
 NabtoError.Message[NabtoError.Code.API_CERT_SAVING_FAILURE]      = "The keypair could not be saved";
 NabtoError.Message[NabtoError.Code.API_ADDRESS_IN_USE]           = "The email address is already registered with the user management server";
 NabtoError.Message[NabtoError.Code.API_INVALID_ADDRESS]          = "The email address is invalid";
+NabtoError.Message[NabtoError.Code.API_CONNECT_TO_HOST_FAILED]   = "Failed to connect to host";
+NabtoError.Message[NabtoError.Code.API_STREAMING_UNSUPPORTED]    = "Streaming is not supported";
+NabtoError.Message[NabtoError.Code.API_INVALID_STREAM]           = "The provided stream is invalid";
+NabtoError.Message[NabtoError.Code.API_DATA_PENDING]             = "There is pending data on the stream";
+NabtoError.Message[NabtoError.Code.API_BUFFER_FULL]              = "The Nabto stream buffer is full";
 NabtoError.Message[NabtoError.Code.API_INVALID_TUNNEL]           = "Tunnel could not be opened - or invalid tunnel handle specified";
+NabtoError.Message[NabtoError.Code.API_INVALID_STREAM_OPTION]    = "Stream option was invalid";
+NabtoError.Message[NabtoError.Code.API_INVALID_STREAM_OPTION_ARGUMENT] = "Stream option argument was invalid";
+NabtoError.Message[NabtoError.Code.API_STREAM_CLOSED]            = "The accessed stream was closed";
 NabtoError.Message[NabtoError.Code.API_FAILED_WITH_JSON_MESSAGE] = "JSON object contains error message";
 NabtoError.Message[NabtoError.Code.API_ERROR]                    = "An API error occurred";		    
 
@@ -243,6 +259,26 @@ NabtoError.prototype.handleApiError = function(status, innerError) {
     this.code = NabtoError.Code.API_INVALID_ADDRESS;
     break;
 
+  case NabtoConstants.ClientApiErrors.CONNECT_TO_HOST_FAILED:
+    this.code = NabtoError.Code.API_CONNECT_TO_HOST_FAILED;
+    break;
+ 
+  case NabtoConstants.ClientApiErrors.STREAMING_UNSUPPORTED:
+    this.code = NabtoError.Code.API_STREAMING_UNSUPPORTED;
+    break;
+ 
+  case NabtoConstants.ClientApiErrors.INVALID_STREAM:
+    this.code = NabtoError.Code.API_INVALID_STREAM;
+    break;
+
+  case NabtoConstants.ClientApiErrors.DATA_PENDING:
+    this.code = NabtoError.Code.API_DATA_PENDING;
+    break;
+
+  case NabtoConstants.ClientApiErrors.BUFFER_FULL:
+    this.code = NabtoError.Code.API_BUFFER_FULL;
+    break;
+
   case NabtoConstants.ClientApiErrors.PORTAL_LOGIN_FAILURE:
     this.code = NabtoError.Code.API_SERVER_LOGIN_FAILURE;
     break;
@@ -262,6 +298,18 @@ NabtoError.prototype.handleApiError = function(status, innerError) {
 
   case NabtoConstants.ClientApiErrors.FAILED:
     this.code = NabtoError.Code.API_ERROR;
+    break;
+
+  case NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION:
+    this.code = NabtoError.Code.API_INVALID_STREAM_OPTION;
+    break;
+
+  case NabtoConstants.ClientApiErrors.INVALID_STREAM_OPTION_ARGUMENT:
+    this.code = NabtoError.Code.API_INVALID_STREAM_OPTION_ARGUMENT;
+    break;
+
+  case NabtoConstants.ClientApiErrors.STREAM_CLOSED:
+    this.code = NabtoError.Code.API_STREAM_CLOSED;
     break;
 
   case NabtoConstants.ClientApiErrors.FAILED_WITH_JSON_MESSAGE:
