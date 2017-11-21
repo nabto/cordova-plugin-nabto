@@ -121,6 +121,10 @@ Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
 
 // STREAM API //
 Nabto.prototype.streamOpen = function(host, cb) {
+  if (!host || host.length == 0) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
   invokeNabto('streamOpen', [host], cb);
 };
 
