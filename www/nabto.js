@@ -137,7 +137,7 @@ Nabto.prototype.streamWrite = function(stream, data, cb) {
   invokeNabto('streamWrite', [stream, string], cb);
 };
 
-Nabto.prototype.streamStartReading = function(stream, cb) {
+Nabto.prototype.streamRead = function(stream, cb) {
   exec(
     function success(result) {
       var string = atob(result);
@@ -146,17 +146,13 @@ Nabto.prototype.streamStartReading = function(stream, cb) {
       for (var i = 0; i < len; i++){
         bytes[i] = string.charCodeAt(i);
       }
-      var evt = new CustomEvent("NabtoStreamEvent", {detail: {data: bytes}, bubbles: true, cancelable: true});
-      document.dispatchEvent(evt);
+      cb(undefined, bytes);
     },
     function error(apiStatus) {
-      var err = new NabtoError(NabtoError.Category.API, apiStatus);
-      var evt = new CustomEvent("NabtoStreamEvent", {detail: {error: err}, bubbles: true, cancelable: true});
-      document.dispatchEvent(evt);
+      cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'streamStartReading', [stream]
+    'Nabto', 'streamRead', [stream]
   );
-  nextTick(cb, undefined);
 };
 
 Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
