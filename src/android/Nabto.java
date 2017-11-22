@@ -34,7 +34,7 @@ public class Nabto extends CordovaPlugin {
     private NabtoApi nabto = null;
     private Session session;
     private Map<String, Tunnel> tunnels;
-    private static volatile Map<String, Stream> streams;
+    private Map<String, CordovaStream> streams;
 
     private boolean adShown = false;
     private long timerStart = 0;
@@ -45,7 +45,7 @@ public class Nabto extends CordovaPlugin {
         deviceCache = new ArrayList<String>();
         adService = new AdService();
         tunnels = new HashMap<String, Tunnel>();
-        streams = new HashMap<String, Stream>();
+        streams = new HashMap<String, CordovaStream>();
     }
 
     /**
@@ -135,7 +135,7 @@ public class Nabto extends CordovaPlugin {
             streamWrite(args.getString(0), args.getString(1), callbackContext);
         }
         else if (action.equals("streamRead")) {
-            streamRead(args.getString(0), callbackContext);
+            streamRead(args.getString(0), args.getInt(1), callbackContext);
         }
         // Nabto Tunnel API
         else if (action.equals("tunnelOpenTcp")) {
@@ -389,6 +389,8 @@ public class Nabto extends CordovaPlugin {
                 nabto = null;
                 session = null;
                 deviceCache.clear();
+                streams.clear();
+                tunnels.clear();
                 adShown = false;
                 cc.success();
             }
@@ -638,13 +640,20 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    Stream stream = nabto.streamOpen(host, session);
-                    if (stream.getStatus() == NabtoStatus.OK) {
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    
+                    CordovaStream stream = new CordovaStream(nabto);
+                    NabtoStatus status = stream.open(host, session);
+
+                    if (status == NabtoStatus.OK) {
                         String handle = stream.getHandle().toString();
                         streams.put(handle, stream);
                         cc.success(handle);
                     } else {
-                        cc.error(stream.getStatus().ordinal());
+                        cc.error(status.ordinal());
                     }
                 }
             });
@@ -658,9 +667,9 @@ public class Nabto extends CordovaPlugin {
                         cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
                         return;
                     }
-                    Stream stream = streams.get(streamHandle);
+                    CordovaStream stream = streams.get(streamHandle);
                     if (stream != null) {
-                        NabtoStatus status = nabto.streamClose(stream);
+                        NabtoStatus status = stream.close();
                         if (status == NabtoStatus.OK) {
                             streams.remove(stream);
                             cc.success();
@@ -675,16 +684,20 @@ public class Nabto extends CordovaPlugin {
             });
     }
 
-    private void streamRead(final String streamHandle, final CallbackContext cc) {
+    private void streamRead(final String streamHandle, final int bytes, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    Stream stream = streams.get(streamHandle);
+                    if (nabto == null) {
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    CordovaStream stream = streams.get(streamHandle);
                     if (stream == null) {
                         cc.error(NabtoStatus.STREAM_CLOSED.ordinal());
                         return;
                     } else {
-                        StreamReadResult result = nabto.streamRead(stream);
+                        StreamReadResult result = stream.read(bytes);
                         if (result.getStatus() != NabtoStatus.OK) {
                             cc.error(result.getStatus().ordinal());
                             return;
@@ -705,9 +718,9 @@ public class Nabto extends CordovaPlugin {
                         cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
                         return;
                     }
-                    Stream stream = streams.get(streamHandle);
+                    CordovaStream stream = streams.get(streamHandle);
                     if (stream != null) {
-                        NabtoStatus status = nabto.streamWrite(stream, Base64.decode(data, Base64.DEFAULT));
+                        NabtoStatus status = stream.write(Base64.decode(data, Base64.DEFAULT));
                         if (status == NabtoStatus.OK) {
                             cc.success();
                         } else {
@@ -729,9 +742,9 @@ public class Nabto extends CordovaPlugin {
                         cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
                         return;
                     }
-                    Stream stream = streams.get(streamHandle);
+                    CordovaStream stream = streams.get(streamHandle);
                     if (stream != null) {
-                        NabtoConnectionType type = nabto.streamConnectionType(stream);
+                        NabtoConnectionType type = stream.connectionType();
                         cc.success(type.ordinal());
                     } else {
                         cc.error(NabtoStatus.INVALID_STREAM.ordinal());

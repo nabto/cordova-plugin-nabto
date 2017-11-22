@@ -141,7 +141,7 @@ Nabto.prototype.streamWrite = function(stream, data, cb) {
   invokeNabto('streamWrite', [stream, string], cb);
 };
 
-Nabto.prototype.streamRead = function(stream, cb) {
+Nabto.prototype.streamRead = function(stream, reqLen, cb) {
   exec(
     function success(result) {
       var string = atob(result);
@@ -155,7 +155,7 @@ Nabto.prototype.streamRead = function(stream, cb) {
     function error(apiStatus) {
       cb(new NabtoError(NabtoError.Category.API, apiStatus));
     },
-    'Nabto', 'streamRead', [stream]
+    'Nabto', 'streamRead', [stream, reqLen]
   );
 };
 

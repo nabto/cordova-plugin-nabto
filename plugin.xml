@@ -39,6 +39,7 @@
 	<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
 	<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
 	<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
+	<source-file src="src/android/CordovaStream.java" target-dir="src/com/nabto/api" />
         
         <!-- when working on android client along with cordova plugin, copy            -->
         <!-- git/cordova-plugin-nabto/src/main/java/com/nabto/api to ./src/android/api -->
