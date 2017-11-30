@@ -14,6 +14,10 @@
         <clobbers target="nabto"/>
     </js-module>
 
+    <js-module src="www/nabto-experimental.js" name="nabtoExp">
+        <clobbers target="nabtoExp"/>
+    </js-module>
+
     <js-module src="www/nabto-constants.js" name="NabtoConstants">
         <clobbers target="window.NabtoConstants"/>
     </js-module>

@@ -119,45 +119,6 @@ Nabto.prototype.rpcSetInterface = function(host, interfaceXml, cb) {
   invokeNabto('rpcSetInterface', [host, interfaceXml], cb);
 };
 
-// STREAM API //
-Nabto.prototype.streamOpen = function(host, cb) {
-  if (!host || host.length == 0) {
-    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
-    return;
-  }
-  invokeNabto('streamOpen', [host], cb);
-};
-
-Nabto.prototype.streamClose = function(stream, cb) {
-  invokeNabto('streamClose', [stream], cb);
-};
-
-Nabto.prototype.streamConnectionType = function(stream, cb) {
-  invokeNabto('streamConnectionType', [stream], cb);
-};
-
-Nabto.prototype.streamWrite = function(stream, data, cb) {
-  var string = btoa(data);
-  invokeNabto('streamWrite', [stream, string], cb);
-};
-
-Nabto.prototype.streamRead = function(stream, reqLen, cb) {
-  exec(
-    function success(result) {
-      var string = atob(result);
-      var len  = string.length;
-      var bytes = new Uint8Array(len);
-      for (var i = 0; i < len; i++){
-        bytes[i] = string.charCodeAt(i);
-      }
-      cb(undefined, bytes);
-    },
-    function error(apiStatus) {
-      cb(new NabtoError(NabtoError.Category.API, apiStatus));
-    },
-    'Nabto', 'streamRead', [stream, reqLen]
-  );
-};
 
 Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
   cb = cb || function() {};
