@@ -12,6 +12,11 @@ the release and a new unreleased section is added.
 
 ## 2.5.0 Unreleased
 
+## 2.4.4 2018-01-11
+
+## Changed
+- Fix for compile error for android studio 3
+
 ## 2.4.1 2017-10-10
 
 ### Changed
