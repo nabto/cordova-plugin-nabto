@@ -19,6 +19,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         instance_ = [[self alloc] init];
+        instance_->session_ = nil;
     });
     return instance_;
 }
@@ -28,7 +29,7 @@ void simulatorSymlinkDocDir() {
     NSString* homeDirectory = [[NSProcessInfo processInfo] environment][@"SIMULATOR_HOST_HOME"];
     NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
     NSString *documentsDirectoryPath = documentsDirectory.path;
-    NSString *simlinkPath = [homeDirectory stringByAppendingFormat:@"/SimulatorDocuments"];
+    NSString *simlinkPath = [homeDirectory stringByAppendingFormat:@"/NabtoSimulatorDocuments"];
     unlink(simlinkPath.UTF8String);
     symlink(documentsDirectoryPath.UTF8String, simlinkPath.UTF8String);
 #endif
@@ -66,9 +67,15 @@ void nabtoLogCallback(const char* line, size_t size) {
     NSString* dir = [self getHomeDir];
     nabto_status_t status = nabtoStartup([dir UTF8String]);
     if (status != NABTO_OK) {
-        NSLog(@"Error setting home dir");
+        NSLog(@"Error starting nabto");
         return status;
     }
+    status = nabtoInstallDefaultStaticResources([dir UTF8String]);
+    if (status != NABTO_OK) {
+        NSLog(@"Error installing resources");
+        return status;
+    }
+
     nabtoSetOption("dnsHints", "stun.nabto.net,global.cloud.nabto.com,cn-north-1.cloud.nabto.com");
 
 #if NABTOLOG
@@ -121,9 +128,7 @@ void nabtoLogCallback(const char* line, size_t size) {
 }
 
 - (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password {
-    @synchronized (self) {
-        return nabtoOpenSession(&session_, [email UTF8String], [password UTF8String]);
-    }
+    return nabtoOpenSession(&session_, [email UTF8String], [password UTF8String]);
 }
 
 - (nabto_status_t)nabtoCreateProfile:(NSString *)email withPassword:(NSString *)password {
@@ -158,47 +163,40 @@ void nabtoLogCallback(const char* line, size_t size) {
 }
 
 - (nabto_status_t)nabtoCloseSession {
-    @synchronized (self) {
-        return nabtoCloseSession(session_);
-        session_ = nil;
+    if (session_) {
+        nabto_status_t res = nabtoCloseSession(session_);
+        if (res == NABTO_OK) {
+            session_ = nil;
+        }
+        return res;
+    } else {
+        return NABTO_OK;
     }
 }
 
 - (nabto_status_t)nabtoSetBasestationAuthJson:(NSString *)jsonKeyValuePairs {
-    @synchronized (self) {
-        return nabtoSetBasestationAuthJson(session_, [jsonKeyValuePairs UTF8String]);
-    }
+    return nabtoSetBasestationAuthJson(session_, [jsonKeyValuePairs UTF8String]);
 }
 
 - (nabto_status_t)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType {
-    @synchronized (self) {
-        return nabtoFetchUrl(session_, [url UTF8String], resultBuffer, resultLength, mimeType);
-    }
+    return nabtoFetchUrl(session_, [url UTF8String], resultBuffer, resultLength, mimeType);
 }
 
 - (nabto_status_t)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse {
-    @synchronized (self) {
-        return nabtoRpcInvoke(session_, [url UTF8String], jsonResponse);
-    }
+    return nabtoRpcInvoke(session_, [url UTF8String], jsonResponse);
 }
 
 - (nabto_status_t)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
-    @synchronized (self) {
-        return nabtoRpcSetDefaultInterface(session_, [interfaceDefinition UTF8String], errorMessage);
-    }
+    return nabtoRpcSetDefaultInterface(session_, [interfaceDefinition UTF8String], errorMessage);
 }
 
 
 - (nabto_status_t)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
-    @synchronized (self) {
-        return nabtoRpcSetInterface(session_, [host UTF8String], [interfaceDefinition UTF8String], errorMessage);
-    }
+    return nabtoRpcSetInterface(session_, [host UTF8String], [interfaceDefinition UTF8String], errorMessage);
 }
 
 - (nabto_status_t)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType {
-    @synchronized (self) {
-        return nabtoSubmitPostData(session_, [url UTF8String], [postBuffer UTF8String], [postBuffer length], "", resultBuffer, resultLen, mimeType);
-    }
+    return nabtoSubmitPostData(session_, [url UTF8String], [postBuffer UTF8String], [postBuffer length], "", resultBuffer, resultLen, mimeType);
 }
 
 - (NSArray *)nabtoGetLocalDevices {
@@ -223,20 +221,16 @@ void nabtoLogCallback(const char* line, size_t size) {
     const size_t size = 64;
     char buffer[size+1];
     size_t resLen;
-    @synchronized (self) {
-        if (nabtoGetSessionToken(session_, buffer, size, &resLen) == NABTO_OK && resLen <= size) {
-            buffer[resLen] = 0;
-            return [NSString stringWithCString:buffer encoding:NSASCIIStringEncoding];
-        } else {
-            return NULL;
-        }
+    if (nabtoGetSessionToken(session_, buffer, size, &resLen) == NABTO_OK && resLen <= size) {
+        buffer[resLen] = 0;
+        return [NSString stringWithCString:buffer encoding:NSASCIIStringEncoding];
+    } else {
+        return NULL;
     }
 }
 
 - (nabto_status_t)nabtoTunnelOpenTcp:(nabto_tunnel_t *)handle toHost:(NSString *)host onPort:(int)port {
-    @synchronized (self) {
-        return nabtoTunnelOpenTcp(handle, session_, 0, [host UTF8String], "127.0.0.1", port);
-    }
+    return nabtoTunnelOpenTcp(handle, session_, 0, [host UTF8String], "127.0.0.1", port);
 }
 
 - (int)nabtoTunnelVersion:(nabto_tunnel_t)handle {

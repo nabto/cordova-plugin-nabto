@@ -12,6 +12,11 @@ the release and a new unreleased section is added.
 
 ## 2.5.0 Unreleased
 
+## 2.4.5 2018-04-05
+
+## Changed
+- Fix iOS problem where session could not be closed while waiting for RPC invoke to timeout.
+
 ## 2.4.4 2018-01-11
 
 ## Changed

@@ -184,9 +184,13 @@
 - (void)shutdown:(CDVInvokedUrlCommand*)command {
     [[AdManager instance] clear];
     [self.commandDelegate runInBackground:^{
-            nabto_status_t status = [[NabtoClient instance] nabtoShutdown];
+            NSLog(@"Shutting down - first closing session");
+            nabto_status_t status = [[NabtoClient instance] nabtoCloseSession];
+            NSLog(@"Closed session, status is %d, shutting down", status);
+            status = [[NabtoClient instance] nabtoShutdown];
+            NSLog(@"Invoked nabtoShutdown, status is x %d", status);
             [self handleStatus:status withCommand:command];
-    }];
+        }];
 }
 
 - (void)fetchUrl:(CDVInvokedUrlCommand*)command {
