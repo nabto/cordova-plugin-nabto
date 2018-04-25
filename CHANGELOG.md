@@ -12,6 +12,11 @@ the release and a new unreleased section is added.
 
 ## 2.5.0 Unreleased
 
+## 2.4.6 2018-04-25
+
+## Changed
+- Added missing iOS simulator architectures.
+
 ## 2.4.5 2018-04-05
 
 ## Changed
