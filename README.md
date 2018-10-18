@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.4
+# Cordova Plugin Nabto - 2.5
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
