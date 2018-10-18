@@ -10,21 +10,27 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 2.5.0 Unreleased
+## 2.6.0 Unreleased
+### Changed
+
+## 2.5.0 2018-10-17
+
+### Changed
+- Wrap native Nabto Client SDK 4.3.0
 
 ## 2.4.6 2018-04-25
 
-## Changed
+### Changed
 - Added missing iOS simulator architectures.
 
 ## 2.4.5 2018-04-05
 
-## Changed
+### Changed
 - Fix iOS problem where session could not be closed while waiting for RPC invoke to timeout.
 
 ## 2.4.4 2018-01-11
 
-## Changed
+### Changed
 - Fix for compile error for android studio 3
 
 ## 2.4.1 2017-10-10
