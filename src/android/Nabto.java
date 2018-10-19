@@ -13,10 +13,10 @@ import android.content.Context;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -28,7 +28,7 @@ import android.R;
 import android.util.Log;
 
 public class Nabto extends CordovaPlugin {
-    private static final int NABTO_ERROR_MISSING_PREPARE = 2000068; 
+    private static final int NABTO_ERROR_MISSING_PREPARE = 2000068;
     private static final int GRACEPERIOD = 300; // seconds
     private NabtoApi nabto = null;
     private Session session;
@@ -37,12 +37,14 @@ public class Nabto extends CordovaPlugin {
     private boolean adShown = false;
     private long timerStart = 0;
     private AdService adService;
-    private List<String> deviceCache;
-    
+    private Set<String> deviceCache;
+
+    private Integer initMutex = new Integer(0);
+
     public Nabto() {
-        deviceCache = new ArrayList<String>();
+        deviceCache = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
         adService = new AdService();
-        tunnels = new HashMap<String, Tunnel>();
+        tunnels = new ConcurrentHashMap<String, Tunnel>();
     }
 
     /**
@@ -156,7 +158,7 @@ public class Nabto extends CordovaPlugin {
                         Log.d("prepareInvoke", "prepareInvoke was called with empty device list");
                         return;
                     }
-                    
+
                     for (int i = 0; i< jsonDevices.length(); i++){
                         try{
                             //Log.d("prepareInvoke","jsonDevices[" + i + "]: " + jsonDevices.get(i).toString());
@@ -165,7 +167,7 @@ public class Nabto extends CordovaPlugin {
                             Log.w("prepareInvoke","Nabto.java: Failed to get jsonDevice, bad JSON syntax, skipping device");
                             continue;
                         }
-            
+
                         // Checking if free, own-it or not AMP. We should agree how to define free and own-it in url
                         if (dev.matches("^[\\w]+\\.[\\w]{5}f(\\.[\\w]+)*$")){
                             Log.d("prepareInvoke","found free device: " + dev);
@@ -177,13 +179,13 @@ public class Nabto extends CordovaPlugin {
                             deviceCache.add(dev);
                         }
                     }
-        
+
                     if (timerStart != 0) {
                         // an ad has been shown earlier - if within graceperiod, do not show again
                         if (System.currentTimeMillis()-timerStart < GRACEPERIOD*1000){
                             Log.d("prepareInvoke","Invoking grace period");
                             adShown = true;
-                        } 
+                        }
                     }
                     if(showAdFlag == true && adShown == false){
                         adService.showAd(cordova.getActivity(), webView.getContext());
@@ -201,156 +203,171 @@ public class Nabto extends CordovaPlugin {
         Log.d("startup", "Nabto startup begins");
         final Context context = cordova.getActivity().getApplicationContext();
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto != null) {
-                    Log.d("startup", "Nabto was already started");
-                    cc.success();
-                    return;
+                @Override
+                public void run() {
+                    synchronized(initMutex) {
+                        if (nabto != null) {
+                            Log.d("startup", "Nabto was already started");
+                            cc.success();
+                            return;
+                        }
+                        nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
+                        nabto.startup();
+                        Log.d("startup", "Nabto started");
+                        cc.success();
+                    }
                 }
-                nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
-                nabto.startup();
-                Log.d("startup", "Nabto started");
-                cc.success();
-            }
-        });
+            });
     }
+
     private void startupAndOpenProfile(final String user, final String pass, final CallbackContext cc) {
         Log.d("startupAndOpenProfile", "Nabto startupAndOpenProfile begins");
         final Context context = cordova.getActivity().getApplicationContext();
 
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null){
-                    nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
-                }
-                NabtoStatus status = nabto.startup();
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
+                @Override
+                public void run() {
+                    synchronized(initMutex) {
+                        if (nabto == null){
+                            nabto = new NabtoApi(new NabtoAndroidAssetManager(context));
+                        }
+                        NabtoStatus status = nabto.startup();
+                        if (status != NabtoStatus.OK) {
+                            cc.error(status.ordinal());
+                            return;
+                        }
 
-                if (session != null) {
-                    cc.success();
-                    return;
-                }
+                        if (session != null) {
+                            cc.success();
+                            return;
+                        }
 
-                session = nabto.openSession(user, pass);
+                        session = nabto.openSession(user, pass);
 
-                if (session.getStatus() != NabtoStatus.OK) {
-                    cc.error(session.getStatus().ordinal());
-                    session = null;
-                } else {
-                    cc.success();
+                        if (session.getStatus() != NabtoStatus.OK) {
+                            cc.error(session.getStatus().ordinal());
+                            session = null;
+                        } else {
+                            cc.success();
+                        }
+                    }
                 }
+            });
+    }
+
+    private NabtoApi getNabto(final CallbackContext cc) {
+        NabtoApi res;
+        synchronized(initMutex) {
+            res = nabto;
+            if (res == null) {
+                cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
             }
-        });
+        }
+        return res;
     }
 
     private void signup(final String user, final String pass, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    NabtoStatus status = initializedNabto.signup(user, pass);
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                NabtoStatus status = nabto.signup(user, pass);
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
+            });
     }
 
     private void resetAccountPassword(final String user, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    NabtoStatus status = initializedNabto.resetAccountPassword(user);
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                NabtoStatus status = nabto.resetAccountPassword(user);
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
+            });
     }
 
     private void createSignedKeyPair(final String user, final String pass, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    NabtoStatus status = initializedNabto.createProfile(user, pass);
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                NabtoStatus status = nabto.createProfile(user, pass);
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
+            });
     }
 
     private void createKeyPair(final String user, final String pass, final CallbackContext cc) {
-        cordova.getThreadPool().execute(new Runnable(){
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    NabtoStatus status = initializedNabto.createSelfSignedProfile(user, pass);
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                NabtoStatus status = nabto.createSelfSignedProfile(user, pass);
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
-            
+            });
     }
 
     private void removeKeyPair(final String user, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable(){
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    NabtoStatus status = initializedNabto.removeProfile(user);
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                NabtoStatus status = nabto.removeProfile(user);
-                if (status != NabtoStatus.OK) {
-                    cc.error(status.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
-            
+            });
+
     }
 
     private void getFingerprint(final String certId, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run(){
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
                     String[] fingerprint = new String[1];
                     fingerprint[0] = "";
-                    NabtoStatus status = nabto.getFingerprint(certId,fingerprint);
+                    NabtoStatus status = initializedNabto.getFingerprint(certId,fingerprint);
                     if (status != NabtoStatus.OK) {
                         cc.error(status.ordinal());
                         return;
@@ -359,31 +376,41 @@ public class Nabto extends CordovaPlugin {
                 }
             });
     }
-    
+
     private void shutdown(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if(nabto != null){
-                    nabto.shutdown();
+                @Override
+                public void run() {
+                    synchronized(initMutex) {
+                        Log.d("shutdown", "shutdown begins");
+                        if(nabto != null){
+                            nabto.shutdown();
+                            Log.d("shutdown", "shutdown done");
+                        }
+                        nabto = null;
+                        session = null;
+                        deviceCache.clear();
+                        adShown = false;
+                        cc.success();
+                    }
                 }
-                nabto = null;
-                session = null;
-                deviceCache.clear();
-                adShown = false;
-                cc.success();
-            }
-        });
+            });
     }
-    
+
     private void setBasestationAuthJson(final String authJson, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (session == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                        return;
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
                     }
                     String json;
                     if (authJson.length() > 0) {
@@ -392,7 +419,7 @@ public class Nabto extends CordovaPlugin {
                         // we interpret javascript empty string as user's intention of resetting auth data
                         json = null;
                     }
-                    NabtoStatus status = nabto.setBasestationAuthJson(json, session);
+                    NabtoStatus status = initializedNabto.setBasestationAuthJson(json, initializedSession);
                     if (status != NabtoStatus.OK) {
                         cc.error(status.ordinal());
                         return;
@@ -400,7 +427,7 @@ public class Nabto extends CordovaPlugin {
                     cc.success();
                 }
             });
-            
+
     }
 
     private void setStaticResourceDir(final String dir, final CallbackContext cc) {
@@ -408,11 +435,11 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
-                    NabtoStatus status = nabto.setStaticResourceDir(dir);
+                    NabtoStatus status = initializedNabto.setStaticResourceDir(dir);
                     if (status != NabtoStatus.OK) {
                         cc.error(status.ordinal());
                         return;
@@ -420,198 +447,219 @@ public class Nabto extends CordovaPlugin {
                     cc.success();
                 }
             });
-            
+
     }
 
     private void fetchUrl(final String url, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (session == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
-                }
-                UrlResult result = nabto.fetchUrl(url, session);
-                if (result.getStatus() != NabtoStatus.OK) {
-                    cc.error(result.getStatus().ordinal());
-                    return;
-                }
+                @Override
+                public void run() {
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
+                    }
+                    UrlResult result = initializedNabto.fetchUrl(url, initializedSession);
+                    if (result.getStatus() != NabtoStatus.OK) {
+                        cc.error(result.getStatus().ordinal());
+                        return;
+                    }
 
-                try {
-                    String stringResult = new String(result.getResult(), "UTF-8");
-                    cc.success(stringResult);
-                } catch (UnsupportedEncodingException e) {
-                    cc.error("Nabto request parse error");
+                    try {
+                        String stringResult = new String(result.getResult(), "UTF-8");
+                        cc.success(stringResult);
+                    } catch (UnsupportedEncodingException e) {
+                        cc.error("Nabto request parse error");
+                    }
                 }
-            }
-        });
+            });
     }
 
     private void rpcInvoke(final String url, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (session == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
-                }
-
-                // looking up the device in the Cache.
-                String dev = url.split("/")[2];
-                //Log.d("rpcInvoke","dev from URL: " + dev);
-                boolean devKnown = false;
-                for (int i = 0; i < deviceCache.size(); i ++){
-                    //Log.d("rpcInvoke","checking: " + deviceCache.get(i));
-                    if(deviceCache.get(i).equals(dev)){
-                        devKnown = true;
-                        break;
+                @Override
+                public void run() {
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
                     }
-                }
-                // If the device is unknown rpcInvoke fails
-                if(!devKnown){
-                    JSONObject error = new JSONObject();
-                    JSONObject root = new JSONObject();
-                    try{
-                        error.put("event",NABTO_ERROR_MISSING_PREPARE);
-                        error.put("header","Unprepared device invoked");
-                        error.put("detail", dev);
-                        error.put("body","rpcInvoke was called with unprepared device: " + dev + ". prepareInvoke must be called before device can be invoked");
-                        root.put("error",error);
-                    } catch (JSONException e){
-                        Log.e("rpcInvoke","could not put JSON error message");
-                        cc.error(NabtoStatus.FAILED.ordinal());
+
+                    // looking up the device in the Cache.
+                    String dev = url.split("/")[2];
+                    //Log.d("rpcInvoke","dev from URL: " + dev);
+                    // If the device is unknown rpcInvoke fails
+                    if (!deviceCache.contains(dev)) {
+                        JSONObject error = new JSONObject();
+                        JSONObject root = new JSONObject();
+                        try{
+                            error.put("event",NABTO_ERROR_MISSING_PREPARE);
+                            error.put("header","Unprepared device invoked");
+                            error.put("detail", dev);
+                            error.put("body","rpcInvoke was called with unprepared device: " + dev + ". prepareInvoke must be called before device can be invoked");
+                            root.put("error",error);
+                        } catch (JSONException e){
+                            Log.e("rpcInvoke","could not put JSON error message");
+                            cc.error(NabtoStatus.FAILED.ordinal());
+                            return;
+                        }
+                        //Log.w("rpcInvoke","root: " + root.toString());
+                        cc.error(root.toString());
                         return;
                     }
-                    //Log.w("rpcInvoke","root: " + root.toString());
-                    cc.error(root.toString());
-                    return;
-                }
-                RpcResult result = nabto.rpcInvoke(url, session);
-                if (result.getStatus() != NabtoStatus.OK) {
-                    if(result.getStatus() == NabtoStatus.FAILED_WITH_JSON_MESSAGE){
-                        cc.error(result.getJson());
-                    } else {
-                        cc.error(result.getStatus().ordinal());
+                    RpcResult result = initializedNabto.rpcInvoke(url, initializedSession);
+                    if (result.getStatus() != NabtoStatus.OK) {
+                        if(result.getStatus() == NabtoStatus.FAILED_WITH_JSON_MESSAGE){
+                            cc.error(result.getJson());
+                        } else {
+                            cc.error(result.getStatus().ordinal());
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                String stringResult = new String(result.getJson());
-                cc.success(stringResult);
-            }
-        });
+                    String stringResult = new String(result.getJson());
+                    cc.success(stringResult);
+                }
+            });
     }
 
     private void rpcSetDefaultInterface(final String interfaceXml, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                if (session == null){
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                public void run() {
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
+                    }
+                    RpcResult result = initializedNabto.rpcSetDefaultInterface(interfaceXml, initializedSession);
+                    if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                RpcResult result = nabto.rpcSetDefaultInterface(interfaceXml, session);
-                if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
-                    
+            });
     }
 
     private void rpcSetInterface(final String host, final String interfaceXml, final CallbackContext cc){
         cordova.getThreadPool().execute(new Runnable(){
-            public void run() {
-                if (session == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                public void run() {
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
+                    }
+                    RpcResult result = initializedNabto.rpcSetInterface(host,interfaceXml, initializedSession);
+                    if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
+                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                        return;
+                    }
+                    cc.success();
                 }
-                RpcResult result = nabto.rpcSetInterface(host,interfaceXml, session);
-                if(result.getStatus() == NabtoStatus.API_NOT_INITIALIZED){
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
-                }
-                cc.success();
-            }
-        });
-                
+            });
+
     }
-    
+
     private void getSessionToken(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
+                    }
+                    String token = initializedNabto.getSessionToken(initializedSession);
+                    cc.success(token);
                 }
-                String token = nabto.getSessionToken(session);
-                cc.success(token);
-            }
-        });
+            });
     }
 
     private void getLocalDevices(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    Collection<String> devices = initializedNabto.getLocalDevices();
+                    JSONArray jsonArray = new JSONArray(devices); //Arrays.asList(devices));
+                    cc.success(jsonArray);
                 }
-                Collection<String> devices = nabto.getLocalDevices();
-                JSONArray jsonArray = new JSONArray(devices); //Arrays.asList(devices));
-                cc.success(jsonArray);
-            }
-        });
+            });
     }
 
     private void version(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    String version = initializedNabto.version();
+                    cc.success(version);
                 }
-                String version = nabto.version();
-                cc.success(version);
-            }
-        });
+            });
     }
 
     private void versionString(final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    String version = initializedNabto.versionString();
+                    cc.success(version);
                 }
-                String version = nabto.versionString();
-                cc.success(version);
-            }
-        });
+            });
     }
 
     private void setOption(final String key, final String value, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                if (nabto == null) {
-                    cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                    return;
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    NabtoStatus status = initializedNabto.setOption(key, value);
+                    if (status == NabtoStatus.OK) {
+                        cc.success();
+                    } else {
+                        cc.error(status.ordinal());
+                        return;
+                    }
                 }
-                NabtoStatus status = nabto.setOption(key, value);
-                if (status == NabtoStatus.OK) {
-                    cc.success();
-                } else {
-                    cc.error(status.ordinal());
-                    return;
-                }
-            }
-        });
+            });
     }
 
 
@@ -621,14 +669,20 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
-                        return;
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
                     }
-                    Tunnel tunnel = nabto.tunnelOpenTcp(0, host, "localhost", port, session);
+                    Tunnel tunnel = initializedNabto.tunnelOpenTcp(0, host, "localhost", port, initializedSession);
                     NabtoStatus status = tunnel.getStatus();
                     if (status == NabtoStatus.OK) {
-                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        TunnelInfoResult info = initializedNabto.tunnelInfo(tunnel);
                         while (info.getStatus() == NabtoStatus.OK &&
                                info.getTunnelState() == NabtoTunnelState.CONNECTING) {
                             try {
@@ -636,7 +690,7 @@ public class Nabto extends CordovaPlugin {
                             } catch (InterruptedException e) {
                                 // ignore
                             }
-                            info = nabto.tunnelInfo(tunnel);
+                            info = initializedNabto.tunnelInfo(tunnel);
                         }
                         if (info.getStatus() == NabtoStatus.OK &&
                             info.getTunnelState() != NabtoTunnelState.CLOSED) {
@@ -663,13 +717,13 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
-                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        TunnelInfoResult info = initializedNabto.tunnelInfo(tunnel);
                         if (info.getStatus() == NabtoStatus.OK) {
                             cc.success(info.getVersion());
                         } else {
@@ -686,13 +740,13 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
-                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        TunnelInfoResult info = initializedNabto.tunnelInfo(tunnel);
                         if (info.getStatus() == NabtoStatus.OK) {
                             cc.success(info.getTunnelState().ordinal());
                         } else {
@@ -704,18 +758,18 @@ public class Nabto extends CordovaPlugin {
                 }
             });
     }
-    
+
     private void tunnelLastError(final String tunnelHandle, final CallbackContext cc) {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
-                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        TunnelInfoResult info = initializedNabto.tunnelInfo(tunnel);
                         if (info.getStatus() == NabtoStatus.OK) {
                             cc.success(info.getLastError());
                         } else {
@@ -732,13 +786,13 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
-                        TunnelInfoResult info = nabto.tunnelInfo(tunnel);
+                        TunnelInfoResult info = initializedNabto.tunnelInfo(tunnel);
                         if (info.getStatus() == NabtoStatus.OK) {
                             cc.success(info.getPort());
                         } else {
@@ -755,13 +809,13 @@ public class Nabto extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    if (nabto == null) {
-                        cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
                         return;
                     }
                     Tunnel tunnel = tunnels.get(tunnelHandle);
                     if (tunnel != null) {
-                        NabtoStatus status = nabto.tunnelClose(tunnel);
+                        NabtoStatus status = initializedNabto.tunnelClose(tunnel);
                         if (status == NabtoStatus.OK) {
                             tunnels.remove(tunnel);
                             cc.success();
