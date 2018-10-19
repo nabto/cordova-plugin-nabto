@@ -13,6 +13,11 @@ the release and a new unreleased section is added.
 ## 2.6.0 Unreleased
 ### Changed
 
+## 2.5.1 2018-10-19
+
+### Changed
+- Fix NABTO-1884 (Android shutdown hangs if connect attempt is in progress, an issue in all plugin versions), fix Android race conditions (issue in version 2.0 and later).
+
 ## 2.5.0 2018-10-17
 
 ### Changed
