@@ -384,6 +384,7 @@ public class Nabto extends CordovaPlugin {
                     synchronized(initMutex) {
                         Log.d("shutdown", "shutdown begins");
                         if(nabto != null){
+                            nabto.closeSession(session);
                             nabto.shutdown();
                             Log.d("shutdown", "shutdown done");
                         }
