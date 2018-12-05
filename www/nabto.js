@@ -43,6 +43,10 @@ Nabto.prototype.setBasestationAuthJson = function(authJson, cb) {
   invokeNabto('setBasestationAuthJson', [authJson], cb);
 };
 
+Nabto.prototype.setLocalConnectionPsk = function(host, pskId, psk, cb) {
+  invokeNabto('setLocalConnectionPsk', [host, pskId, psk], cb);
+};
+
 Nabto.prototype.prepareInvoke = function(devices, cb) {
   invokeNabto('prepareInvoke', [devices], cb);
 };
@@ -131,6 +135,14 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
 
 Nabto.prototype.tunnelClose = function(tunnel, cb) {
   invokeNabto('tunnelClose', [tunnel], cb);
+};
+
+Nabto.prototype.tunnelSetSendWindowSize = function(tunnel, sendWindowSize, cb) {
+  invokeNabto('tunnelSetSendWindowSize', [tunnel, sendWindowSize], cb);
+};
+
+Nabto.prototype.tunnelSetSendWindowSize = function(tunnel, recvWindowSize, cb) {
+  invokeNabto('tunnelSetSendWindowSize', [tunnel, recvWindowSize], cb);
 };
 
 Nabto.prototype.tunnelPort = function(tunnel, cb) {

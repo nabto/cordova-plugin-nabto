@@ -5,6 +5,7 @@
  */
 
 #import "NabtoClient.h"
+#import "NabtoAPI/nabto_client_api.h"
 
 @implementation NabtoClient
 {
@@ -35,6 +36,54 @@ void simulatorSymlinkDocDir() {
 #endif
 }
 
+NabtoClientStatus mapToClientStatus(nabto_status apiStatus) {
+    switch (apiStatus) {
+        case NABTO_OK: return                                 NCS_OK;
+        case NABTO_NO_PROFILE: return                         NCS_NO_PROFILE;
+        case NABTO_ERROR_READING_CONFIG: return               NCS_ERROR_READING_CONFIG;
+        case NABTO_API_NOT_INITIALIZED: return                NCS_API_NOT_INITIALIZED;
+        case NABTO_INVALID_SESSION: return                    NCS_INVALID_SESSION;
+        case NABTO_OPEN_CERT_OR_PK_FAILED: return             NCS_OPEN_CERT_OR_PK_FAILED;
+        case NABTO_UNLOCK_PK_FAILED: return                   NCS_UNLOCK_PK_FAILED;
+        case NABTO_PORTAL_LOGIN_FAILURE: return               NCS_PORTAL_LOGIN_FAILURE;
+        case NABTO_CERT_SIGNING_ERROR: return                 NCS_CERT_SIGNING_ERROR;
+        case NABTO_CERT_SAVING_FAILURE: return                NCS_CERT_SAVING_FAILURE;
+        case NABTO_ADDRESS_IN_USE: return                     NCS_ADDRESS_IN_USE;
+        case NABTO_INVALID_ADDRESS: return                    NCS_INVALID_ADDRESS;
+        case NABTO_NO_NETWORK: return                         NCS_NO_NETWORK;
+        case NABTO_CONNECT_TO_HOST_FAILED: return             NCS_CONNECT_TO_HOST_FAILED;
+        case NABTO_STREAMING_UNSUPPORTED: return              NCS_STREAMING_UNSUPPORTED;
+        case NABTO_INVALID_STREAM: return                     NCS_INVALID_STREAM;
+        case NABTO_DATA_PENDING: return                       NCS_DATA_PENDING;
+        case NABTO_BUFFER_FULL: return                        NCS_BUFFER_FULL;
+        case NABTO_FAILED: return                             NCS_FAILED;
+        case NABTO_INVALID_TUNNEL: return                     NCS_INVALID_TUNNEL;
+        case NABTO_ILLEGAL_PARAMETER: return                  NCS_ILLEGAL_PARAMETER;
+        case NABTO_INVALID_RESOURCE: return                   NCS_INVALID_RESOURCE;
+        case NABTO_INVALID_STREAM_OPTION: return              NCS_INVALID_STREAM_OPTION;
+        case NABTO_INVALID_STREAM_OPTION_ARGUMENT: return     NCS_INVALID_STREAM_OPTION_ARGUMENT;
+        case NABTO_ABORTED: return                            NCS_ABORTED;
+        case NABTO_STREAM_CLOSED: return                      NCS_STREAM_CLOSED;
+        case NABTO_FAILED_WITH_JSON_MESSAGE: return           NCS_FAILED_WITH_JSON_MESSAGE;
+        case NABTO_ERROR_CODE_COUNT: return                   NCS_ERROR_CODE_COUNT;
+        default: assert(!"never here");
+    }
+}
+
+NabtoTunnelState mapToTunnelState(nabto_tunnel_state apiTunnelStatus) {
+    switch (apiTunnelStatus) {
+        case NTCS_CLOSED: return                 NTS_CLOSED;
+        case NTCS_CONNECTING: return             NTS_CONNECTING;
+        case NTCS_READY_FOR_RECONNECT: return    NTS_READY_FOR_RECONNECT;
+        case NTCS_UNKNOWN: return                NTS_UNKNOWN;
+        case NTCS_LOCAL: return                  NTS_LOCAL;
+        case NTCS_REMOTE_P2P: return             NTS_REMOTE_P2P;
+        case NTCS_REMOTE_RELAY: return           NTS_REMOTE_RELAY;
+        case NTCS_REMOTE_RELAY_MICRO: return     NTS_REMOTE_RELAY_MICRO;
+        default: assert(!"never here");
+    }
+}
+
 void nabtoLogCallback(const char* line, size_t size) {
     const size_t interestingStuffStart = 50;
     size_t offset = size > interestingStuffStart ? interestingStuffStart : 0;
@@ -55,10 +104,10 @@ void nabtoLogCallback(const char* line, size_t size) {
     return [documentsDir stringByAppendingPathComponent:@"nabto/"];
 }
 
-- (nabto_status_t)nabtoStartup {
+- (NabtoClientStatus)nabtoStartup {
     @synchronized(self) {
         if (initialized_) {
-            return NABTO_OK;
+            return NCS_OK;
         }
         initialized_ = YES;
     }
@@ -68,12 +117,12 @@ void nabtoLogCallback(const char* line, size_t size) {
     nabto_status_t status = nabtoStartup([dir UTF8String]);
     if (status != NABTO_OK) {
         NSLog(@"Error starting nabto");
-        return status;
+        return mapToClientStatus(status);
     }
     status = nabtoInstallDefaultStaticResources([dir UTF8String]);
     if (status != NABTO_OK) {
         NSLog(@"Error installing resources");
-        return status;
+        return mapToClientStatus(status);
     }
 
     nabtoSetOption("dnsHints", "stun.nabto.net,global.cloud.nabto.com,cn-north-1.cloud.nabto.com");
@@ -82,31 +131,30 @@ void nabtoLogCallback(const char* line, size_t size) {
     nabtoRegisterLogCallback(nabtoLogCallback);
 #endif
 
-    return status;
+    return mapToClientStatus(status);
 }
 
-- (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value {
-    return nabtoSetOption([name UTF8String], [value UTF8String]);
+- (NabtoClientStatus)nabtoSetOption:(NSString *)name withValue:(NSString *)value {
+    return mapToClientStatus(nabtoSetOption([name UTF8String], [value UTF8String]));
 }
 
-- (nabto_status_t)nabtoShutdown {
+- (NabtoClientStatus)nabtoShutdown {
     @synchronized(self) {
         initialized_ = false;
     }
     [self nabtoCloseSession];
-    return nabtoShutdown();
-    return NABTO_OK;
+    return mapToClientStatus(nabtoShutdown());
 }
 
-- (nabto_status_t)nabtoInstallDefaultStaticResources:(NSString *)resourceDir {
+- (NabtoClientStatus)nabtoInstallDefaultStaticResources:(NSString *)resourceDir {
     if (!resourceDir) {
         resourceDir = [self getHomeDir];
     }
-    return nabtoInstallDefaultStaticResources([resourceDir UTF8String]);
+    return mapToClientStatus(nabtoInstallDefaultStaticResources([resourceDir UTF8String]));
 }
 
-- (nabto_status_t)nabtoSetStaticResourceDir:(NSString *)resourceDir {
-    return nabtoSetStaticResourceDir([resourceDir UTF8String]);
+- (NabtoClientStatus)nabtoSetStaticResourceDir:(NSString *)resourceDir {
+    return mapToClientStatus(nabtoSetStaticResourceDir([resourceDir UTF8String]));
 }
 
 - (NSString *)nabtoVersion {
@@ -127,76 +175,80 @@ void nabtoLogCallback(const char* line, size_t size) {
     return result;
 }
 
-- (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password {
-    return nabtoOpenSession(&session_, [email UTF8String], [password UTF8String]);
+- (NabtoClientStatus)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password {
+    return mapToClientStatus(nabtoOpenSession(&session_, [email UTF8String], [password UTF8String]));
 }
 
-- (nabto_status_t)nabtoCreateProfile:(NSString *)email withPassword:(NSString *)password {
-    return nabtoCreateProfile([email UTF8String], [password UTF8String]);
+- (NabtoClientStatus)nabtoCreateProfile:(NSString *)email withPassword:(NSString *)password {
+    return mapToClientStatus(nabtoCreateProfile([email UTF8String], [password UTF8String]));
 }
 
-- (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
-    return nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]);
+- (NabtoClientStatus)nabtoCreateSelfSignedProfile:(NSString *)email withPassword:(NSString *)password {
+    return mapToClientStatus(nabtoCreateSelfSignedProfile([email UTF8String], [password UTF8String]));
 }
 
-- (nabto_status_t)nabtoSignup:(NSString *)email withPassword:(NSString *)password {
-    return nabtoSignup([email UTF8String], [password UTF8String]);
+- (NabtoClientStatus)nabtoSignup:(NSString *)email withPassword:(NSString *)password {
+    return mapToClientStatus(nabtoSignup([email UTF8String], [password UTF8String]));
 }
 
-- (nabto_status_t)nabtoResetAccountPassword:(NSString *)email {
-    return nabtoResetAccountPassword([email UTF8String]);
+- (NabtoClientStatus)nabtoResetAccountPassword:(NSString *)email {
+    return mapToClientStatus(nabtoResetAccountPassword([email UTF8String]));
 }
 
-- (nabto_status_t)nabtoRemoveProfile:(NSString *)id {
-    return nabtoRemoveProfile([id UTF8String]);
+- (NabtoClientStatus)nabtoRemoveProfile:(NSString *)id {
+    return mapToClientStatus(nabtoRemoveProfile([id UTF8String]));
 }
 
-- (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result {
-    return nabtoGetFingerprint([certificateId UTF8String], result);
+- (NabtoClientStatus)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result {
+    return mapToClientStatus(nabtoGetFingerprint([certificateId UTF8String], result));
 }
 
 
-- (nabto_status_t)nabtoOpenSessionGuest {
+- (NabtoClientStatus)nabtoOpenSessionGuest {
     NSString *email = @"guest";
     NSString *password = @"";
     return [self nabtoOpenSession:email withPassword:password];
 }
 
-- (nabto_status_t)nabtoCloseSession {
+- (NabtoClientStatus)nabtoCloseSession {
     if (session_) {
         nabto_status_t res = nabtoCloseSession(session_);
         if (res == NABTO_OK) {
             session_ = nil;
         }
-        return res;
+        return mapToClientStatus(res);
     } else {
-        return NABTO_OK;
+        return NCS_OK;
     }
 }
 
-- (nabto_status_t)nabtoSetBasestationAuthJson:(NSString *)jsonKeyValuePairs {
-    return nabtoSetBasestationAuthJson(session_, [jsonKeyValuePairs UTF8String]);
+- (NabtoClientStatus)nabtoSetLocalConnectionPsk:(NSString *)host withPskId:(char[16])pskId withPsk:(char[16])psk {
+    return mapToClientStatus(nabtoSetLocalConnectionPsk(session_, [host UTF8String], pskId, psk));
 }
 
-- (nabto_status_t)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType {
-    return nabtoFetchUrl(session_, [url UTF8String], resultBuffer, resultLength, mimeType);
+- (NabtoClientStatus)nabtoSetBasestationAuthJson:(NSString *)jsonKeyValuePairs {
+    return mapToClientStatus(nabtoSetBasestationAuthJson(session_, [jsonKeyValuePairs UTF8String]));
 }
 
-- (nabto_status_t)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse {
-    return nabtoRpcInvoke(session_, [url UTF8String], jsonResponse);
+- (NabtoClientStatus)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType {
+    return mapToClientStatus(nabtoFetchUrl(session_, [url UTF8String], resultBuffer, resultLength, mimeType));
 }
 
-- (nabto_status_t)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
-    return nabtoRpcSetDefaultInterface(session_, [interfaceDefinition UTF8String], errorMessage);
+- (NabtoClientStatus)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse {
+    return mapToClientStatus(nabtoRpcInvoke(session_, [url UTF8String], jsonResponse));
+}
+
+- (NabtoClientStatus)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
+    return mapToClientStatus(nabtoRpcSetDefaultInterface(session_, [interfaceDefinition UTF8String], errorMessage));
 }
 
 
-- (nabto_status_t)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
-    return nabtoRpcSetInterface(session_, [host UTF8String], [interfaceDefinition UTF8String], errorMessage);
+- (NabtoClientStatus)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage {
+    return mapToClientStatus(nabtoRpcSetInterface(session_, [host UTF8String], [interfaceDefinition UTF8String], errorMessage));
 }
 
-- (nabto_status_t)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType {
-    return nabtoSubmitPostData(session_, [url UTF8String], [postBuffer UTF8String], [postBuffer length], "", resultBuffer, resultLen, mimeType);
+- (NabtoClientStatus)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType {
+    return mapToClientStatus(nabtoSubmitPostData(session_, [url UTF8String], [postBuffer UTF8String], [postBuffer length], "", resultBuffer, resultLen, mimeType));
 }
 
 - (NSArray *)nabtoGetLocalDevices {
@@ -229,82 +281,90 @@ void nabtoLogCallback(const char* line, size_t size) {
     }
 }
 
-- (nabto_status_t)nabtoTunnelOpenTcp:(nabto_tunnel_t *)handle toHost:(NSString *)host onPort:(int)port {
-    return nabtoTunnelOpenTcp(handle, session_, 0, [host UTF8String], "127.0.0.1", port);
+- (NabtoClientStatus)nabtoTunnelOpenTcp:(NabtoTunnelHandle *)handle toHost:(NSString *)host onPort:(int)port {
+    return mapToClientStatus(nabtoTunnelOpenTcp((nabto_tunnel_t *)handle, session_, 0, [host UTF8String], "127.0.0.1", port));
 }
 
-- (int)nabtoTunnelVersion:(nabto_tunnel_t)handle {
+- (int)nabtoTunnelVersion:(NabtoTunnelHandle)handle {
     int version = 0;
-    nabtoTunnelInfo(handle, NTI_VERSION, sizeof(version), &version);
+    nabtoTunnelInfo((nabto_tunnel_t)handle, NTI_VERSION, sizeof(version), &version);
     return version;
 }
 
-- (nabto_tunnel_state_t)nabtoTunnelInfo:(nabto_tunnel_t)handle {
+- (NabtoTunnelState)nabtoTunnelInfo:(NabtoTunnelHandle)handle {
     nabto_tunnel_state_t state = NTCS_CLOSED;
-    nabtoTunnelInfo(handle, NTI_STATUS, sizeof(state), &state);
-    return state;
+    nabtoTunnelInfo((nabto_tunnel_t)handle, NTI_STATUS, sizeof(state), &state);
+    return mapToTunnelState(state);
 }
 
-- (int)nabtoTunnelError:(nabto_tunnel_t)handle {
+- (int)nabtoTunnelError:(NabtoTunnelHandle)handle {
     int lastError = -1;
-    nabtoTunnelInfo(handle, NTI_LAST_ERROR, sizeof(lastError), &lastError);
+    nabtoTunnelInfo((nabto_tunnel_t)handle, NTI_LAST_ERROR, sizeof(lastError), &lastError);
     return lastError;
 }
 
-- (int)nabtoTunnelPort:(nabto_tunnel_t)handle {
+- (int)nabtoTunnelPort:(NabtoTunnelHandle)handle {
     int port = 0;
-    nabtoTunnelInfo(handle, NTI_PORT, sizeof(port), &port);
+    nabtoTunnelInfo((nabto_tunnel_t)handle, NTI_PORT, sizeof(port), &port);
     return port;
 }
 
-- (nabto_status_t)nabtoTunnelClose:(nabto_tunnel_t)handle {
-    return nabtoTunnelClose(handle);
+- (NabtoClientStatus)nabtoTunnelClose:(NabtoTunnelHandle)handle {
+    return mapToClientStatus(nabtoTunnelClose((nabto_tunnel_t)handle));
 }
 
-- (nabto_status_t)nabtoFree:(void *)p {
-    return nabtoFree(p);
+- (NabtoClientStatus)nabtoTunnelSetRecvWindowSize:(NabtoTunnelHandle)handle withRecvWindowSize:(int)recvWindowSize {
+    return mapToClientStatus(nabtoTunnelSetRecvWindowSize((nabto_tunnel_t)handle, (size_t)recvWindowSize));
 }
 
-+ (NSString *)nabtoStatusString:(nabto_status_t)status {
+- (NabtoClientStatus)nabtoTunnelSetSendWindowSize:(NabtoTunnelHandle)handle withSendWindowSize:(int)sendWindowSize {
+    return mapToClientStatus(nabtoTunnelSetSendWindowSize((nabto_tunnel_t)handle, (size_t)sendWindowSize));
+}
+
+- (NabtoClientStatus)nabtoFree:(void *)p {
+    return mapToClientStatus(nabtoFree(p));
+}
+
++ (NSString *)nabtoStatusString:(NabtoClientStatus)status {
     switch(status) {
-        case NABTO_OK: return @"success";
-        case NABTO_NO_PROFILE: return @"no profile";
-        case NABTO_ERROR_READING_CONFIG: return @"error reading config";
-        case NABTO_API_NOT_INITIALIZED: return @"API not initialized";
-        case NABTO_INVALID_SESSION: return @"invalid session";
-        case NABTO_OPEN_CERT_OR_PK_FAILED: return @"open certificate or private key failed";
-        case NABTO_UNLOCK_PK_FAILED: return @"unlock private key failed";
-        case NABTO_PORTAL_LOGIN_FAILURE: return @"could not login to portal";
-        case NABTO_CERT_SIGNING_ERROR: return @"portal failed when signing certificate request";
-        case NABTO_CERT_SAVING_FAILURE: return @"could not save signed certificate";
-        case NABTO_ADDRESS_IN_USE: return @"email is already in use";
-        case NABTO_INVALID_ADDRESS: return @"email is invalid";
-        case NABTO_NO_NETWORK: return @"no network available";
-        case NABTO_CONNECT_TO_HOST_FAILED: return @"could not connect to specified host";
-        case NABTO_STREAMING_UNSUPPORTED: return @"peer does not support streaming";
-        case NABTO_INVALID_STREAM: return @"an invalid stream handle was specified";
-        case NABTO_DATA_PENDING: return @"unacknowledged stream data pending";
-        case NABTO_BUFFER_FULL: return @"all stream data slots are full";
-        case NABTO_FAILED: return @"unknown error";
-        case NABTO_INVALID_TUNNEL: return @"an invalid tunnel handle was specified";
-        case NABTO_ILLEGAL_PARAMETER: return @"a parameter to a function is not supported";
-        case NABTO_INVALID_RESOURCE: return @"an invalid asynchronous resource was specified";
-        case NABTO_ERROR_CODE_COUNT: return @"number of possible error codes";
-        default: return @"?";
+        case NCS_OK: return @"success";
+        case NCS_NO_PROFILE: return @"no profile";
+        case NCS_ERROR_READING_CONFIG: return @"error reading config";
+        case NCS_API_NOT_INITIALIZED: return @"API not initialized";
+        case NCS_INVALID_SESSION: return @"invalid session";
+        case NCS_OPEN_CERT_OR_PK_FAILED: return @"open certificate or private key failed";
+        case NCS_UNLOCK_PK_FAILED: return @"unlock private key failed";
+        case NCS_PORTAL_LOGIN_FAILURE: return @"could not login to portal";
+        case NCS_CERT_SIGNING_ERROR: return @"portal failed when signing certificate request";
+        case NCS_CERT_SAVING_FAILURE: return @"could not save signed certificate";
+        case NCS_ADDRESS_IN_USE: return @"email is already in use";
+        case NCS_INVALID_ADDRESS: return @"email is invalid";
+        case NCS_NO_NETWORK: return @"no network available";
+        case NCS_CONNECT_TO_HOST_FAILED: return @"could not connect to specified host";
+        case NCS_STREAMING_UNSUPPORTED: return @"peer does not support streaming";
+        case NCS_INVALID_STREAM: return @"an invalid stream handle was specified";
+        case NCS_DATA_PENDING: return @"unacknowledged stream data pending";
+        case NCS_BUFFER_FULL: return @"all stream data slots are full";
+        case NCS_FAILED: return @"unknown error";
+        case NCS_INVALID_TUNNEL: return @"an invalid tunnel handle was specified";
+        case NCS_ILLEGAL_PARAMETER: return @"a parameter to a function is not supported";
+        case NCS_INVALID_RESOURCE: return @"an invalid asynchronous resource was specified";
+        case NCS_ERROR_CODE_COUNT: return @"number of possible error codes";
+        default: return @"(unknown api status)";
     }
 }
 
-+ (NSString *)nabtoTunnelInfoString:(nabto_tunnel_state_t)status {
++ (NSString *)nabtoTunnelInfoString:(NabtoTunnelState)status {
     switch(status) {
-        case NTCS_CLOSED: return @"closed";
-        case NTCS_CONNECTING: return @"connecting...";
-        case NTCS_READY_FOR_RECONNECT: return @"ready for reconnect";
-        case NTCS_UNKNOWN: return @"unknown connection";
-        case NTCS_LOCAL: return @"local";
-        case NTCS_REMOTE_P2P: return @"remote P2P";
-        case NTCS_REMOTE_RELAY: return @"remote relay";
-        case NTCS_REMOTE_RELAY_MICRO: return @"remote relay micro";
-        default: return @"?";
+        case NTS_CLOSED: return @"closed";
+        case NTS_CONNECTING: return @"connecting...";
+        case NTS_READY_FOR_RECONNECT: return @"ready for reconnect";
+        case NTS_UNKNOWN: return @"unknown connection";
+        case NTS_LOCAL: return @"local";
+        case NTS_REMOTE_P2P: return @"remote P2P";
+        case NTS_REMOTE_RELAY: return @"remote relay";
+        case NTS_REMOTE_RELAY_MICRO: return @"remote relay micro";
+        default: return @"(unknown tunnel state)";
     }
 }
 

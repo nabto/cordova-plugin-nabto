@@ -3,7 +3,6 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "nabto_client_api.h"
 
 /**
  * The NabtoClient class is an Objective C wrapper for the plain C-based Nabto Client SDK. The
@@ -23,80 +22,131 @@
  * when comparing with the the general SDK documentation, the Nabto session parameter is omitted
  * from all functions.
  *
- * The following is a full working API interaction to invoke an RPC function on a device adhering 
+ * The following is a full working API interaction to invoke an RPC function on a device adhering
  * to the specified interface:
  
- if ([[NabtoClient instance] nabtoStartup] != NABTO_OK) {
-   // handle error
+ if ([[NabtoClient instance] nabtoStartup] != NCS_OK) {
+ // handle error
  }
- if ([[NabtoClient instance] nabtoOpenSessionGuest] != NABTO_OK) {
-   // handle error
+ if ([[NabtoClient instance] nabtoOpenSessionGuest] != NCS_OK) {
+ // handle error
  }
-
+ 
  NSString* interfaceXml = @"<unabto_queries><query name='wind_speed.json' id='2'><request></request><response format='json'><parameter name='rpc_speed_m_s' type='uint32'/></response></query></unabto_queries>";
  
  char* errorMsg;
- if ([[NabtoClient instance] nabtoRpcSetDefaultInterface:interfaceXml withErrorMessage:&errorMsg] != NABTO_OK) {
-   // handle error
+ if ([[NabtoClient instance] nabtoRpcSetDefaultInterface:interfaceXml withErrorMessage:&errorMsg] != IOS_NABTO_OK) {
+ // handle error
  }
  
  char* json;
- nabto_status_t status = [[NabtoClient instance] nabtoRpcInvoke:@"nabto://demo.nabto.net/wind_speed.json?" withResultBuffer:&json];
- if (status == NABTO_OK) {
-   NSLog(@"rpcInvoke finished with result: %s", json);
-   nabtoFree(json);
+ NabtoClientStatus status = [[NabtoClient instance] nabtoRpcInvoke:@"nabto://demo.nabto.net/wind_speed.json?" withResultBuffer:&json];
+ if (status == IOS_NABTO_OK) {
+ NSLog(@"rpcInvoke finished with result: %s", json);
+ nabtoFree(json);
  }
  
  [[NabtoClient instance] nabtoShutdown];
  
  */
 
+// see nabto_status enum in nabto_client_api.h for details
+typedef NS_ENUM(NSInteger, NabtoClientStatus) {
+    NCS_OK,
+    NCS_NO_PROFILE,
+    NCS_ERROR_READING_CONFIG,
+    NCS_API_NOT_INITIALIZED,
+    NCS_INVALID_SESSION,
+    NCS_OPEN_CERT_OR_PK_FAILED,
+    NCS_UNLOCK_PK_FAILED,
+    NCS_PORTAL_LOGIN_FAILURE,
+    NCS_CERT_SIGNING_ERROR,
+    NCS_CERT_SAVING_FAILURE,
+    NCS_ADDRESS_IN_USE,
+    NCS_INVALID_ADDRESS,
+    NCS_NO_NETWORK,
+    NCS_CONNECT_TO_HOST_FAILED,
+    NCS_STREAMING_UNSUPPORTED,
+    NCS_INVALID_STREAM,
+    NCS_DATA_PENDING,
+    NCS_BUFFER_FULL,
+    NCS_FAILED,
+    NCS_INVALID_TUNNEL,
+    NCS_ILLEGAL_PARAMETER,
+    NCS_INVALID_RESOURCE,
+    NCS_INVALID_STREAM_OPTION,
+    NCS_INVALID_STREAM_OPTION_ARGUMENT,
+    NCS_ABORTED,
+    NCS_STREAM_CLOSED,
+    NCS_FAILED_WITH_JSON_MESSAGE,
+    NCS_ERROR_CODE_COUNT
+};
+
+// see nabto_tunnel_state enum in nabto_client_api.h for details
+typedef NS_ENUM(NSInteger, NabtoTunnelState) {
+    NTS_CLOSED,
+    NTS_CONNECTING,
+    NTS_READY_FOR_RECONNECT,
+    NTS_UNKNOWN,
+    NTS_LOCAL,
+    NTS_REMOTE_P2P,
+    NTS_REMOTE_RELAY,
+    NTS_REMOTE_RELAY_MICRO
+};
+
+struct NabtoOpaqueTunnel;
+typedef struct NabtoOpaqueTunnel* NabtoTunnelHandle;
+
+// TODO: missing docs for wrapper (NABTO-1911), see nabto_client_api.h for API documentation until fixed
 @interface NabtoClient : NSObject {
 }
 
-- (nabto_status_t)nabtoStartup;
-- (nabto_status_t)nabtoShutdown;
-- (nabto_status_t)nabtoSetOption:(NSString *)name withValue:(NSString *)value;
-- (nabto_status_t)nabtoInstallDefaultStaticResources:(NSString *)resourceDir;
-- (nabto_status_t)nabtoSetStaticResourceDir:(NSString *)resourceDir;
+- (NabtoClientStatus)nabtoStartup;
+- (NabtoClientStatus)nabtoShutdown;
+- (NabtoClientStatus)nabtoSetOption:(NSString *)name withValue:(NSString *)value;
+- (NabtoClientStatus)nabtoInstallDefaultStaticResources:(NSString *)resourceDir;
+- (NabtoClientStatus)nabtoSetStaticResourceDir:(NSString *)resourceDir;
 
 - (NSString *)nabtoVersion;
 - (NSString *)nabtoVersionString;
 
-- (nabto_status_t)nabtoCreateProfile:(NSString *)id withPassword:(NSString *)password;
-- (nabto_status_t)nabtoCreateSelfSignedProfile:(NSString *)id withPassword:(NSString *)password;
-- (nabto_status_t)nabtoSignup:(NSString *)id withPassword:(NSString *)password;
-- (nabto_status_t)nabtoResetAccountPassword:(NSString *)id;
-- (nabto_status_t)nabtoRemoveProfile:(NSString *)id;
-- (nabto_status_t)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result;
+- (NabtoClientStatus)nabtoCreateProfile:(NSString *)id withPassword:(NSString *)password;
+- (NabtoClientStatus)nabtoCreateSelfSignedProfile:(NSString *)id withPassword:(NSString *)password;
+- (NabtoClientStatus)nabtoSignup:(NSString *)id withPassword:(NSString *)password;
+- (NabtoClientStatus)nabtoResetAccountPassword:(NSString *)id;
+- (NabtoClientStatus)nabtoRemoveProfile:(NSString *)id;
+- (NabtoClientStatus)nabtoGetFingerprint:(NSString *)certificateId withResult:(char[16])result;
 
-- (nabto_status_t)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password;
-- (nabto_status_t)nabtoOpenSessionGuest;
-- (nabto_status_t)nabtoCloseSession;
+- (NabtoClientStatus)nabtoOpenSession:(NSString *)email withPassword:(NSString *)password;
+- (NabtoClientStatus)nabtoOpenSessionGuest;
+- (NabtoClientStatus)nabtoCloseSession;
 
-- (nabto_status_t)nabtoSetBasestationAuthJson:(NSString *)jsonKeyValuePairs;
+- (NabtoClientStatus)nabtoSetBasestationAuthJson:(NSString *)jsonKeyValuePairs;
+- (NabtoClientStatus)nabtoSetLocalConnectionPsk:(NSString *)host withPskId:(char[16])pskId withPsk:(char[16])psk;
 
-- (nabto_status_t)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType;
-- (nabto_status_t)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType;
+- (NabtoClientStatus)nabtoFetchUrl:(NSString *)url withResultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLength mimeType:(char **)mimeType;
+- (NabtoClientStatus)nabtoSubmitPostData:(NSString *)url withBuffer:(NSString *)postBuffer resultBuffer:(char **)resultBuffer resultLength:(size_t *)resultLen mimeType:(char **)mimeType;
 
-- (nabto_status_t)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse;
-- (nabto_status_t)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage;
-- (nabto_status_t)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage;
-                             
+- (NabtoClientStatus)nabtoRpcInvoke:(NSString *)url withResultBuffer:(char **)jsonResponse;
+- (NabtoClientStatus)nabtoRpcSetDefaultInterface:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage;
+- (NabtoClientStatus)nabtoRpcSetInterface:(NSString *)host withInterfaceDefinition:(NSString *)interfaceDefinition withErrorMessage:(char **)errorMessage;
+
 - (NSArray *)nabtoGetLocalDevices;
 - (NSString *)nabtoGetSessionToken;
 
-- (nabto_status_t)nabtoTunnelOpenTcp:(nabto_tunnel_t *)handle toHost:(NSString *)host onPort:(int)port;
-- (int)nabtoTunnelVersion:(nabto_tunnel_t)handle;
-- (nabto_tunnel_state_t)nabtoTunnelInfo:(nabto_tunnel_t)handle;
-- (int)nabtoTunnelError:(nabto_tunnel_t)handle; // return the internal nabto error on the tunnel
-- (int)nabtoTunnelPort:(nabto_tunnel_t)handle;
-- (nabto_status_t)nabtoTunnelClose:(nabto_tunnel_t)handle;
+- (NabtoClientStatus)nabtoTunnelOpenTcp:(NabtoTunnelHandle *)handle toHost:(NSString *)host onPort:(int)port;
+- (int)nabtoTunnelVersion:(NabtoTunnelHandle)handle;
+- (NabtoTunnelState)nabtoTunnelInfo:(NabtoTunnelHandle)handle;
+- (int)nabtoTunnelError:(NabtoTunnelHandle)handle; // return the internal nabto error on the tunnel
+- (int)nabtoTunnelPort:(NabtoTunnelHandle)handle;
+- (NabtoClientStatus)nabtoTunnelClose:(NabtoTunnelHandle)handle;
+- (NabtoClientStatus)nabtoTunnelSetRecvWindowSize:(NabtoTunnelHandle)handle withRecvWindowSize:(int)recvWindowSize;
+- (NabtoClientStatus)nabtoTunnelSetSendWindowSize:(NabtoTunnelHandle)handle withSendWindowSize:(int)sendWindowSize;
 
-- (nabto_status_t)nabtoFree:(void *)p;
+- (NabtoClientStatus)nabtoFree:(void *)p;
 
 + (id)instance;
-+ (NSString *)nabtoStatusString:(nabto_status_t)status;
-+ (NSString *)nabtoTunnelInfoString:(nabto_tunnel_state_t)status;
++ (NSString *)nabtoStatusString:(NabtoClientStatus)status;
++ (NSString *)nabtoTunnelInfoString:(NabtoTunnelState)status;
 
 @end

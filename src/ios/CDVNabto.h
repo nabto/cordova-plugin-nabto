@@ -15,6 +15,7 @@
 
 /* Nabto API */
 - (void)setOption:(CDVInvokedUrlCommand*)command;
+- (void)setLocalConnectionPsk:(CDVInvokedUrlCommand*)command;
 - (void)setBasestationAuthJson:(CDVInvokedUrlCommand*)command;
 - (void)shutdown:(CDVInvokedUrlCommand*)command;
 - (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command;
@@ -39,6 +40,8 @@
 - (void)tunnelLastError:(CDVInvokedUrlCommand*)command;
 - (void)tunnelPort:(CDVInvokedUrlCommand*)command;
 - (void)tunnelClose:(CDVInvokedUrlCommand*)command;
+- (void)tunnelSetSendWindowSize:(CDVInvokedUrlCommand*)command;
+- (void)tunnelSetRecvWindowSize:(CDVInvokedUrlCommand*)command;
 
 /* Ad functionallity */
 - (void)showAd;

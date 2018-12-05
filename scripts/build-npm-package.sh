@@ -24,6 +24,7 @@ if [ ! -z "$3" ] && [ "$3" != "no" ]; then
     fi
 fi
 
+STATIC_BUNDLE_URL=https://downloads.nabto.com/assets/nabto-ios-client-static/4.4.0/nabto-libs-ios-static.zip
 BUILD_DIR=$DIR/..
 CDV_ASSET_SUBDIR=src/nabto/ios
 CDV_SRC_SUBDIR=src/ios
@@ -73,7 +74,10 @@ function download() {
     local path=$1
     local output=$2
     local desc=`basename $path`
-    echo "Downloading release artifact '$desc'"
+    local outputDir=`dirname $output`
+    mkdir -p $outputDir || true
+    echo "Downloading release artifact '$desc' to $outputDir"
+    
     curl -fs $DOWNLOAD_URL_PREFIX/$path > $output || die "Download $desc failed"
 }
 
@@ -81,20 +85,26 @@ function build() {
     if [ ! -z "$DEPLOY_ONLY" ]; then
         return
     fi
-        
+
+    # TODO: use submodule or cocoapod instead
     local tmp_dir=`mktemp -d`
-    local src_bundle=NabtoClient-src.zip
-    download ios/ios-client-src/$src_bundle $tmp_dir/src.zip
-    (cd $tmp_dir ; unzip src.zip ; mv NabtoClient/NabtoClient.* $BUILD_DIR/$CDV_SRC_SUBDIR)
-    rm -rf $tmp_dir
+    (cd $tmp_dir ; git clone git@github.com:nabto/nabto-ios-client.git ; cd nabto-ios-client ; cp NabtoClient/NabtoClient.* $BUILD_DIR/$CDV_SRC_SUBDIR)
 
     local lib_api=lib/libnabto_client_api_static.a
     local lib_ext=lib/libnabto_static_external.a
-    local header=include/nabto_client_api.h
-    download nabto/ios/${lib_api} $BUILD_DIR/$CDV_ASSET_SUBDIR/${lib_api}
-    download nabto/ios/${lib_ext} $BUILD_DIR/$CDV_ASSET_SUBDIR/${lib_ext}
-    download nabto/ios/${header}  $BUILD_DIR/$CDV_ASSET_SUBDIR/${header}
+    local header=include/NabtoAPI/nabto_client_api.h
+    local archive=$tmp_dir/lib.zip
+    curl -o $archive $STATIC_BUNDLE_URL
 
+    local libdir=$BUILD_DIR/$CDV_ASSET_SUBDIR/lib
+    local incdir=$BUILD_DIR/$CDV_SRC_SUBDIR/NabtoAPI
+    local prefix=nabto-libs-ios-static/ios
+    mkdir -p $libdir
+    mkdir -p $incdir
+    tmp_dir=`mktemp -d`
+    (cd $tmp_dir ; unzip $archive ; mv $prefix/lib/*.a $libdir ; mv $prefix/include/*.h $incdir)
+    rm -rf $tmp_dir
+    
     echo "Pack npm module"
     cd $BUILD_DIR
     npm pack

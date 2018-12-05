@@ -72,19 +72,16 @@
 
     <!-- ios -->
     <platform name="ios">
-      <!--
-          nabto-core-sdk-version: 4.1.4
-      -->
         <config-file target="config.xml" parent="/*">
-            <feature name="Nabto">
+          <feature name="Nabto">
                 <param name="ios-package" value="CDVNabto"/>
             </feature>
         </config-file>
 
-        <header-file src="src/ios/CDVNabto.h" />
-        <source-file src="src/ios/CDVNabto.m" />
         <header-file src="src/ios/NabtoClient.h" />
         <source-file src="src/ios/NabtoClient.mm" />
+        <header-file src="src/ios/CDVNabto.h" />
+        <source-file src="src/ios/CDVNabto.m" />
         <header-file src="src/ios/AdViewController.h" />
         <source-file src="src/ios/AdViewController.m" />
         <header-file src="src/ios/AdManager.h" />
@@ -92,7 +89,7 @@
         <header-file src="src/ios/AdTimeProvider.h" />
         <source-file src="src/ios/AdTimeProvider.m" />
         <header-file src="src/ios/IsShowingAd.h" />
-        <header-file src="src/nabto/ios/include/nabto_client_api.h" />
+        <header-file src="src/ios/NabtoAPI/nabto_client_api.h" target-dir="NabtoAPI"/>
 
 	<resource-file src="src/ios/res/ad.png" target="res/ad.png" />
 
