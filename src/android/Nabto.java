@@ -440,7 +440,7 @@ public class Nabto extends CordovaPlugin {
                     try {
                         status = initializedNabto.setLocalConnectionPsk(host, hexstringToBytes(pskId), hexstringToBytes(psk), session);
                     } catch (IllegalArgumentException e) {
-                        status = NabtoStatus.ILLEGAL_PARAMETER;
+                        status = NabtoStatus.FAILED;
                     }
                     if (status != NabtoStatus.OK) {
                         cc.error(status.ordinal());
