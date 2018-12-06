@@ -101,8 +101,14 @@ BOOL parseHex(char c, char* res)
         *res = c - '0';
         return YES;
     }
-    if ('A' <= c && c <= 'F') return c - 'A' + 10;
-    if ('a' <= c && c <= 'f') return c - 'a' + 10;
+    if ('A' <= c && c <= 'F') {
+        *res =  c - 'A' + 10;
+        return YES;
+    } 
+    if ('a' <= c && c <= 'f') {
+        *res = c - 'a' + 10;
+        return YES;
+    }
     return NO;
 }
 
@@ -231,7 +237,7 @@ BOOL parseHex(char c, char* res)
                                             nabtoGetFingerprint:[command.arguments objectAtIndex:0]
                                                      withResult:fingerprint];
             if (status == NCS_OK) {
-                char fingerprintString[2*sizeof(fingerprint)];
+                char fingerprintString[2*sizeof(fingerprint) + 1];
                 for (size_t i=0; i<sizeof(fingerprint); i++) {
                     sprintf(fingerprintString+2*i, "%02x", (unsigned char)(fingerprint[i]));
                 }
