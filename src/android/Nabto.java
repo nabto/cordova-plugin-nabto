@@ -66,6 +66,9 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("setOption")) {
             setOption(args.getString(0), args.getString(1), callbackContext);
         }
+        else if (action.equals("setLocalConnectionPsk")) {
+            setLocalConnectionPsk(args.getString(0), args.getString(1), args.getString(2), callbackContext);
+        }
         else if (action.equals("setBasestationAuthJson")) {
             setBasestationAuthJson(args.getString(0), callbackContext);
         }
@@ -398,6 +401,56 @@ public class Nabto extends CordovaPlugin {
             });
     }
 
+    private byte[] hexstringToBytes(String hexString) throws IllegalArgumentException {
+        int offset;
+        if (hexString.length() == 2*16) {
+            offset = 2;
+        } else if (hexString.length() == 3*16-1) {
+            offset = 3;
+        } else {
+            throw new IllegalArgumentException();
+        }
+        byte[] result = new byte[16];
+        for (int i = 0; i < (hexString.length() + offset-2) / offset; i++) {
+            try {
+                result[i] = (byte)(Integer.parseInt("" + hexString.charAt(offset * i) + hexString.charAt(offset * i + 1), 16));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        return result;
+    }
+
+    private void setLocalConnectionPsk(final String host, final String pskId, final String psk, final CallbackContext cc) {
+        final Context context = cordova.getActivity().getApplicationContext();
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    Session initializedSession;
+                    NabtoApi initializedNabto;
+                    synchronized(initMutex) {
+                        if (session == null || nabto == null) {
+                            cc.error(NabtoStatus.API_NOT_INITIALIZED.ordinal());
+                            return;
+                        }
+                        initializedSession = session;
+                        initializedNabto = nabto;
+                    }
+                    NabtoStatus status;
+                    try {
+                        status = initializedNabto.setLocalConnectionPsk(host, hexstringToBytes(pskId), hexstringToBytes(psk), session);
+                    } catch (IllegalArgumentException e) {
+                        status = NabtoStatus.ILLEGAL_PARAMETER;
+                    }
+                    if (status != NabtoStatus.OK) {
+                        cc.error(status.ordinal());
+                        return;
+                    }
+                    cc.success();
+                }
+            });
+    }
+    
     private void setBasestationAuthJson(final String authJson, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
         cordova.getThreadPool().execute(new Runnable() {
