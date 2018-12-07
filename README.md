@@ -1,4 +1,4 @@
-# Cordova Plugin Nabto - 2.5
+# Cordova Plugin Nabto - 2.6
 
 [Nabto ApS](https://www.nabto.com) client plugin for Cordova.
 
@@ -300,6 +300,25 @@ Set JSON document with basestation authentication info to use on the active sess
 ```js
 nabto.setBaseStationAuthJson(jsonString, callback)
 ```
+
+
+### `nabto.setLocalConnectionPsk`
+
+Set pre-shared key to use for encrypting local connections. See `nabto_client_api.h` for more details.
+
+```js
+nabto.setLocalConnectionPsk(<host>, <hex pskId>, <hex psk>)
+```
+
+For example:
+
+```js
+nabto.setLocalConnectionPsk("mydevice.mydomain.nabto.net",
+                                "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+                                "66:64:94:5f:e5:30:e0:15:d9:77:01:13:78:e9:37:e7");
+```                               
+
+Delimiter (e.g. `:`) is optional.
 
 ## Source File Structure
 

@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-nabto",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "Cordova Plugin Nabto",
   "cordova": {
     "id": "cordova-plugin-nabto",
