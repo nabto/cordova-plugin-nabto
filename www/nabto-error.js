@@ -78,6 +78,9 @@ NabtoError.Code.P2P_ENCRYPTION_MISMATCH       = 3120;
 NabtoError.Code.P2P_DEVICE_BUSY               = 3121;
 NabtoError.Code.P2P_DEVICE_REATTACHING        = 3124;
 NabtoError.Code.P2P_SELF_SIGNED_NOT_ALLOWED   = 3127;
+NabtoError.Code.P2P_ACCESS_DENIED_BS          = 3128;
+NabtoError.Code.P2P_BAD_KEY_ID                = 3129;
+NabtoError.Code.P2P_BAD_KEY                   = 3134;
 NabtoError.Code.P2P_CERT_CREATION_ERROR       = 3205;
 NabtoError.Code.P2P_TIMEOUT                   = 3215; // TIME_OUT, CONNECT_TIMEOUT
 NabtoError.Code.P2P_INTERFACE_DEF_INVALID     = 3223;
@@ -136,6 +139,9 @@ NabtoError.Message[NabtoError.Code.P2P_CONNECTION_PROBLEM]       = "A problem oc
 NabtoError.Message[NabtoError.Code.P2P_ENCRYPTION_MISMATCH]      = "Security options of remote device does not match client's - likely because remote device is not using crypto";		    
 NabtoError.Message[NabtoError.Code.P2P_DEVICE_REATTACHING]       = "Device is currently unavailable as it tries to reconnect to server, try again in a moment";
 NabtoError.Message[NabtoError.Code.P2P_SELF_SIGNED_NOT_ALLOWED]  = "This server does not allow self-signed certificates - either install signed cert or change server configuration";
+NabtoError.Message[NabtoError.Code.P2P_ACCESS_DENIED_BS]         = "Device access denied by access control on central server";
+NabtoError.Message[NabtoError.Code.P2P_BAD_KEY_ID]               = "Local pre-shared key id invalid";
+NabtoError.Message[NabtoError.Code.P2P_BAD_KEY]                  = "Local pre-shared key invalid";
 NabtoError.Message[NabtoError.Code.P2P_CERT_CREATION_ERROR]      = "Error creating certificate, if using guest certificate make sure it is pre-installed as a ressource (in share/nabto/users dir)";		    
 NabtoError.Message[NabtoError.Code.P2P_TIMEOUT]                  = "Timeout when trying to perform operation - likely due to a network or server problem";
 NabtoError.Message[NabtoError.Code.P2P_NO_SUCH_REQUEST]          = "The specified request does not exist in the interface definition";
@@ -389,6 +395,18 @@ NabtoError.prototype.handleNabtoEvent = function(event) {
 
   case NabtoConstants.ClientEvents.SELF_SIGNED_NOT_ALLOWED:
     this.code = NabtoError.Code.P2P_SELF_SIGNED_NOT_ALLOWED;
+    break;
+
+  case NabtoConstants.ClientEvents.ACCESS_DENIED_BS:
+    this.code = NabtoError.Code.P2P_ACCESS_DENIED_BS;
+    break;
+
+  case NabtoConstants.ClientEvents.BAD_KEY_ID:
+    this.code = NabtoError.Code.P2P_BAD_KEY_ID;
+    break;
+
+  case NabtoConstants.ClientEvents.BAD_KEY:
+    this.code = NabtoError.Code.P2P_BAD_KEY;
     break;
 
   case NabtoConstants.ClientEvents.CERT_CREATION_ERROR:

@@ -43,6 +43,19 @@ Nabto.prototype.setBasestationAuthJson = function(authJson, cb) {
   invokeNabto('setBasestationAuthJson', [authJson], cb);
 };
 
+Nabto.prototype.setLocalConnectionPsk = function(host, pskId, psk, cb) {
+  var validHexLen = 16 * 2;
+  var validHexLenDelim = 15 * 3 + 2;
+  if ((pskId.length != validHexLen &&
+      pskId.length != validHexLenDelim) ||
+      (psk.length != validHexLen &&
+       psk.length != validHexLenDelim)) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
+  invokeNabto('setLocalConnectionPsk', [host, pskId, psk], cb);
+};
+
 Nabto.prototype.prepareInvoke = function(devices, cb) {
   invokeNabto('prepareInvoke', [devices], cb);
 };
@@ -131,6 +144,22 @@ Nabto.prototype.tunnelOpenTcp = function(host, port, cb) {
 
 Nabto.prototype.tunnelClose = function(tunnel, cb) {
   invokeNabto('tunnelClose', [tunnel], cb);
+};
+
+Nabto.prototype.tunnelSetSendWindowSize = function(tunnel, sendWindowSize, cb) {
+  if (isNaN(sendWindowSize)) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
+  invokeNabto('tunnelSetSendWindowSize', [tunnel, sendWindowSize], cb);
+};
+
+Nabto.prototype.tunnelSetRecvWindowSize = function(tunnel, recvWindowSize, cb) {
+  if (isNaN(recvWindowSize)) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
+  invokeNabto('tunnelSetRecvWindowSize', [tunnel, recvWindowSize], cb);
 };
 
 Nabto.prototype.tunnelPort = function(tunnel, cb) {

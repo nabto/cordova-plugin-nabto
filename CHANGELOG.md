@@ -10,8 +10,14 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 2.6.0 Unreleased
+## 2.7.0 Unreleased
+
+## 2.6.0 2018-12-07
+
 ### Changed
+- Wrap native Nabto Client SDK 4.4.0
+- Add PSK functions (missing from previous wrapper of 4.3)
+- Build using NabtoClient in public repo
 
 ## 2.5.1 2018-10-19
 

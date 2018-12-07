@@ -19,11 +19,11 @@
     tunnels_ = [NSMutableDictionary dictionary];
     [self.commandDelegate runInBackground:^{
             CDVPluginResult* res = nil;
-            nabto_status_t status = [[NabtoClient instance] nabtoStartup];
-            if (status == NABTO_OK) {
+            NabtoClientStatus status = [[NabtoClient instance] nabtoStartup];
+            if (status == NCS_OK) {
                 status = [[NabtoClient instance] nabtoInstallDefaultStaticResources:0];
             }
-            if (status == NABTO_OK) {
+            if (status == NCS_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
@@ -34,9 +34,9 @@
 
 - (void)setOption:(CDVInvokedUrlCommand*)command {
     CDVPluginResult* res = nil;
-    nabto_status_t status = [[NabtoClient instance] nabtoSetOption:[command.arguments objectAtIndex:0]
+    NabtoClientStatus status = [[NabtoClient instance] nabtoSetOption:[command.arguments objectAtIndex:0]
                                                           withValue:[command.arguments objectAtIndex:1]];
-    if (status == NABTO_OK) {
+    if (status == NCS_OK) {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
@@ -46,8 +46,8 @@
 
 - (void)setStaticResourceDir:(CDVInvokedUrlCommand*)command {
     CDVPluginResult* res = nil;
-    nabto_status_t status = [[NabtoClient instance] nabtoSetStaticResourceDir:[command.arguments objectAtIndex:0]];
-    if (status == NABTO_OK) {
+    NabtoClientStatus status = [[NabtoClient instance] nabtoSetStaticResourceDir:[command.arguments objectAtIndex:0]];
+    if (status == NCS_OK) {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
@@ -59,19 +59,19 @@
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* res = nil;
 
-        nabto_status_t status = [[NabtoClient instance] nabtoStartup];
-        if (status == NABTO_OK) {
+        NabtoClientStatus status = [[NabtoClient instance] nabtoStartup];
+        if (status == NCS_OK) {
             status = [[NabtoClient instance] nabtoInstallDefaultStaticResources:0];
         }
-        if (status != NABTO_OK) {
+        if (status != NCS_OK) {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         } else {
             status = [[NabtoClient instance] nabtoOpenSession:[command.arguments objectAtIndex:0]
                                                  withPassword:[command.arguments objectAtIndex:1]];
-            if (status == NABTO_OK) {
+            if (status == NCS_OK) {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             } else {
-                NSLog(@"nabtoOpenSession failed with status [%d]", status);
+                NSLog(@"nabtoOpenSession failed with status [%d]", (int)status);
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
         }
@@ -79,9 +79,9 @@
     }];
 }
 
-- (void)handleStatus:(nabto_status_t)status withCommand:(CDVInvokedUrlCommand*)command {
+- (void)handleStatus:(NabtoClientStatus)status withCommand:(CDVInvokedUrlCommand*)command {
     CDVPluginResult *res = nil;
-    if (status == NABTO_OK) {
+    if (status == NCS_OK) {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
@@ -95,6 +95,79 @@
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
+BOOL parseHex(char c, char* res)
+{
+    if ('0' <= c && c <= '9') {
+        *res = c - '0';
+        return YES;
+    }
+    if ('A' <= c && c <= 'F') {
+        *res =  c - 'A' + 10;
+        return YES;
+    } 
+    if ('a' <= c && c <= 'f') {
+        *res = c - 'a' + 10;
+        return YES;
+    }
+    return NO;
+}
+
+// convert
+// "1a:0b:00:00:00:00:00:00:00:00:00:00:00:00:00:ff" or
+// "0a0b000000000000000000000000000f"
+// to 16 byte buffer
+- (BOOL)hexStringToBytes:(NSString*)hexString
+        withOutputBuffer:(char[16])buffer
+{
+    int offset;
+    if ([hexString length] == 2*16) {
+        offset = 2;
+    } else if ([hexString length] == 3*16-1) {
+        offset = 3;
+    } else {
+        return NO;
+    }
+    for (int i = 0; i < ([hexString length] + offset-2) / offset; i++) {
+        char h;
+        if (!parseHex([hexString characterAtIndex:offset * i], &h)) {
+            return NO;
+        }
+        char l;
+        if (!parseHex([hexString characterAtIndex:offset * i+1], &l)) {
+            return NO;
+        }
+        buffer[i] = 16 * h + l;
+    }
+    return YES;
+}
+
+- (void)setLocalConnectionPsk:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            NSString* host = [command.arguments objectAtIndex:0];
+            NSString* pskId = [command.arguments objectAtIndex:1];
+            NSString* psk = [command.arguments objectAtIndex:2];
+            char pskIdBuf[16];
+            char pskBuf[16];
+            if (![self hexStringToBytes:pskId
+                       withOutputBuffer:pskIdBuf]) {
+                [self handleStatus:NCS_FAILED withCommand:command];
+                return;
+            }
+            if (![self hexStringToBytes:psk
+                       withOutputBuffer:pskBuf]) {
+                [self handleStatus:NCS_FAILED withCommand:command];
+                return;
+            }
+            NabtoClientStatus status = [[NabtoClient instance]
+                                            nabtoSetLocalConnectionPsk:host
+                                                             withPskId:pskIdBuf
+                                                               withPsk:pskBuf];
+            NSLog(@"setLocalConnectionPsk returns %d", (int)status);
+            [self handleStatus:status withCommand:command];
+        }];
+}
+
+
 - (void)setBasestationAuthJson:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
             NSString* json = [command.arguments objectAtIndex:0];
@@ -105,9 +178,9 @@
                 // we interpret javascript empty string as user's intention of resetting auth data
                 arg = NULL;
             }
-            nabto_status_t status = [[NabtoClient instance]
+            NabtoClientStatus status = [[NabtoClient instance]
                                             nabtoSetBasestationAuthJson:arg];
-            NSLog(@"nabtoSetBasestationAuthJson returns %d", status);
+            NSLog(@"nabtoSetBasestationAuthJson returns %d", (int)status);
             [self handleStatus:status withCommand:command];
         }];
 }
@@ -115,7 +188,7 @@
 
 - (void)createSignedKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-        nabto_status_t status = [[NabtoClient instance]
+        NabtoClientStatus status = [[NabtoClient instance]
                                     nabtoCreateProfile:[command.arguments objectAtIndex:0]
                                                     withPassword:[command.arguments objectAtIndex:1]];
         [self handleStatus:status withCommand:command];
@@ -124,7 +197,7 @@
 
 - (void)signup:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-        nabto_status_t status = [[NabtoClient instance]
+        NabtoClientStatus status = [[NabtoClient instance]
                                     nabtoSignup:[command.arguments objectAtIndex:0]
                                    withPassword:[command.arguments objectAtIndex:1]];
         [self handleStatus:status withCommand:command];
@@ -133,7 +206,7 @@
 
 - (void)resetAccountPassword:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-            nabto_status_t status = [[NabtoClient instance]
+            NabtoClientStatus status = [[NabtoClient instance]
                                         nabtoResetAccountPassword:[command.arguments objectAtIndex:0]];
             [self handleStatus:status withCommand:command];
         }];
@@ -141,7 +214,7 @@
 
 - (void)removeKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-            nabto_status_t status = [[NabtoClient instance]
+            NabtoClientStatus status = [[NabtoClient instance]
                                         nabtoRemoveProfile:[command.arguments objectAtIndex:0]];
             [self handleStatus:status withCommand:command];
         }];
@@ -149,7 +222,7 @@
 
 - (void)createKeyPair:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-        nabto_status_t status = [[NabtoClient instance]
+        NabtoClientStatus status = [[NabtoClient instance]
                                     nabtoCreateSelfSignedProfile:[command.arguments objectAtIndex:0]
                                                     withPassword:[command.arguments objectAtIndex:1]];
         [self handleStatus:status withCommand:command];
@@ -160,11 +233,11 @@
     [self.commandDelegate runInBackground:^{
             char fingerprint[16];
             CDVPluginResult *res = nil;
-            nabto_status_t status = [[NabtoClient instance]
+            NabtoClientStatus status = [[NabtoClient instance]
                                             nabtoGetFingerprint:[command.arguments objectAtIndex:0]
                                                      withResult:fingerprint];
-            if (status == NABTO_OK) {
-                char fingerprintString[2*sizeof(fingerprint)];
+            if (status == NCS_OK) {
+                char fingerprintString[2*sizeof(fingerprint) + 1];
                 for (size_t i=0; i<sizeof(fingerprint); i++) {
                     sprintf(fingerprintString+2*i, "%02x", (unsigned char)(fingerprint[i]));
                 }
@@ -185,10 +258,10 @@
     [[AdManager instance] clear];
     [self.commandDelegate runInBackground:^{
             NSLog(@"Shutting down - first closing session");
-            nabto_status_t status = [[NabtoClient instance] nabtoCloseSession];
-            NSLog(@"Closed session, status is %d, shutting down", status);
+            NabtoClientStatus status = [[NabtoClient instance] nabtoCloseSession];
+            NSLog(@"Closed session, status is %d, shutting down", (int)status);
             status = [[NabtoClient instance] nabtoShutdown];
-            NSLog(@"Invoked nabtoShutdown, status is x %d", status);
+            NSLog(@"Invoked nabtoShutdown, status is x %d", (int)status);
             [self handleStatus:status withCommand:command];
         }];
 }
@@ -197,7 +270,7 @@
     [self.commandDelegate runInBackground:^{
         CDVPluginResult *res = nil;
 
-        nabto_status_t status;
+        NabtoClientStatus status;
         char *resultBuffer = 0;
         size_t resultLen = 0;
         char *resultMimeType = 0;
@@ -206,12 +279,12 @@
                                        withResultBuffer:&resultBuffer
                                            resultLength:&resultLen
                                                mimeType:&resultMimeType];
-        if (status == NABTO_OK) {
+        if (status == NCS_OK) {
             NSData *data = [NSData dataWithBytes:resultBuffer length:resultLen];
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
-            nabtoFree(resultBuffer);
-            nabtoFree(resultMimeType);
+            [[NabtoClient instance] nabtoFree:resultBuffer];
+            [[NabtoClient instance] nabtoFree:resultMimeType];
         } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
@@ -232,7 +305,7 @@
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         NSLog(@"Invalid json array: [%@]", jsonHosts);
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_FAILED];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_FAILED];
     }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
     NSLog(@"Cordova prepareInvoke ends");
@@ -242,21 +315,21 @@
     [self.commandDelegate runInBackground:^{
         CDVPluginResult *res = nil;
         NSLog(@"Cordova RPC invoke runInBackground ");
-        nabto_status_t status;
+        NabtoClientStatus status;
         char *jsonString = 0;
         
         status = [[NabtoClient instance] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
                                         withResultBuffer:&jsonString];
-        if (status == NABTO_OK || status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+        if (status == NCS_OK || status == NCS_FAILED_WITH_JSON_MESSAGE) {
             int cdvStatus;
-            if (status == NABTO_OK) {
+            if (status == NCS_OK) {
                 cdvStatus = CDVCommandStatus_OK;
             } else {
                 cdvStatus = CDVCommandStatus_ERROR;
             }
             res = [CDVPluginResult resultWithStatus:cdvStatus
                                 messageAsString:[NSString stringWithUTF8String:jsonString]];
-            nabtoFree(jsonString);
+            [[NabtoClient instance] nabtoFree:jsonString];
         } else {
             res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
         }
@@ -290,14 +363,14 @@
 
 - (void)rpcSetDefaultInterface:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-        nabto_status_t status;
+        NabtoClientStatus status;
         char *jsonString;
         status = [[NabtoClient instance] nabtoRpcSetDefaultInterface:[command.arguments objectAtIndex:0]
                                                      withErrorMessage:&jsonString];
 
-        if (status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+        if (status == NCS_FAILED_WITH_JSON_MESSAGE) {
             [self handleJsonError:jsonString withCommand:command];
-            nabtoFree(jsonString);
+            [[NabtoClient instance] nabtoFree:jsonString];
         } else {
             [self handleStatus:status withCommand:command];
         }
@@ -306,14 +379,14 @@
 
 - (void)rpcSetInterface:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
-        nabto_status_t status;
+        NabtoClientStatus status;
         char *jsonString = 0;
         status = [[NabtoClient instance] nabtoRpcSetInterface:[command.arguments objectAtIndex:0]
                                        withInterfaceDefinition:[command.arguments objectAtIndex:1]
                                               withErrorMessage:&jsonString];
-        if (status == NABTO_FAILED_WITH_JSON_MESSAGE) {
+        if (status == NCS_FAILED_WITH_JSON_MESSAGE) {
             [self handleJsonError:jsonString withCommand:command];
-            nabtoFree(jsonString);
+            [[NabtoClient instance] nabtoFree:jsonString];
         } else {
             [self handleStatus:status withCommand:command];
         }
@@ -352,37 +425,31 @@
 - (void)tunnelOpenTcp:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
             CDVPluginResult *res = nil;
-            nabto_tunnel_t tunnel;
-            nabto_status_t status = [[NabtoClient instance] nabtoTunnelOpenTcp:&tunnel
+            NabtoTunnelHandle tunnel;
+            NabtoClientStatus status = [[NabtoClient instance] nabtoTunnelOpenTcp:&tunnel
                                                                         toHost:[command.arguments objectAtIndex:0]
                                                                         onPort:[[command.arguments objectAtIndex:1] intValue]];
-            if (status == NABTO_OK) {
+            if (status == NCS_OK) {
                 // we are running in background thread so poll and sleep on synchronous API should be ok
-                nabto_tunnel_state_t state = NTCS_CONNECTING;
-                status = nabtoTunnelInfo(tunnel, NTI_STATUS, sizeof(state), &state);
-                while (status == NABTO_OK && state == NTCS_CONNECTING) {
+                NabtoTunnelState state = [[NabtoClient instance] nabtoTunnelInfo:tunnel];
+                while (state == NTS_CONNECTING) {
                     [NSThread sleepForTimeInterval:0.1f];
-                    status = nabtoTunnelInfo(tunnel, NTI_STATUS, sizeof(state), &state);
+                    state = [[NabtoClient instance] nabtoTunnelInfo:tunnel];
                 }
-                if (status == NABTO_OK && state != NTCS_CLOSED) {
+                if (state != NTS_CLOSED) {
                     NSString* tunnelId = [NSString stringWithFormat:@"%p", tunnel];
                     tunnels_[tunnelId] = [NSValue valueWithPointer:tunnel];
                     res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                             messageAsString:tunnelId];
                 } else {
-                    if (status == NABTO_OK) {
-                        // int err = [[NabtoClient instance] nabtoTunnelError:tunnel];
-                        // TODO: json error message instead (currently not possible for caller to
-                        // determine domain (api or p2p error))
-                        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
-                    } else {
-                        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
-                    }
+                    // int err = [[NabtoClient instance] nabtoTunnelError:tunnel];
+                    // TODO: json error message instead (currently not possible for caller to
+                    // determine domain (api or p2p error))
+                    res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
                 }
             } else {
                 res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:status];
             }
-            
             [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
         }];
 }
@@ -391,11 +458,11 @@
     NSString* handle = [command.arguments objectAtIndex:0];
     CDVPluginResult *res;
     if (tunnels_[handle]) {
-        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
         int version = [[NabtoClient instance] nabtoTunnelVersion:tunnel];
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:version];
     } else {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
     }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
@@ -404,11 +471,11 @@
     NSString* handle = [command.arguments objectAtIndex:0];
     CDVPluginResult *res;
     if (tunnels_[handle]) {
-        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
-        nabto_tunnel_state_t state = [[NabtoClient instance] nabtoTunnelInfo:tunnel];
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
+        NabtoTunnelState state = [[NabtoClient instance] nabtoTunnelInfo:tunnel];
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:state];
     } else {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
     }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
@@ -417,11 +484,11 @@
     NSString* handle = [command.arguments objectAtIndex:0];
     CDVPluginResult *res;
     if (tunnels_[handle]) {
-        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
-        nabto_status_t internalStatus = [[NabtoClient instance] nabtoTunnelError:tunnel];
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
+        NabtoClientStatus internalStatus = [[NabtoClient instance] nabtoTunnelError:tunnel];
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:internalStatus];
     } else {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
     }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
@@ -430,11 +497,11 @@
     NSString* handle = [command.arguments objectAtIndex:0];
     CDVPluginResult *res;
     if (tunnels_[handle]) {
-        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
         int port = [[NabtoClient instance] nabtoTunnelPort:tunnel];
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:port];
     } else {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
     }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
@@ -443,11 +510,39 @@
     NSString* handle = [command.arguments objectAtIndex:0];
     CDVPluginResult *res;
     if (tunnels_[handle]) {
-        nabto_tunnel_t tunnel = (nabto_tunnel_t)([tunnels_[handle] pointerValue]);
-        nabto_status_t status = [[NabtoClient instance] nabtoTunnelClose:tunnel];
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
+        NabtoClientStatus status = [[NabtoClient instance] nabtoTunnelClose:tunnel];
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:status];
     } else {
-        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NABTO_INVALID_TUNNEL];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelSetSendWindowSize:(CDVInvokedUrlCommand*)command {
+    NSString* handle = [command.arguments objectAtIndex:0];
+    int size =[[command.arguments objectAtIndex:1] intValue];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
+        NabtoClientStatus status = [[NabtoClient instance] nabtoTunnelSetSendWindowSize:tunnel withSendWindowSize:size];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:status];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
+    }
+    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+}
+
+- (void)tunnelSetRecvWindowSize:(CDVInvokedUrlCommand*)command {
+    NSString* handle = [command.arguments objectAtIndex:0];
+    int size =[[command.arguments objectAtIndex:1] intValue];
+    CDVPluginResult *res;
+    if (tunnels_[handle]) {
+        NabtoTunnelHandle tunnel = (NabtoTunnelHandle)([tunnels_[handle] pointerValue]);
+        NabtoClientStatus status = [[NabtoClient instance] nabtoTunnelSetRecvWindowSize:tunnel withRecvWindowSize:size];
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:status];
+    } else {
+        res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NCS_INVALID_TUNNEL];
     }
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
