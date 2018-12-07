@@ -5,7 +5,7 @@
 # Note: Pollutes local repo with artifacts downloaded into plugin dirs, so clone repo just for
 # building and throw away afterwards.
 #
-# $0 <artifact download url prefix> <target dir> [<deploy {yes|no|deploy-only}>]"
+# $0 <target dir> [<deploy {yes|no|deploy-only}>]"
 #
 # If $3 is set and not set to false, NPM_USER, NPM_PASS and NPM_EMAIL env variables must have been
 # set with relevant npmjs info.
@@ -15,11 +15,10 @@ set -e
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-DOWNLOAD_URL_PREFIX=$1
-TARGET_DIR=$2
-if [ ! -z "$3" ] && [ "$3" != "no" ]; then
+TARGET_DIR=$1
+if [ ! -z "$2" ] && [ "$2" != "no" ]; then
     DEPLOY_TO_NPM=1
-    if [ "$3" == "deploy-only" ]; then
+    if [ "$2" == "deploy-only" ]; then
         DEPLOY_ONLY=1
     fi
 fi
@@ -37,7 +36,7 @@ function die() {
 }
 
 function usage() {
-    die "$0 <artifact download url prefix> <target dir> [<deploy {true|false}>]"
+    die "$0 <target dir> [<deploy {true|false}>]"
 }
 
 function prep_dirs() {
@@ -68,17 +67,6 @@ function check_deploy_ready() {
         die "ERROR: Missing $NPM_CLI_LOGIN please install and/or update path"
     fi
     set -e
-}
-
-function download() {
-    local path=$1
-    local output=$2
-    local desc=`basename $path`
-    local outputDir=`dirname $output`
-    mkdir -p $outputDir || true
-    echo "Downloading release artifact '$desc' to $outputDir"
-    
-    curl -fs $DOWNLOAD_URL_PREFIX/$path > $output || die "Download $desc failed"
 }
 
 function build() {
