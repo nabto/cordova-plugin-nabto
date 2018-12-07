@@ -142,6 +142,12 @@ public class Nabto extends CordovaPlugin {
         else if (action.equals("tunnelClose")) {
             tunnelClose(args.getString(0), callbackContext);
         }
+        else if (action.equals("tunnelSetSendWindowSize")) {
+            tunnelSetSendWindowSize(args.getString(0), args.getString(1), callbackContext);
+        }
+        else if (action.equals("tunnelSetRecvWindowSize")) {
+            tunnelSetRecvWindowSize(args.getString(0), args.getString(1), callbackContext);
+        }
         else {
             return false;
         }
@@ -883,4 +889,70 @@ public class Nabto extends CordovaPlugin {
                 }
             });
     }
+
+    private void tunnelSetSendWindowSize(final String tunnelHandle, final String sendWindowSize, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    int value;
+                    try {
+                        value = Integer.parseInt(sendWindowSize);
+                    } catch (Exception e) {
+                        cc.error(NabtoStatus.FAILED.ordinal());
+                        return;
+                    }
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        NabtoStatus status = initializedNabto.tunnelSetSendWindowSize(value, tunnel);
+                        if (status == NabtoStatus.OK) {
+                            tunnels.remove(tunnel);
+                            cc.success();
+                        } else {
+                            cc.error(status.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                        return;
+                    }
+                }
+            });
+    }
+
+    private void tunnelSetRecvWindowSize(final String tunnelHandle, final String recvWindowSize, final CallbackContext cc) {
+        cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    NabtoApi initializedNabto = getNabto(cc);
+                    if (initializedNabto == null) {
+                        return;
+                    }
+                    int value;
+                    try {
+                        value = Integer.parseInt(recvWindowSize);
+                    } catch (Exception e) {
+                        cc.error(NabtoStatus.FAILED.ordinal());
+                        return;
+                    }
+                    Tunnel tunnel = tunnels.get(tunnelHandle);
+                    if (tunnel != null) {
+                        NabtoStatus status = initializedNabto.tunnelSetRecvWindowSize(value, tunnel);
+                        if (status == NabtoStatus.OK) {
+                            tunnels.remove(tunnel);
+                            cc.success();
+                        } else {
+                            cc.error(status.ordinal());
+                        }
+                    } else {
+                        cc.error(NabtoStatus.INVALID_TUNNEL.ordinal());
+                        return;
+                    }
+                }
+            });
+    }
+
+
 }

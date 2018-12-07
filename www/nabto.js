@@ -147,11 +147,19 @@ Nabto.prototype.tunnelClose = function(tunnel, cb) {
 };
 
 Nabto.prototype.tunnelSetSendWindowSize = function(tunnel, sendWindowSize, cb) {
+  if (isNaN(sendWindowSize)) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
   invokeNabto('tunnelSetSendWindowSize', [tunnel, sendWindowSize], cb);
 };
 
-Nabto.prototype.tunnelSetSendWindowSize = function(tunnel, recvWindowSize, cb) {
-  invokeNabto('tunnelSetSendWindowSize', [tunnel, recvWindowSize], cb);
+Nabto.prototype.tunnelSetRecvWindowSize = function(tunnel, recvWindowSize, cb) {
+  if (isNaN(recvWindowSize)) {
+    nextTick(cb, new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
+    return;
+  }
+  invokeNabto('tunnelSetRecvWindowSize', [tunnel, recvWindowSize], cb);
 };
 
 Nabto.prototype.tunnelPort = function(tunnel, cb) {
