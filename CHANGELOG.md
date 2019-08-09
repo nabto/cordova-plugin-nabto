@@ -12,6 +12,12 @@ the release and a new unreleased section is added.
 
 ## 2.7.0 Unreleased
 
+## 2.6.1 2019-08-09
+
+### Changed
+- Wrap native Nabto Client SDK 4.4.1: Re-introduce armv7 support as default Cordova builds break otherwise (app store may choke on 32-bit binaries, though - contact us if you observe this)
+
+
 ## 2.6.0 2018-12-07
 
 ### Changed

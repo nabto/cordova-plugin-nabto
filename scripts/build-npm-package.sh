@@ -23,7 +23,7 @@ if [ ! -z "$2" ] && [ "$2" != "no" ]; then
     fi
 fi
 
-STATIC_BUNDLE_URL=https://downloads.nabto.com/assets/nabto-ios-client-static/4.4.0/nabto-libs-ios-static.zip
+STATIC_BUNDLE_URL=https://downloads.nabto.com/assets/nabto-ios-client-static/4.4.1/nabto-libs-ios-static.zip
 BUILD_DIR=$DIR/..
 CDV_ASSET_SUBDIR=src/nabto/ios
 CDV_SRC_SUBDIR=src/ios
