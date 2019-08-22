@@ -12,6 +12,11 @@ the release and a new unreleased section is added.
 
 ## 2.7.0 Unreleased
 
+## 2.6.2 2019-08-22
+
+### Changed
+- Wrap native Nabto Client SDK 4.4.2: Add Android x86_64 support
+
 ## 2.6.1 2019-08-09
 
 ### Changed
