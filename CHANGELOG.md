@@ -12,6 +12,11 @@ the release and a new unreleased section is added.
 
 ## 2.7.0 Unreleased
 
+## 2.6.3 2019-10-21
+
+### Changed
+- Fix missing tunnel container initialization on iOS when invoking `startupAndOpenProfile`.
+
 ## 2.6.2 2019-08-22
 
 ### Changed

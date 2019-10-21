@@ -105,7 +105,7 @@ BOOL parseHex(char c, char* res)
     if ('A' <= c && c <= 'F') {
         *res =  c - 'A' + 10;
         return YES;
-    } 
+    }
     if ('a' <= c && c <= 'f') {
         *res = c - 'a' + 10;
         return YES;
@@ -263,6 +263,8 @@ BOOL parseHex(char c, char* res)
             NSLog(@"Closed session, status is %d, shutting down", (int)status);
             status = [[NabtoClient instance] nabtoShutdown];
             NSLog(@"Invoked nabtoShutdown, status is x %d", (int)status);
+            tunnels_ = nil;
+            initialized_ = NO;
             [self handleStatus:status withCommand:command];
         }];
 }
@@ -318,7 +320,7 @@ BOOL parseHex(char c, char* res)
         NSLog(@"Cordova RPC invoke runInBackground ");
         NabtoClientStatus status;
         char *jsonString = 0;
-        
+
         status = [[NabtoClient instance] nabtoRpcInvoke:[command.arguments objectAtIndex:0]
                                         withResultBuffer:&jsonString];
         if (status == NCS_OK || status == NCS_FAILED_WITH_JSON_MESSAGE) {
@@ -339,7 +341,7 @@ BOOL parseHex(char c, char* res)
 }
 
 - (NSString*)createUnpreparedError:(NSString*)url {
-    return [NSString stringWithFormat: 
+    return [NSString stringWithFormat:
                          @"{\"error\" : {"
                           "\"event\" : 2000068,"
                          "\"header\" : \"Unprepared device invoked\","
@@ -347,7 +349,7 @@ BOOL parseHex(char c, char* res)
                          "\"detail\" : \"%@\""
                      "}}", url];
 }
-        
+
 
 - (void)rpcInvoke:(CDVInvokedUrlCommand*)command {
     NSString* url = [command.arguments objectAtIndex:0];
@@ -551,7 +553,7 @@ BOOL parseHex(char c, char* res)
 - (void)showAd {
     @synchronized (self) {
         if(![self isShowingAd]) {
-           self.showingAd = YES; 
+           self.showingAd = YES;
            AdViewController* avc = [[AdViewController alloc] init];
            avc.CDV=self;
            [[self topMostController] presentViewController:avc animated:YES completion:nil];
@@ -559,7 +561,7 @@ BOOL parseHex(char c, char* res)
            NSLog(@"Not showing add.. already showing");
         }
     }
-    
+
 }
 
 - (UIViewController*) topMostController {

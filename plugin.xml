@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-nabto"
-    version="2.6.2">
+    version="2.6.3">
 
     <name>Nabto</name>
     <description>Cordova Plugin Nabto</description>
@@ -33,13 +33,13 @@
                 <param name="android-package" value="com.nabto.api.Nabto"/>
             </feature>
         </config-file>
-        
+
         <framework src="com.nabto.android:nabto-api:1.5.3" />
 	<resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
 	<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
 	<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
 	<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
-        
+
         <!-- when working on android client along with cordova plugin, copy            -->
         <!-- git/cordova-plugin-nabto/src/main/java/com/nabto/api to ./src/android/api -->
         <!-- (for production, these files are all retrieved from the jcenter bundle    -->
@@ -104,7 +104,7 @@
 	  <param name="browser-package" value="NabtoMock" />
 	</feature>
       </config-file>
-      
+
       <js-module src="src/browser/NabtoProxy.js" name="NabtoProxy">
 	<runs />
       </js-module>
