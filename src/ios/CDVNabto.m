@@ -56,6 +56,7 @@
 }
 
 - (void)startupAndOpenProfile:(CDVInvokedUrlCommand*)command {
+    tunnels_ = [NSMutableDictionary dictionary];
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* res = nil;
 
