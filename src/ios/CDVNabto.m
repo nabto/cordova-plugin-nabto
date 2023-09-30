@@ -3,7 +3,7 @@
  */
 
 #import "CDVNabto.h"
-#import "NabtoClient.h"
+#import "NabtoClient/NabtoClient.h"
 #import "AdViewController.h"
 #import "AdManager.h"
 

@@ -12,6 +12,12 @@ the release and a new unreleased section is added.
 
 ## 2.7.0 Unreleased
 
+## 2.6.4 2023-08-25
+
+### Changed
+- Update to Nabto Client SDK 4.7.0 to fix guest.crt issue.
+
+
 ## 2.6.3 2019-10-21
 
 ### Changed

@@ -1,113 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-plugin-nabto"
-    version="2.6.3">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cordova-plugin-nabto"
+        version="2.7.0-rc3">
 
-    <name>Nabto</name>
-    <description>Cordova Plugin Nabto</description>
-    <license>MIT</license>
-    <keywords>cordova,nabto</keywords>
+  <name>Nabto</name>
+  <description>Cordova Plugin Nabto</description>
+  <license>MIT</license>
+  <keywords>cordova,nabto</keywords>
 
-    <js-module src="www/nabto.js" name="nabto">
-        <clobbers target="nabto"/>
-    </js-module>
+  <js-module src="www/nabto.js" name="nabto">
+    <clobbers target="nabto"/>
+  </js-module>
 
-    <js-module src="www/nabto-constants.js" name="NabtoConstants">
-        <clobbers target="window.NabtoConstants"/>
-    </js-module>
+  <js-module src="www/nabto-constants.js" name="NabtoConstants">
+    <clobbers target="window.NabtoConstants"/>
+  </js-module>
 
-    <js-module src="www/nabto-error.js" name="NabtoError">
-        <clobbers target="window.NabtoError"/>
-    </js-module>
+  <js-module src="www/nabto-error.js" name="NabtoError">
+    <clobbers target="window.NabtoError"/>
+  </js-module>
 
-    <js-module src="www/nabto-tunnel-state.js" name="NabtoTunnelState">
-        <clobbers target="window.NabtoTunnelState"/>
-    </js-module>
+  <js-module src="www/nabto-tunnel-state.js" name="NabtoTunnelState">
+    <clobbers target="window.NabtoTunnelState"/>
+  </js-module>
 
-    <!-- android -->
-    <platform name="android">
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="Nabto">
-                <param name="android-package" value="com.nabto.api.Nabto"/>
-            </feature>
-        </config-file>
+  <!-- android -->
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="Nabto">
+        <param name="android-package" value="com.nabto.api.Nabto"/>
+      </feature>
+    </config-file>
 
-        <framework src="com.nabto.android:nabto-api:1.5.3" />
-	<resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
-	<resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
-	<source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
-	<source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
+    <framework src="src/android/NabtoCordova.gradle" custom="true" type="gradleReference" />
 
-        <!-- when working on android client along with cordova plugin, copy            -->
-        <!-- git/cordova-plugin-nabto/src/main/java/com/nabto/api to ./src/android/api -->
-        <!-- (for production, these files are all retrieved from the jcenter bundle    -->
-        <!--
-        <source-file src="src/android/api/NabtoApi.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoAssetManager.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoAndroidAssetManager.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoCApiWrapper.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoClient.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoConnectionType.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoDefaultAssetManager.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoStatus.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoStreamOption.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/NabtoTunnelState.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/RpcResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/Session.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/Stream.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/StreamReadResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/TunnelInfoResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/Tunnel.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/android/api/UrlResult.java" target-dir="src/com/nabto/api" />
-        <source-file src="src/nabto/android-x86/lib/libnabto_client_api_jni.so" target-dir="libs/x86"/>
-        -->
+    <resource-file src="src/android/res/ad.png" target="res/drawable-xxhdpi/ad.png" />
+    <resource-file src="src/android/res/ad_land.png" target="res/drawable-xxhdpi/ad_land.png" />
+    <source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
+    <source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
 
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-            <uses-permission android:name="android.permission.INTERNET" />
-        </config-file>
-    </platform>
+    <!-- as of cordova 12, it is necessary to use a hackish relative path as it prepends the
+         resource with "src/main" causing to not be able to find the .aar file -->
+    <resource-file src="aar/nabto-api-release.aar" target="../../libs/nabto-api-release.aar" />
 
-    <!-- ios -->
-    <platform name="ios">
-        <config-file target="config.xml" parent="/*">
-          <feature name="Nabto">
-                <param name="ios-package" value="CDVNabto"/>
-            </feature>
-        </config-file>
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+      <uses-permission android:name="android.permission.INTERNET" />
+    </config-file>
+  </platform>
 
-        <header-file src="src/ios/NabtoClient.h" />
-        <source-file src="src/ios/NabtoClient.mm" />
-        <header-file src="src/ios/CDVNabto.h" />
-        <source-file src="src/ios/CDVNabto.m" />
-        <header-file src="src/ios/AdViewController.h" />
-        <source-file src="src/ios/AdViewController.m" />
-        <header-file src="src/ios/AdManager.h" />
-        <source-file src="src/ios/AdManager.m" />
-        <header-file src="src/ios/AdTimeProvider.h" />
-        <source-file src="src/ios/AdTimeProvider.m" />
-        <header-file src="src/ios/IsShowingAd.h" />
-        <header-file src="src/ios/NabtoAPI/nabto_client_api.h" target-dir="NabtoAPI"/>
-
-	<resource-file src="src/ios/res/ad.png" target="res/ad.png" />
-
-        <source-file src="src/nabto/ios/lib/libnabto_client_api_static.a" framework="true" />
-        <source-file src="src/nabto/ios/lib/libnabto_static_external.a" framework="true" />
-    </platform>
-
-    <!-- browser -->
-    <platform name="browser">
-      <config-file target="config.xml" parent="/*">
-	<feature name="Nabto">
-	  <param name="browser-package" value="NabtoMock" />
-	</feature>
-      </config-file>
-
-      <js-module src="src/browser/NabtoProxy.js" name="NabtoProxy">
-	<runs />
-      </js-module>
-    </platform>
+  <!-- ios -->
+  <platform name="ios">
+    <podspec>
+      <config>
+        <source url="https://github.com/CocoaPods/Specs.git"/>
+      </config>
+      <pods use-frameworks="true">
+        <pod name="NabtoClient" spec="~> 7.3.0-rc4"/>
+      </pods>
+    </podspec>
+    <config-file target="config.xml" parent="/*">
+      <preference name="deployment-target" value="14.5" />
+      <feature name="Nabto">
+        <param name="ios-package" value="CDVNabto"/>
+      </feature>
+    </config-file>
+    <header-file src="src/ios/CDVNabto.h" />
+    <source-file src="src/ios/CDVNabto.m" />
+    <header-file src="src/ios/AdViewController.h" />
+    <source-file src="src/ios/AdViewController.m" />
+    <header-file src="src/ios/AdManager.h" />
+    <source-file src="src/ios/AdManager.m" />
+    <header-file src="src/ios/AdTimeProvider.h" />
+    <source-file src="src/ios/AdTimeProvider.m" />
+    <header-file src="src/ios/IsShowingAd.h" />
+    <resource-file src="src/ios/res/ad.png" target="res/ad.png" />
+  </platform>
 
 </plugin>
