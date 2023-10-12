@@ -27,6 +27,12 @@ import org.json.JSONException;
 import android.R;
 import android.util.Log;
 
+import android.net.ConnectivityManager;
+import android.content.Context;
+import android.net.NetworkInfo;
+import android.net.Network;
+import android.os.Build;
+
 public class Nabto extends CordovaPlugin {
     private static final int NABTO_ERROR_MISSING_PREPARE = 2000068;
     private static final int GRACEPERIOD = 300; // seconds
@@ -34,6 +40,7 @@ public class Nabto extends CordovaPlugin {
     private Session session;
     private Map<String, Tunnel> tunnels;
 
+    private boolean bindToWifi = false;
     private boolean adShown = false;
     private long timerStart = 0;
     private AdService adService;
@@ -208,8 +215,35 @@ public class Nabto extends CordovaPlugin {
             });
     }
 
+    private void initWifi() {
+        if (!bindToWifi) {
+            return;
+        }
+        try {
+            final Context context = cordova.getActivity().getApplicationContext();
+            final ConnectivityManager connectivityManager = (ConnectivityManager)(context.getSystemService(Context.CONNECTIVITY_SERVICE));
+            for (Network network : connectivityManager.getAllNetworks()) {
+                NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        connectivityManager.bindProcessToNetwork(network);
+                        Log.d("nabto", "bindProcessToNetwork ok");
+                    } else {
+                        // For older Android versions, use the deprecated method
+                        ConnectivityManager.setProcessDefaultNetwork(network);
+                        Log.d("nabto", "setProcessDefaultNetwork ok");
+                    }
+                    break;
+                }
+            }
+        } catch (Throwable e) {
+            Log.w("nabto", "bindProcessToNetwork failed: " + e);
+        }
+    }
+
     private void startup(final CallbackContext cc) {
         Log.d("startup", "Nabto startup begins");
+        initWifi();
         final Context context = cordova.getActivity().getApplicationContext();
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
@@ -231,6 +265,7 @@ public class Nabto extends CordovaPlugin {
 
     private void startupAndOpenProfile(final String user, final String pass, final CallbackContext cc) {
         Log.d("startupAndOpenProfile", "Nabto startupAndOpenProfile begins");
+        initWifi();
         final Context context = cordova.getActivity().getApplicationContext();
 
         cordova.getThreadPool().execute(new Runnable() {
@@ -456,7 +491,7 @@ public class Nabto extends CordovaPlugin {
                 }
             });
     }
-    
+
     private void setBasestationAuthJson(final String authJson, final CallbackContext cc) {
         final Context context = cordova.getActivity().getApplicationContext();
         cordova.getThreadPool().execute(new Runnable() {
@@ -704,6 +739,10 @@ public class Nabto extends CordovaPlugin {
     }
 
     private void setOption(final String key, final String value, final CallbackContext cc) {
+        if (key.toLowerCase().equals("forcebindtowifi") && (value.toLowerCase().equals("true") || value.equals("1"))) {
+            bindToWifi = true;
+            return;
+        }
         cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
