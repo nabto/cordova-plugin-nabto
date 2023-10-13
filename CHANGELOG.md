@@ -13,9 +13,13 @@ the release and a new unreleased section is added.
 ## 2.7.0 Unreleased
 
 ### Changed
-- Add option `forceBindToWifi` that can be set with `setOption()`. If set on Android, all network traffic is routed to the wifi interface,
-  even if it does not have internet access - with newer Android versions, all traffic is routed to the cellular network interface, causing trouble
-  when pairing directly with device in WiFi AP mode.
+
+- Add option `forceBindToWifi` that can be set with `setOption()`. If set on Android, all network
+  traffic is routed to the WiFi interface, even if it does not have internet access: This is to
+  remedy an often seen problem on newer Android devices when connected to a WiFi in AP mode during
+  bootstrap (when there typically is no internet) - the Android system then routes all traffic to
+  the cellular network interface, preventing direct device communication. This new option works
+  around this behavior.
 
 ## 2.6.4 2023-08-25
 
