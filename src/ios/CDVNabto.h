@@ -7,7 +7,7 @@
 #import <Cordova/CDVPlugin.h>
 #import "IsShowingAd.h"
 
-@interface CDVNabto : CDVPlugin <IsShowingAd> { 
+@interface CDVNabto : CDVPlugin <IsShowingAd> {
 }
 
 
@@ -32,6 +32,8 @@
 - (void)getSessionToken:(CDVInvokedUrlCommand*)command;
 - (void)getLocalDevices:(CDVInvokedUrlCommand*)command;
 - (void)version:(CDVInvokedUrlCommand*)command;
+- (void)bindToWifi:(CDVInvokedUrlCommand*)command;
+- (void)clearWifiBinding:(CDVInvokedUrlCommand*)command;
 
 /* Nabto Tunnel API */
 - (void)tunnelOpenTcp:(CDVInvokedUrlCommand*)command;

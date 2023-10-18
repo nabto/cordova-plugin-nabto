@@ -269,6 +269,20 @@ BOOL parseHex(char c, char* res)
         }];
 }
 
+- (void)bindToWifi:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            NSLog(@"Notice: bindToWifi has no effect on iOS");
+            [self handleStatus:NCS_OK withCommand:command];
+        }];
+}
+
+- (void)clearWifiBinding:(CDVInvokedUrlCommand*)command {
+    [self.commandDelegate runInBackground:^{
+            NSLog(@"Notice: clearWifiBinding has no effect on iOS");
+            [self handleStatus:NCS_OK withCommand:command];
+        }];
+}
+
 - (void)fetchUrl:(CDVInvokedUrlCommand*)command {
     [self.commandDelegate runInBackground:^{
         CDVPluginResult *res = nil;
