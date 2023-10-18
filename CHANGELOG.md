@@ -10,7 +10,15 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 2.7.0 Unreleased
+## 2.9.0 Unreleased
+
+## 2.8.0 2023-10-18
+
+### Changed
+
+- Introduce bindToWifi() and clearWifiBinding() for full control of wifi bindings introduced in 2.7.0.
+
+## 2.7.0 2023-10-13
 
 ### Changed
 
