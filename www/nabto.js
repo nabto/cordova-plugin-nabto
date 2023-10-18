@@ -88,6 +88,14 @@ Nabto.prototype.shutdown = function(cb) {
   invokeNabto('shutdown', [], cb);
 };
 
+Nabto.prototype.bindToWifi = function(cb) {
+  invokeNabto('bindToWifi', [], cb);
+};
+
+Nabto.prototype.clearWifiBinding = function(cb) {
+  invokeNabto('clearWifiBinding', [], cb);
+};
+
 // requires prior invocation of setRpcInterface
 Nabto.prototype.rpcInvoke = function(url, cb) {
   cb = cb || function() {};
@@ -194,7 +202,7 @@ function rpcStyleInvoker(url, cb, apiFunction) {
 
 
 function handlePotentialJsonError(cb, error) {
-  var code; 
+  var code;
   var json;
   if (isNaN(parseInt(error))) {
     // json string (yirks ... use CDV messageAsMultipart to return explicit status + json string instead)
@@ -218,7 +226,7 @@ function invokeNabto(apiFunction, args, cb) {
       // missing argument
       nextTick(args[i], new NabtoError(NabtoError.Category.WRAPPER, NabtoError.Code.CDV_INVALID_ARG));
       return;
-    }    
+    }
   }
   cb = cb || function() {};
   exec(
@@ -231,5 +239,3 @@ function invokeNabto(apiFunction, args, cb) {
     'Nabto', apiFunction, args
   );
 }
-
-
