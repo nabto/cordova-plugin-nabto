@@ -759,8 +759,8 @@ public class Nabto extends CordovaPlugin {
             }
         } catch (Throwable e) {
             Log.w("nabto", "bindProcessToNetwork failed: " + e);
-            return false;
         }
+        return false;
     }
 
     private void clearWifiBinding(final CallbackContext cc) {
