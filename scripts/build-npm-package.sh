@@ -105,15 +105,27 @@ function deploy() {
     fi
     cd $BUILD_DIR
 
-    $NPM_CLI_LOGIN
-    
+    VERSION=$(node -p "require('./package.json').version")
+    TAG_ARG=""
+    echo "$VERSION" | grep -Eq 'rc[0-9]*$|rc\.[0-9]+$'
+    if [ $? -eq 0 ]; then
+        TAG_ARG="--tag=rc"
+    fi
+
+    echo -n "Enter npm OTP: "
+    read NPM_OTP
+    if [ -z "$NPM_OTP" ]; then
+        echo "ERROR: No OTP entered, aborting publish"
+        return 1
+    fi
+
     set +e
     NODE_OUTPUT=`mktemp`
-    node --max_old_space_size=8192 `which npm` publish --verbose 2>&1 | tee $NODE_OUTPUT 2>&1
+    node --max_old_space_size=8192 `which npm` publish --verbose $TAG_ARG --otp="$NPM_OTP" 2>&1 | tee $NODE_OUTPUT 2>&1
     if [ ${PIPESTATUS[0]} != 1 ]; then
         local msg="check download page https://www.npmjs.com/package/cordova-plugin-nabto to see if package is actually updated. If not, try again."
         grep -q "first byte timeout" $NODE_OUTPUT
-        if [ $? == "0" ]; then
+        if [ $? == 0 ]; then
             echo "npm says upload failed, but it is likely just a wrong error message - $msg"
             return 0
         else

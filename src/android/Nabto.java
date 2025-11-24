@@ -752,7 +752,7 @@ public class Nabto extends CordovaPlugin {
                     } else {
                         // For older Android versions, use the deprecated method
                         ConnectivityManager.setProcessDefaultNetwork(network);
-                        Log.d("nabto", "setProcessDefaultNetwork(wome_wifi) ok");
+                        Log.d("nabto", "setProcessDefaultNetwork(some_wifi) ok");
                     }
                     return true;
                 }
