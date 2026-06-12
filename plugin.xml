@@ -10,6 +10,11 @@
   <license>MIT</license>
   <keywords>cordova,nabto</keywords>
 
+  <!-- iOS uses Swift Package Manager (see Package.swift), which requires cordova-ios 8+. -->
+  <engines>
+    <engine name="cordova-ios" version=">=8.0.0"/>
+  </engines>
+
   <js-module src="www/nabto.js" name="nabto">
     <clobbers target="nabto"/>
   </js-module>
@@ -41,9 +46,8 @@
     <source-file src="src/android/Nabto.java" target-dir="src/com/nabto/api" />
     <source-file src="src/android/AdService.java" target-dir="src/com/nabto/api" />
 
-    <!-- as of cordova 12, it is necessary to use a hackish relative path as it prepends the
-         resource with "src/main" causing to not be able to find the .aar file -->
-    <resource-file src="aar/nabto-api-release.aar" target="../../libs/nabto-api-release.aar" />
+    <!-- The Nabto Android client AAR is resolved by Gradle directly from the
+         android-client-api GitHub release; see src/android/NabtoCordova.gradle. -->
 
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -52,15 +56,9 @@
   </platform>
 
   <!-- ios -->
-  <platform name="ios">
-    <podspec>
-      <config>
-        <source url="https://github.com/CocoaPods/Specs.git"/>
-      </config>
-      <pods use-frameworks="true">
-        <pod name="NabtoClient" spec="~> 7.3.0-rc4"/>
-      </pods>
-    </podspec>
+  <!-- The NabtoClient library is resolved via Swift Package Manager; see Package.swift
+       in the plugin root, which depends on https://github.com/nabto/nabto-ios-client. -->
+  <platform name="ios" package="swift">
     <config-file target="config.xml" parent="/*">
       <preference name="deployment-target" value="14.5" />
       <feature name="Nabto">
