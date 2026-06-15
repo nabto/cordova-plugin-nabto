@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-nabto",
-  "version": "3.0.1-rc.4",
+  "version": "3.0.1-rc.6",
   "description": "Cordova Plugin Nabto",
   "scripts": {
     "version": "node scripts/sync-plugin-version.js && git add plugin.xml"
