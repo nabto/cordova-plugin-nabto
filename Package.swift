@@ -15,6 +15,12 @@ let package = Package(
         .library(name: "cordova-plugin-nabto", targets: ["CDVNabto"])
     ],
     dependencies: [
+        // cordova-ios is referenced here only so the plugin resolves when built
+        // standalone (swift build). When cordova integrates the plugin it rewrites
+        // this line to a local path dependency on the app's vendored cordova-ios
+        // (see cordova-ios lib/SwiftPackage.js), so the requirement below is just a
+        // placeholder. A version range can't be used because cordova-ios publishes
+        // only "rel/X.Y.Z" git tags, which SwiftPM does not treat as semver.
         .package(url: "https://github.com/apache/cordova-ios.git", branch: "master"),
         // Legacy Nabto 4/Micro client (the SPM distribution of the NabtoClient
         // library that was previously consumed via the CocoaPods "NabtoClient" pod).
@@ -28,14 +34,12 @@ let package = Package(
                 .product(name: "NabtoClient", package: "nabto-ios-client")
             ],
             path: "src/ios",
-            // src/ios also holds sample/test Xcode projects and a resource that is
-            // delivered to the app via the <resource-file> tag in plugin.xml; none
-            // of these should be compiled as part of the plugin target.
+            // src/ios/res holds a resource delivered to the app via the
+            // <resource-file> tag in plugin.xml; it must not be compiled into the
+            // plugin target. (The former sample/test Xcode projects that were also
+            // excluded here have been removed from the repo.)
             exclude: [
-                "AmpAdHelperTest",
-                "PluginTester",
-                "res",
-                ".npmignore"
+                "res"
             ],
             sources: [
                 "CDVNabto.m",
