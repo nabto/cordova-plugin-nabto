@@ -1,0 +1,25 @@
+// Pull the Nabto Android client AAR straight from the android-client-api GitHub
+// release, treating the release download URL as an Ivy repository.
+//
+//   https://github.com/nabto/android-client-api/releases/download/v1.7.3/nabto-api-release.aar
+//
+// Gradle resolves and caches it like any other dependency, so there is no need
+// to vendor the binary or copy it into the app's libs/ directory.
+repositories {
+    ivy {
+        url 'https://github.com/nabto/android-client-api/releases/download'
+        patternLayout {
+            artifact '[revision]/[module].[ext]'
+        }
+        // The release only hosts the raw .aar, no Ivy/POM metadata.
+        metadataSources { artifact() }
+        // Only resolve the Nabto AAR here; everything else uses the normal repos.
+        content {
+            includeModule('com.nabto.api', 'nabto-api-release')
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.nabto.api:nabto-api-release:v1.7.4@aar'
+}

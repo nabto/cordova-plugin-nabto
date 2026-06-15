@@ -12,6 +12,12 @@ the release and a new unreleased section is added.
 
 ## 2.9.0 Unreleased
 
+### Changed
+
+- iOS: resolve the NabtoClient library via Swift Package Manager
+  (https://github.com/nabto/nabto-ios-client) instead of the CocoaPods
+  `NabtoClient` pod. This requires cordova-ios 8 or later.
+
 ## 2.8.0 2023-10-18
 
 ### Changed

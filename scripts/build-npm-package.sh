@@ -2,8 +2,11 @@
 #
 # Build cordova-plugin-nabto package and optionally deploy to npmjs.
 #
-# Note: Pollutes local repo with artifacts downloaded into plugin dirs, so clone repo just for
-# building and throw away afterwards.
+# Note: The iOS NabtoClient library is no longer vendored into the package; it is resolved at app
+# build time via Swift Package Manager (see Package.swift), so building is just `npm pack`.
+#
+# WARNING: <target dir> is wiped with `rm -rf` before building. Pass a dedicated output directory,
+# NOT the plugin repo itself.
 #
 # $0 <target dir> [<deploy {yes|no|deploy-only}>]"
 #
@@ -23,10 +26,7 @@ if [ ! -z "$2" ] && [ "$2" != "no" ]; then
     fi
 fi
 
-STATIC_BUNDLE_URL=https://downloads.nabto.com/assets/nabto-ios-client-static/4.7.0/nabto-libs-ios-static.zip
 BUILD_DIR=$DIR/..
-CDV_ASSET_SUBDIR=src/nabto/ios
-CDV_SRC_SUBDIR=src/ios
 
 NPM_CLI_LOGIN=npm-cli-login
 
@@ -40,11 +40,22 @@ function usage() {
 }
 
 function prep_dirs() {
-    rm -rf $TARGET_DIR
-    mkdir -p $TARGET_DIR
-    mkdir -p $BUILD_DIR/$CDV_ASSET_SUBDIR/lib
-    mkdir -p $BUILD_DIR/$CDV_ASSET_SUBDIR/include
-    mkdir -p $BUILD_DIR/$CDV_SRC_SUBDIR
+    if [ -z "$TARGET_DIR" ]; then
+        die "ERROR: no <target dir> given"
+    fi
+    # Guard against wiping the plugin repo or any ancestor: <target dir> is rm -rf'd below, so it
+    # must be a dedicated output directory, not the repo root, the cwd, or a parent of the repo.
+    local abs_target abs_build
+    abs_target=$(cd "$TARGET_DIR" 2>/dev/null && pwd || echo "$TARGET_DIR")
+    abs_build=$(cd "$BUILD_DIR" && pwd)
+    if [ "$abs_target" == "/" ] || [ "$abs_target" == "$abs_build" ] || [ "$abs_target" == "$PWD" ]; then
+        die "ERROR: refusing to 'rm -rf' target dir '$abs_target' - it is the repo/cwd. Pass a separate output directory."
+    fi
+    case "$abs_build/" in
+        "$abs_target"/*) die "ERROR: refusing to 'rm -rf' target dir '$abs_target' - it contains the plugin repo." ;;
+    esac
+    rm -rf "$TARGET_DIR"
+    mkdir -p "$TARGET_DIR"
 }
 
 function check_deploy_ready() {
@@ -74,25 +85,9 @@ function build() {
         return
     fi
 
-    # TODO: use submodule or cocoapod instead
-    local tmp_dir=`mktemp -d`
-    (cd $tmp_dir ; git clone git@github.com:nabto/nabto-ios-client.git ; cd nabto-ios-client ; cp NabtoClient/NabtoClient.* $BUILD_DIR/$CDV_SRC_SUBDIR)
-
-    local lib_api=lib/libnabto_client_api_static.a
-    local lib_ext=lib/libnabto_static_external.a
-    local header=include/NabtoAPI/nabto_client_api.h
-    local archive=$tmp_dir/lib.zip
-    curl -o $archive $STATIC_BUNDLE_URL
-
-    local libdir=$BUILD_DIR/$CDV_ASSET_SUBDIR/lib
-    local incdir=$BUILD_DIR/$CDV_SRC_SUBDIR/NabtoAPI
-    local prefix=nabto-libs-ios-static/ios
-    mkdir -p $libdir
-    mkdir -p $incdir
-    tmp_dir=`mktemp -d`
-    (cd $tmp_dir ; unzip $archive ; mv $prefix/lib/*.a $libdir ; mv $prefix/include/*.h $incdir)
-    rm -rf $tmp_dir
-    
+    # The iOS NabtoClient library and its native NabtoAPI dependency are no longer downloaded and
+    # vendored here: they are pulled in by Swift Package Manager at app build time via the
+    # https://github.com/nabto/nabto-ios-client dependency declared in Package.swift.
     echo "Pack npm module"
     cd $BUILD_DIR
     npm pack
