@@ -21,5 +21,5 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.nabto.api:nabto-api-release:v1.7.3@aar'
+    implementation 'com.nabto.api:nabto-api-release:v1.7.4@aar'
 }
