@@ -65,15 +65,15 @@
         <param name="ios-package" value="CDVNabto"/>
       </feature>
     </config-file>
-    <header-file src="src/ios/CDVNabto.h" />
+    <header-file src="src/ios/include/CDVNabto.h" />
     <source-file src="src/ios/CDVNabto.m" />
-    <header-file src="src/ios/AdViewController.h" />
+    <header-file src="src/ios/include/AdViewController.h" />
     <source-file src="src/ios/AdViewController.m" />
-    <header-file src="src/ios/AdManager.h" />
+    <header-file src="src/ios/include/AdManager.h" />
     <source-file src="src/ios/AdManager.m" />
-    <header-file src="src/ios/AdTimeProvider.h" />
+    <header-file src="src/ios/include/AdTimeProvider.h" />
     <source-file src="src/ios/AdTimeProvider.m" />
-    <header-file src="src/ios/IsShowingAd.h" />
+    <header-file src="src/ios/include/IsShowingAd.h" />
     <resource-file src="src/ios/res/ad.png" target="res/ad.png" />
   </platform>
 

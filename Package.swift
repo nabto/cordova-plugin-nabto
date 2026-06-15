@@ -43,7 +43,11 @@ let package = Package(
                 "AdTimeProvider.m",
                 "AdViewController.m"
             ],
-            publicHeadersPath: "."
+            // The public headers live in their own include/ subdirectory. SPM treats the
+            // module-named header (CDVNabto.h) as an umbrella header and rejects any sibling
+            // directories next to it; isolating the headers in include/ keeps the umbrella
+            // header away from the sample projects and res/ that sit at the src/ios root.
+            publicHeadersPath: "include"
         )
     ]
 )
