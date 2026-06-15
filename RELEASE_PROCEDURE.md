@@ -92,9 +92,15 @@ npm stage view <stage-id>                # (optional) inspect it
 npm stage approve <stage-id>             # prompts for 2FA -> goes live
 ```
 
-The version is staged under npm's default `latest` dist-tag, applied when you approve. If a
-release needs a different dist-tag (e.g. an `rc` for a pre-release), stage it manually with
-`npm stage publish --tag <tag>` instead of relying on the tag-push workflow.
+A clean semver release (e.g. `3.0.1`) is staged under npm's default `latest` dist-tag, applied
+when you approve. A pre-release (anything with a suffix, e.g. `3.1.0-rc1`, `3.1.0-alpha.0`,
+`3.1.0-beta.2`) is staged under a channel dist-tag derived from its pre-release identifier
+(`rc` / `alpha` / `beta`, …) so it never lands on `latest`. CI does this automatically from the
+tag name — no manual `--tag` needed.
+
+The dist-tag is an **immutable** property of the staged package — it can't be changed at approval
+time. If CI staged a release under the wrong dist-tag, `npm stage reject <stage-id>` it and re-stage
+with the right tag (`npm stage publish --tag <tag>`) rather than approving.
 
 ### 5. Verify
 
@@ -109,8 +115,9 @@ under the expected dist-tag: `npm view cordova-plugin-nabto`.
 - **`.github/workflows/release.yml`** (on push of a `v*` tag):
   1. verifies the tag matches `package.json`;
   2. **stages** the publish to npm via **OIDC trusted publishing** (`npm stage publish`, no
-     tokens/OTP, provenance included) under the default `latest` dist-tag — the version is NOT
-     live until approved (step 4).
+     tokens/OTP, provenance included) — a clean semver under the default `latest` dist-tag, a
+     pre-release (`-rc`/`-alpha`/`-beta`/…) under its channel dist-tag instead — the version is
+     NOT live until approved (step 4).
 
 ## Summary
 

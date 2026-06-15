@@ -42,8 +42,27 @@ jobs:
             exit 1
           fi
 
+      - name: Determine npm dist-tag
+        id: disttag
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"           # v3.1.0-rc1 -> 3.1.0-rc1
+          # Only a clean semver (no pre-release suffix) may take the default `latest`
+          # dist-tag; otherwise `npm install cordova-plugin-nabto` would resolve to a
+          # pre-release. A version like 3.1.0-rc1 / 3.1.0-alpha.0 / 3.1.0-beta.2 is staged
+          # under a channel dist-tag derived from its pre-release identifier (rc / alpha / beta).
+          if [[ "$VERSION" == *-* ]]; then
+            PRE="${VERSION#*-}"                     # rc1 | alpha.0 | beta.2
+            CHANNEL="${PRE%%[._0-9]*}"             # rc  | alpha   | beta   (strip from first digit/dot)
+            [ -n "$CHANNEL" ] || CHANNEL="prerelease"
+            echo "tag_arg=--tag $CHANNEL" >> "$GITHUB_OUTPUT"
+            echo "::notice::Pre-release $VERSION -> staging under the '$CHANNEL' dist-tag (not 'latest')."
+          else
+            echo "tag_arg=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Stage publish to npm (OIDC; awaits maintainer 2FA approval)
         run: |
-          npm stage publish --provenance
+          npm stage publish --provenance ${{ steps.disttag.outputs.tag_arg }}
           echo "::notice::Staged cordova-plugin-nabto - NOT live yet. Approve it (2FA) via" \
                "'npm stage approve <id>' or the npmjs.com Staged Packages tab."
