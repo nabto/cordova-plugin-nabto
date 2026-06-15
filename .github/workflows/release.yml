@@ -22,7 +22,7 @@ jobs:
     name: Stage publish to npm
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # NOTE: do NOT set `registry-url` here. It makes setup-node write an .npmrc with a
       # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` line; with no token set that
