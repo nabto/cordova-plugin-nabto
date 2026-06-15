@@ -10,7 +10,9 @@ Guide: always keep an unreleased section which keeps track of current
 changes. When a release is made the unreleased section is renamed to
 the release and a new unreleased section is added.
 
-## 2.9.0 Unreleased
+## <next> Unreleased
+
+## 3.0.1-rc.0 2026-06-15
 
 ### Changed
 
