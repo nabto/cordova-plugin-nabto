@@ -12,7 +12,7 @@ the release and a new unreleased section is added.
 
 ## <next> Unreleased
 
-## 3.0.1-rc.0 2026-06-15
+## 3.0.1-rc.1 2026-06-15
 
 ### Changed
 
