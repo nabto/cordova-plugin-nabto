@@ -46,13 +46,13 @@ jobs:
       # The iOS NabtoClient library is resolved at app build time via Swift Package Manager
       # (see Package.swift), not vendored, so packaging the plugin is just `npm pack`.
       - name: Build npm package
-        run: npm pack --pack-destination "$RUNNER_TEMP/out"
+        run: npm pack
 
       - name: Upload package tarball
         uses: actions/upload-artifact@v4
         with:
           name: cordova-plugin-nabto-npm
-          path: ${{ runner.temp }}/out/*.tgz
+          path: cordova-plugin-nabto-*.tgz
           if-no-files-found: error
 
   android:
