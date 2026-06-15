@@ -3,7 +3,10 @@
  */
 
 #import "CDVNabto.h"
-#import <NabtoClient/NabtoClient.h>
+// nabto-ios-client is consumed as a SwiftPM module; import it as a module
+// (the angle-bracket <NabtoClient/NabtoClient.h> form is a CocoaPods-era
+// convention that SwiftPM does not expose, causing "file not found").
+@import NabtoClient;
 #import "AdViewController.h"
 #import "AdManager.h"
 
