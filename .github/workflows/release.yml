@@ -29,9 +29,10 @@ jobs:
       # forces empty token-auth and the publish fails with E401, shadowing OIDC. Trusted
       # publishing authenticates via the OIDC id-token instead, so we must leave token auth
       # unconfigured. The default registry is registry.npmjs.org, which is what we want.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22                       # staged publishing needs Node >= 22.14.0
+          node-version: 26                       # staged publishing needs Node >= 22.14.0
+          package-manager-cache: false  # never use caching in release builds
 
       - name: Use a staged-publishing-capable npm
         run: npm install -g npm@latest            # staged publishing needs npm >= 11.15.0
@@ -67,6 +68,6 @@ jobs:
 
       - name: Stage publish to npm (OIDC; awaits maintainer 2FA approval)
         run: |
-          npm stage publish --provenance ${{ steps.disttag.outputs.tag_arg }}
+          npm stage publish ${{ steps.disttag.outputs.tag_arg }}
           echo "::notice::Staged cordova-plugin-nabto - NOT live yet. Approve it (2FA) via" \
                "'npm stage approve <id>' or the npmjs.com Staged Packages tab."
