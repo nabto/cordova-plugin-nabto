@@ -24,10 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # NOTE: do NOT set `registry-url` here. It makes setup-node write an .npmrc with a
+      # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` line; with no token set that
+      # forces empty token-auth and the publish fails with E401, shadowing OIDC. Trusted
+      # publishing authenticates via the OIDC id-token instead, so we must leave token auth
+      # unconfigured. The default registry is registry.npmjs.org, which is what we want.
       - uses: actions/setup-node@v4
         with:
           node-version: 22                       # staged publishing needs Node >= 22.14.0
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Use a staged-publishing-capable npm
         run: npm install -g npm@latest            # staged publishing needs npm >= 11.15.0
