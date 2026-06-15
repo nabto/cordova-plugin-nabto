@@ -20,6 +20,19 @@ env:
   CI: "true"
 
 jobs:
+  version-consistency:
+    name: version files in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: package.json and plugin.xml versions must match
+        run: |
+          set -euo pipefail
+          PKG=$(node -p "require('./package.json').version")
+          XML=$(sed -nE 's|^[[:space:]]*version="([^"]*)">|\1|p' plugin.xml | head -n1)
+          echo "package.json=$PKG plugin.xml=$XML"
+          [ "$PKG" = "$XML" ] || { echo "ERROR: package.json ($PKG) != plugin.xml ($XML)" >&2; exit 1; }
+
   pack:
     name: npm pack
     runs-on: ubuntu-latest
@@ -30,14 +43,16 @@ jobs:
         with:
           node-version: 20
 
+      # The iOS NabtoClient library is resolved at app build time via Swift Package Manager
+      # (see Package.swift), not vendored, so packaging the plugin is just `npm pack`.
       - name: Build npm package
-        run: bash scripts/build-npm-package.sh "$RUNNER_TEMP/out" no
+        run: npm pack
 
       - name: Upload package tarball
         uses: actions/upload-artifact@v4
         with:
           name: cordova-plugin-nabto-npm
-          path: ${{ runner.temp }}/out/*.tgz
+          path: cordova-plugin-nabto-*.tgz
           if-no-files-found: error
 
   android:
