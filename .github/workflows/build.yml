@@ -94,4 +94,7 @@ jobs:
           cordova platform add ios@8
           cordova plugin add "$GITHUB_WORKSPACE"
           # Build for the simulator so the build does not require code signing.
-          cordova build ios --emulator
+          # The Nabto client xcframework ships only an arm64 simulator slice, and
+          # the macos-14 runner is Apple Silicon, so exclude the x86_64 simulator
+          # slice to avoid a link failure (and to halve the simulator compile).
+          cordova build ios --emulator --buildFlag='EXCLUDED_ARCHS=x86_64'
