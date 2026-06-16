@@ -13,10 +13,10 @@ See the [AppMyProduct Heat Control](https://github.com/nabto/ionic-starter-nabto
 
 ## Installation
 
-1. Download Nabto libraries and assets to *cordova-plugin-nabto/src/nabto/* (See "Source File Structure" section). This step can be skipped if installing directly from [npm](https://www.npmjs.com/).
-2. Install cordova plugin: `cordova plugin add cordova-plugin-nabto`.
-3. For iOS projects replace linker flag `-ObjC` with `-force_load $(BUILT_PRODUCTS_DIR)/libCordova.a -lstdc++` (in platforms/ios/cordova/build.xcconfig)
-4. Start using as described in the Example and API section.
+1. Install cordova plugin: `cordova plugin add cordova-plugin-nabto`.
+2. Start using as described in the Example and API section.
+
+The native Nabto dependencies are resolved automatically: on Android the client AAR is pulled by Gradle from the [android-client-api](https://github.com/nabto/android-client-api) GitHub release, and on iOS the `NabtoClient` library is resolved via Swift Package Manager from [nabto-ios-client](https://github.com/nabto/nabto-ios-client) (requires cordova-ios 8+).
 
 ## Example
 
@@ -325,34 +325,29 @@ Delimiter (e.g. `:`) is optional.
 
 ## Source File Structure
 
-Install from npm to get all necessary libraries and resources installed in the right location.
+The plugin ships only the Cordova wrapper sources; the native Nabto client libraries are pulled in
+automatically by the platform build tooling, so there is nothing to download manually:
 
-For development of the plugin itself, install with a reference to this git repo. The Nabto Android
-wrapper and dependencies is installed automatically from bintray. For iOS, Cordova does not support
-dynamic frameworks in Cocoapods.
+- **Android** — the Nabto client AAR is resolved by Gradle from the
+  [android-client-api](https://github.com/nabto/android-client-api) GitHub release; see
+  `src/android/NabtoCordova.gradle`.
+- **iOS** — the `NabtoClient` library is resolved via Swift Package Manager from
+  [nabto-ios-client](https://github.com/nabto/nabto-ios-client); see `Package.swift` in the plugin
+  root. This requires cordova-ios 8+.
 
-So for iOS, do the following:
-
-1. Download the iOS <a href="https://www.nabto.com/downloads.html">wrapper source</a> (Libraries > Source > [iOS link in table]) - unpack and put the source files in `./src/ios`.
-2. Download the <a href="https://www.nabto.com/downloads.html">static Nabto Client SDK core libraries</a> - unpack and put .a files in `./src/nabto/ios/lib` and header files in `./src/nabto/ios/include`.
-
-That is, make sure you have the following directory structure:
-
+The wrapper sources are laid out as follows:
 
 ```
 src
-├── ios
-│   ├── CDVNabto.m
+├── android
+│   ├── Nabto.java
 │   ├── ...
-│   ├── NabtoClient.mm
-│   ├── NabtoClient.h
-└── nabto
-    └── ios
-        ├── include
-        │   └── nabto_client_api.h
-        ├── lib
-        │   ├── libnabto_client_api_static.a
-        │   └── libnabto_static_external.a
+│   └── NabtoCordova.gradle
+└── ios
+    ├── CDVNabto.m
+    ├── ...
+    └── include
+        └── CDVNabto.h
 ```
 
 ## Run Tests
