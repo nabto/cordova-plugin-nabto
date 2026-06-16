@@ -11,7 +11,7 @@ on:
       - 'v*'
 
 permissions:
-  contents: read
+  contents: write     # create GitHub Releases
   id-token: write     # OIDC trusted publishing to npm
 
 env:
@@ -61,9 +61,11 @@ jobs:
             CHANNEL="${PRE%%[._0-9]*}"             # rc  | alpha   | beta   (strip from first digit/dot)
             [ -n "$CHANNEL" ] || CHANNEL="prerelease"
             echo "tag_arg=--tag $CHANNEL" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Pre-release $VERSION -> staging under the '$CHANNEL' dist-tag (not 'latest')."
           else
             echo "tag_arg=" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Stage publish to npm (OIDC; awaits maintainer 2FA approval)
@@ -73,3 +75,16 @@ jobs:
           npm stage publish ${{ steps.disttag.outputs.tag_arg }}
           echo "::notice::Staged cordova-plugin-nabto - NOT live yet. Approve it (2FA) via" \
                "'npm stage approve <id>' or the npmjs.com Staged Packages tab."
+
+      # GitHub auto-generates the changelog (commits / merged PRs since the previous tag).
+      # The release is created even though the npm publish is only staged: it documents what
+      # the tag contains. Pre-release tags (e.g. v3.1.0-rc1) are flagged as GitHub pre-releases.
+      - name: Create GitHub Release with auto-generated changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            ${{ steps.disttag.outputs.prerelease == 'true' && '--prerelease' || '' }}
