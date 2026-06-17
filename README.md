@@ -1,7 +1,7 @@
 > **Warning**
 > Deprecation notice: This SDK is for Nabto 4/Micro (uNabto). For new projects, the next generation Nabto 5/Edge should be used instead. Read about the differences [here](https://docs.nabto.com/developer/guides/concepts/overview/edge-vs-micro.html). Nabto 5/Edge provides no direct Cordova support - but provides [iOS](https://docs.nabto.com/developer/platforms/ios/intro.html) and [Android SDK](https://docs.nabto.com/developer/platforms/android/intro.html)s that are straightforward to wrap from Cordova and Ionic Capacitor. 
 
-# Cordova Plugin Nabto - 2.6
+# Cordova Plugin Nabto
 
 Legacy [Nabto 4/Micro](https://www.nabto.com) client plugin for Cordova.
 
