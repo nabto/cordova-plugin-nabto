@@ -14,20 +14,24 @@ it:
   lifecycle script in `package.json` whenever you run `npm version`.
 - CI guards against drift: the `version-consistency` job in `.github/workflows/build.yml` fails
   any PR/push where `package.json` and `plugin.xml` disagree.
-- The git tag is created **from** the bumped commit (via `npm version`), so the tag always
-  matches the released version.
+- The git tag is created on the commit **on `master`** that contains the bump (after the release
+  PR is merged), so the tag always matches the released version. The release workflow refuses to
+  stage a tag whose version differs from `package.json`.
 
 Versions follow [semver](https://semver.org/). Tags use a `v` prefix, e.g. `v3.0.1`.
 
 ## Prerequisites
 
-- Push access to the `master` branch (or rights to merge a release PR and push the tag).
+- Rights to open and merge a PR to `master` and to push a `v*` tag. **`master` is protected by a
+  GitHub ruleset: nothing can be committed or pushed to it directly**, so the version bump goes
+  through a pull request, and only the tag is pushed directly. (If the ruleset also restricts tag
+  creation, the person pushing the tag needs to be on its bypass list.)
 - **One-time npm Trusted Publisher setup** (CI *stages* the publish via OIDC — no tokens, no
   OTP). On [npmjs.com](https://www.npmjs.com/package/cordova-plugin-nabto) → the package →
   *Settings* → *Trusted Publisher*, add a GitHub Actions publisher (all fields case-sensitive):
   - Organization or user: `nabto`
   - Repository: `cordova-plugin-nabto`
-  - Workflow filename: `release.yml`
+  - Workflow filename: `publish.yml`
   - Environment: *(leave blank)*
   - Allowed action: `npm stage publish` (staged publishing — a maintainer approves with 2FA
     before the version goes live)
@@ -38,49 +42,67 @@ Versions follow [semver](https://semver.org/). Tags use a `v` prefix, e.g. `v3.0
 
 ## Steps
 
-### 1. Land the changes and update the changelog
+### 1. Prepare the release on a branch
 
-Make sure everything for the release is merged to `master` and CI is green. Update
-`CHANGELOG.md`: rename the `## X.Y.Z Unreleased` section to the new version with today's date,
-and add a fresh empty `Unreleased` section above it (see the guide at the top of the changelog).
-
-```
-## 3.0.1 2026-06-15      <- renamed from "Unreleased"
-...
-
-## <next> Unreleased     <- new empty section
-```
-
-Commit this (it can be its own small PR, or part of the release work). `npm version` in the next
-step requires a clean working tree.
-
-### 2. Bump the version and tag
-
-From an up-to-date, clean `master`:
+`master` is protected, so make the release changes on a branch from an up-to-date `master`:
 
 ```sh
-npm version <new-version>      # e.g. npm version 3.0.1   (no leading v)
+git checkout master && git pull
+git checkout -b release-<new-version>        # e.g. release-3.0.3
 ```
 
-This single command:
-- updates `version` in `package.json`,
-- runs `scripts/sync-plugin-version.js` to update `plugin.xml` to the same version,
-- creates a commit and an annotated tag `v<new-version>`.
+Make sure everything for the release is already merged to `master`. Then:
 
-For a pre-release use the rc convention, e.g. `npm version 3.1.0-rc1`.
+1. Update `CHANGELOG.md`: rename the `## X.Y.Z Unreleased` section to the new version with today's
+   date, and keep a fresh empty `## <next> Unreleased` section above it (see the guide at the top
+   of the changelog).
 
-### 3. Push
+   ```
+   ## <next> Unreleased
+
+   ## 3.0.3 2026-10-27      <- renamed from "Unreleased"
+   ...
+   ```
+
+2. Bump the version without creating a commit or tag (those happen later):
+
+   ```sh
+   npm version <new-version> --no-git-tag-version    # e.g. npm version 3.0.3 (no leading v)
+   ```
+
+   This updates `version` in `package.json` and `package-lock.json`, and runs
+   `scripts/sync-plugin-version.js` to update `plugin.xml` to the same version. For a pre-release
+   use the rc convention, e.g. `npm version 3.1.0-rc1 --no-git-tag-version`.
+
+3. Commit, push and open a PR:
+
+   ```sh
+   git commit -am "Release <new-version>"
+   git push -u origin release-<new-version>
+   gh pr create --base master --title "Release <new-version>"
+   ```
+
+Wait for CI (`version-consistency`, `pack`, Android and iOS builds) to pass and merge the PR.
+
+### 2. Tag the merged commit
+
+The tag must point at the commit on `master` that contains the bump. If the PR was squash- or
+rebase-merged, that is the *new* commit on `master`, not your branch commit, so always tag from
+an updated `master`:
 
 ```sh
-git push --follow-tags
+git checkout master && git pull
+node -p "require('./package.json').version"     # must print <new-version>
+git tag -a v<new-version> -m "v<new-version>"   # e.g. v3.0.3
+git push origin v<new-version>
 ```
 
-This pushes both the version commit and the `v<new-version>` tag. **Pushing the `v…` tag is what
-triggers the release** — `.github/workflows/release.yml` runs on any pushed tag matching `v*` and
-**stages** the npm publish (see below). No GitHub Release is involved. The version is not live yet
-— proceed to step 4.
+Do not use `git push --follow-tags` or push `master`; only the tag is pushed. **Pushing the `v…`
+tag is what triggers the release** — `.github/workflows/publish.yml` runs on any pushed tag
+matching `v*`, **stages** the npm publish and creates a GitHub Release with auto-generated notes
+(see below). The version is not live on npm yet — proceed to step 3.
 
-### 4. Approve the staged publish (2FA)
+### 3. Approve the staged publish (2FA)
 
 CI stages the version to npm but cannot make it live (OIDC tokens can't approve). A maintainer
 approves it with 2FA — either in the npmjs.com UI (package → **Staged Packages** → **Approve**),
@@ -102,34 +124,42 @@ The dist-tag is an **immutable** property of the staged package — it can't be 
 time. If CI staged a release under the wrong dist-tag, `npm stage reject <stage-id>` it and re-stage
 with the right tag (`npm stage publish --tag <tag>`) rather than approving.
 
-### 5. Verify
+### 4. Verify
 
 After approval, confirm `cordova-plugin-nabto@<new-version>` is on npm (with a provenance badge),
-under the expected dist-tag: `npm view cordova-plugin-nabto`.
+under the expected dist-tag: `npm view cordova-plugin-nabto`. Also check the GitHub Release exists:
+`gh release view v<new-version>`.
 
 ## What CI does automatically
 
 - **`.github/workflows/build.yml`** (every PR and push to `master`): checks
   `package.json`/`plugin.xml` version consistency, packs the plugin, and builds it into a
   throwaway Cordova app on Android and iOS.
-- **`.github/workflows/release.yml`** (on push of a `v*` tag):
+- **`.github/workflows/publish.yml`** (on push of a `v*` tag):
   1. verifies the tag matches `package.json`;
   2. **stages** the publish to npm via **OIDC trusted publishing** (`npm stage publish`, no
      tokens/OTP, provenance included) — a clean semver under the default `latest` dist-tag, a
      pre-release (`-rc`/`-alpha`/`-beta`/…) under its channel dist-tag instead — the version is
-     NOT live until approved (step 4).
+     NOT live until approved (step 3);
+  3. creates a GitHub Release for the tag with auto-generated notes (flagged as a pre-release for
+     `-rc`/`-alpha`/`-beta` tags).
 
 ## Summary
 
 ```sh
-# 1. update CHANGELOG.md, commit
-# 2. bump + tag
-npm version 3.0.1
-# 3. push commit + tag (pushing the v3.0.1 tag triggers CI, which STAGES the npm publish)
-git push --follow-tags
-# 4. approve the staged publish with 2FA (or use the npmjs.com Staged Packages tab)
+# 1. release branch: changelog + version bump, PR, merge
+git checkout master && git pull && git checkout -b release-3.0.3
+# edit CHANGELOG.md
+npm version 3.0.3 --no-git-tag-version
+git commit -am "Release 3.0.3" && git push -u origin release-3.0.3
+gh pr create --base master --title "Release 3.0.3"      # merge when CI is green
+# 2. tag the merged commit on master (only the tag is pushed; pushing it triggers CI,
+#    which STAGES the npm publish and creates the GitHub Release)
+git checkout master && git pull
+git tag -a v3.0.3 -m "v3.0.3" && git push origin v3.0.3
+# 3. approve the staged publish with 2FA (or use the npmjs.com Staged Packages tab)
 npm stage list cordova-plugin-nabto
 npm stage approve <stage-id>
-# 5. verify
-npm view cordova-plugin-nabto@3.0.1
+# 4. verify
+npm view cordova-plugin-nabto@3.0.3
 ```
