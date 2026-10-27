@@ -24,7 +24,7 @@ let package = Package(
         .package(url: "https://github.com/apache/cordova-ios.git", branch: "master"),
         // Legacy Nabto 4/Micro client (the SPM distribution of the NabtoClient
         // library that was previously consumed via the CocoaPods "NabtoClient" pod).
-        .package(url: "https://github.com/nabto/nabto-ios-client.git", from: "8.0.1")
+        .package(url: "https://github.com/nabto/nabto-ios-client.git", from: "8.0.2")
     ],
     targets: [
         .target(
