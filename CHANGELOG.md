@@ -12,6 +12,12 @@ the release and a new unreleased section is added.
 
 ## <next> Unreleased
 
+## 3.0.3 Unreleased
+
+### Changed
+
+- Wrap native Nabto Client SDK 4.9.11 (Android client API 1.7.5, nabto-ios-client 8.0.2).
+
 ## 3.0.1-rc.1 2026-06-15
 
 ### Changed
