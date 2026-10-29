@@ -19,6 +19,9 @@ concurrency:
 env:
   CI: "true"
 
+permissions:
+  contents: read
+
 jobs:
   version-consistency:
     name: version files in sync
